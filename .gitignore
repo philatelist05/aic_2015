@@ -12,7 +12,7 @@ hs_err_pid*
 .gradle
 gradle-app.setting
 
-/*.iml
+*.iml
 .idea/
 *.ipr
 *.iws
