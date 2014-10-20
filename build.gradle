@@ -16,9 +16,8 @@ subprojects {
         mavenCentral()
     }
 
-
-
     dependencies {
+        compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.51'
         compile group: 'org.apache.thrift', name: 'libthrift', version: '0.9.1'
         compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.0.2'
         compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.0.2'
