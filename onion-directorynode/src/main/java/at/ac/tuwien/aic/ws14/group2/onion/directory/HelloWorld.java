@@ -1,4 +1,4 @@
-package at.ac.tuwien.aic.ws14.group2.onion.chain;
+package at.ac.tuwien.aic.ws14.group2.onion.directory;
 
 import static at.ac.tuwien.aic.ws14.group2.onion.common.HelloLib.testPrint;
 
