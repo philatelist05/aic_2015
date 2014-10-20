@@ -1,21 +1,22 @@
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
 
     dependencies {
-        classpath 'co.tomlee.gradle.plugins:gradle-thrift-plugin:0.0.4'
+        classpath 'org.jruyi.gradle:thrift-gradle-plugin:0.2.0'
     }
 }
 
 subprojects {
     apply plugin: 'idea'
     apply plugin: 'java'
-    apply plugin: 'thrift'
 
     repositories {
         mavenCentral()
     }
+
+
 
     dependencies {
         compile group: 'org.apache.thrift', name: 'libthrift', version: '0.9.1'
@@ -28,22 +29,12 @@ subprojects {
     group = 'at.ac.tuwien.aic.ws14.group2.onion'
     version = '0.1.0'
 
-    generateThriftSource {
-        generators {
-            java {
-                option 'hashcode'
-                option 'beans'
-            }
-        }
-    }
-
-    idea.module.excludeDirs = []
-    idea.module.sourceDirs += file('build/generated-src/thrift/main')
+    idea.module.sourceDirs += file('generated-src/thrift/main')
     idea.module.jdkName = '1.8'
 }
 
 project(':onion-chainnode') {
-    apply plugin:'application'
+    apply plugin: 'application'
 
     mainClassName = 'at.ac.tuwien.aic.ws14.group2.onion.chain.HelloWorld'
 
@@ -53,11 +44,22 @@ project(':onion-chainnode') {
 }
 
 project(':onion-directorynode') {
-    apply plugin:'application'
+    apply plugin: 'application'
 
     mainClassName = 'at.ac.tuwien.aic.ws14.group2.onion.directory.HelloWorld'
 
     dependencies {
         compile project(':onion-common')
+    }
+}
+
+project(':onion-common') {
+    apply plugin: 'org.jruyi.thrift'
+
+    compileThrift {
+        recurse true
+
+        generator 'java', 'private-members'
+        outputDir = file('generated-src/thrift')
     }
 }
