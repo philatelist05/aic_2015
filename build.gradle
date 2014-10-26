@@ -56,7 +56,7 @@ project(':onion-common') {
 
     idea.module {
         excludeDirs -= file(buildDir)
-        sourceDirs += file('build/generated-src/thrift/gen-java')
+        buildDir.listFiles({d,f -> f != 'generated-sources'} as FilenameFilter).each {excludeDirs += it}
     }
 
     compileThrift {
