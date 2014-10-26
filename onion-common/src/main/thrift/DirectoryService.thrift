@@ -1,6 +1,6 @@
-namespace java onion
+namespace java at.ac.tuwien.aic.ws14.group2.onion.common.service
 
-service Onion {
+service DirectoryService {
 
   /**
    * A method definition looks like C code. It has a return type, arguments,

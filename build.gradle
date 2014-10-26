@@ -59,6 +59,5 @@ project(':onion-common') {
         recurse true
 
         generator 'java', 'private-members'
-        outputDir = file('generated-src/thrift')
     }
 }
