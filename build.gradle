@@ -35,7 +35,7 @@ subprojects {
 project(':onion-chainnode') {
     apply plugin: 'application'
 
-    mainClassName = 'at.ac.tuwien.aic.ws14.group2.onion.chain.HelloWorld'
+    mainClassName = 'at.ac.tuwien.aic.ws14.group2.onion.chain.HelloChain'
 
     dependencies {
         compile project(':onion-common')
@@ -45,7 +45,7 @@ project(':onion-chainnode') {
 project(':onion-directorynode') {
     apply plugin: 'application'
 
-    mainClassName = 'at.ac.tuwien.aic.ws14.group2.onion.directory.HelloWorld'
+    mainClassName = 'at.ac.tuwien.aic.ws14.group2.onion.directory.HelloDirectory'
 
     dependencies {
         compile project(':onion-common')

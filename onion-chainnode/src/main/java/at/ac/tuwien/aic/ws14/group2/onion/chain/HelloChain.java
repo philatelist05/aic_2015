@@ -5,7 +5,7 @@ import static at.ac.tuwien.aic.ws14.group2.onion.common.HelloLib.testPrint;
 /**
  * Sample class to test Gradle setup.
  */
-public class HelloWorldChain {
+public class HelloChain {
     /**
      * Main method
      * @param args CLI arguments
