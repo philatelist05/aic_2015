@@ -28,7 +28,6 @@ subprojects {
     group = 'at.ac.tuwien.aic.ws14.group2.onion'
     version = '0.1.0'
 
-    idea.module.sourceDirs += file('generated-src/thrift/main')
     idea.module.jdkName = '1.8'
 }
 
@@ -54,6 +53,11 @@ project(':onion-directorynode') {
 
 project(':onion-common') {
     apply plugin: 'org.jruyi.thrift'
+
+    idea.module {
+        excludeDirs -= file(buildDir)
+        sourceDirs += file('build/generated-src/thrift/gen-java')
+    }
 
     compileThrift {
         recurse true
