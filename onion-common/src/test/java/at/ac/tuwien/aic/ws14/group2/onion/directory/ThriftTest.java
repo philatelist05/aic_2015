@@ -1,16 +1,18 @@
 package at.ac.tuwien.aic.ws14.group2.onion.directory;
 
-import static org.junit.Assert.*;
-
+import at.ac.tuwien.aic.ws14.group2.onion.common.service.DirectoryService;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.server.THsHaServer;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
-import org.apache.thrift.transport.*;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TServerTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.junit.Test;
-import at.ac.tuwien.aic.ws14.group2.onion.common.service.DirectoryService;
+
+import static org.junit.Assert.*;
 
 /**
  * Created by Thomas on 26.10.2014.
@@ -38,15 +40,12 @@ public class ThriftTest {
         DirectoryService.Processor<DirectoryService.Iface> processor = new DirectoryService.Processor<>(handler);
 
         TServerTransport serverTransport = new TServerSocket(9090);
-        TServer server = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
+        final TServer server = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
 
-        Runnable serverMethod = new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("server started");
-                server.serve();
-                System.out.println("server finished");
-            }
+        Runnable serverMethod = () -> {
+            System.out.println("server started");
+            server.serve();
+            System.out.println("server finished");
         };
 
         Thread serverThread = new Thread(serverMethod);
