@@ -1,1 +1,1 @@
-include 'onion-common', 'onion-chainnode', 'onion-directorynode'
+include 'directory-api', 'directory', 'node:common', 'node:chain', 'node:local', 'target'

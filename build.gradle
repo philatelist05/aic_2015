@@ -18,7 +18,6 @@ subprojects {
 
     dependencies {
         compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.51'
-        compile group: 'org.apache.thrift', name: 'libthrift', version: '0.9.1'
         compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.0.2'
         compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.0.2'
         compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.0.2'
@@ -31,28 +30,49 @@ subprojects {
     idea.module.jdkName = '1.8'
 }
 
-project(':onion-chainnode') {
+project(':node:common') {
+    dependencies {
+        compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.51'
+		compile project(':directory-api')
+	}
+}
+
+project(':node:chain') {
     apply plugin: 'application'
 
-    mainClassName = 'at.ac.tuwien.aic.ws14.group2.onion.chain.HelloChain'
+    mainClassName = group+'.node.chain.HelloChain'
 
     dependencies {
-        compile project(':onion-common')
+        compile project(':node:common')
     }
 }
 
-project(':onion-directorynode') {
+project(':node:local') {
     apply plugin: 'application'
 
-    mainClassName = 'at.ac.tuwien.aic.ws14.group2.onion.directory.HelloDirectory'
+    mainClassName = group+'.node.local.HelloLocal'
 
     dependencies {
-        compile project(':onion-common')
+        compile project(':node:common')
     }
 }
 
-project(':onion-common') {
+project(':directory') {
+    apply plugin: 'application'
+
+    mainClassName = group+'.directory.HelloDirectory'
+
+    dependencies {
+        compile project(':directory-api')
+    }
+}
+
+project(':directory-api') {
     apply plugin: 'org.jruyi.thrift'
+
+    dependencies {
+        compile group: 'org.apache.thrift', name: 'libthrift', version: '0.9.1'
+    }
 
     idea.module {
         excludeDirs -= file(buildDir)
@@ -64,4 +84,10 @@ project(':onion-common') {
 
         generator 'java', 'private-members'
     }
+}
+
+project(':target') {
+    apply plugin: 'application'
+
+    mainClassName = group+'.target.HelloTarget'
 }
