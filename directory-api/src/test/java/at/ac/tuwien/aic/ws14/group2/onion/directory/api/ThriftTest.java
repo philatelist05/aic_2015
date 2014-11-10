@@ -12,8 +12,6 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.junit.Test;
 
-import java.nio.ByteBuffer;
-
 import static org.junit.Assert.*;
 
 /**

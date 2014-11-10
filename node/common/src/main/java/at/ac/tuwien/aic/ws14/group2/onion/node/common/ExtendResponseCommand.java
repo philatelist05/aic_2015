@@ -30,4 +30,10 @@ public class ExtendResponseCommand extends Command {
     public byte[] getSignature() {
         return signature;
     }
+
+    @Override
+    public void encodePayload(ByteBuffer buffer) {
+        buffer.put(diffieHalf);
+        buffer.put(signature);
+    }
 }

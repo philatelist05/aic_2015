@@ -35,4 +35,10 @@ public class ExtendCommand extends Command {
         // TODO: decrypt
         return encryptedDiffieHalf;
     }
+
+    @Override
+    public void encodePayload(ByteBuffer buffer) {
+        buffer.put(target.getAddress());
+        buffer.put(encryptedDiffieHalf);
+    }
 }

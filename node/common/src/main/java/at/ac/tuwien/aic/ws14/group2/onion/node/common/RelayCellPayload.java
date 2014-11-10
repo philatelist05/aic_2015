@@ -10,6 +10,14 @@ public class RelayCellPayload {
         this.payload = payload;
     }
 
+    /**
+     * Creates a Relay Cell Payload by encoding the specified command.
+     * @param command
+     */
+    public RelayCellPayload(Command command) {
+
+    }
+
     public RelayCellPayload decrypt(byte[] sessionKey) {
         // TODO: decrypt payload
         return new RelayCellPayload(payload);
