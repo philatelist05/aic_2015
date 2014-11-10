@@ -19,9 +19,8 @@ public abstract class Cell {
 
     static final byte CELL_TYPE_CREATE = 0;
     static final byte CELL_TYPE_CREATE_RESPONSE = 1;
-//    static final byte CELL_TYPE_DESTROY = 2;
-//    static final byte CELL_TYPE_DESTROY_RESPONSE = 3;
-    static final byte CELL_TYPE_RELAY = 4;
+    static final byte CELL_TYPE_DESTROY = 2;
+    static final byte CELL_TYPE_RELAY = 3;
 
     protected Cell() {
         // used when receive() is called
@@ -51,6 +50,8 @@ public abstract class Cell {
             case CELL_TYPE_CREATE_RESPONSE:
                 cell = new CreateResponseCell(buffer);
                 break;
+            case CELL_TYPE_DESTROY:
+                cell = new DestroyCell();
             case CELL_TYPE_RELAY:
                 cell = new RelayCell(buffer);
                 break;
