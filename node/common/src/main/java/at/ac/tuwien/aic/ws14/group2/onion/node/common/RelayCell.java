@@ -20,7 +20,18 @@ public class RelayCell extends Cell {
         payload = new RelayCellPayload(data);
     }
 
+    public RelayCell(RelayCellPayload payload, short circuitID) {
+        super(CELL_TYPE_RELAY, circuitID);
+
+        this.payload = payload;
+    }
+
     public RelayCellPayload getPayload() {
         return payload;
+    }
+
+    @Override
+    protected void encodePayload(ByteBuffer buffer) {
+        buffer.put(payload.encode());
     }
 }

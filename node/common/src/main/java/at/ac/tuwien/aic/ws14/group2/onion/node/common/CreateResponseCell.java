@@ -31,4 +31,10 @@ public class CreateResponseCell extends Cell {
     public byte[] getSignature() {
         return signature;
     }
+
+    @Override
+    protected void encodePayload(ByteBuffer buffer) {
+        buffer.put(diffieHalf);
+        buffer.put(signature);
+    }
 }

@@ -6,10 +6,11 @@ import java.nio.ByteBuffer;
 /**
  * Created by Thomas on 09.11.2014.
  */
-public class Cell {
+public abstract class Cell {
     private short circuitID;
+    private byte cellType;
 
-    static final int CELL_BYTES = 512;
+    public static final int CELL_BYTES = 512;
     static final int CELL_HEADER_BYTES = 3;   // sizeof(circuitID) + sizeof(cellType)
     static final int CELL_PAYLOAD_BYTES = CELL_BYTES - CELL_HEADER_BYTES;
 
@@ -21,6 +22,15 @@ public class Cell {
 //    static final byte CELL_TYPE_DESTROY = 2;
 //    static final byte CELL_TYPE_DESTROY_RESPONSE = 3;
     static final byte CELL_TYPE_RELAY = 4;
+
+    protected Cell() {
+        // used when receive() is called
+    }
+
+    protected Cell(byte cellType, short circuitID) {
+        this.cellType = cellType;
+        this.circuitID = circuitID;
+    }
 
     public static Cell receive(InputStream source) throws IOException {
         DataInputStream input = new DataInputStream(source);
@@ -49,11 +59,28 @@ public class Cell {
         }
 
         cell.circuitID = circuitID;
+        cell.cellType = cellType;
 
         return cell;
     }
 
-    public void send(OutputStream destination) {
+    public void send(OutputStream destination) throws IOException {
+        byte[] packet = new byte[CELL_BYTES];
+        ByteBuffer buffer = ByteBuffer.wrap(packet);
 
+        buffer.putShort(circuitID);
+        buffer.put(cellType);
+        encodePayload(buffer);
+
+        destination.write(packet);
+    }
+
+    /**
+     * Encodes the Cell payload into the specified buffer.
+     */
+    protected abstract void encodePayload(ByteBuffer buffer);
+
+    public short getCircuitID() {
+        return circuitID;
     }
 }

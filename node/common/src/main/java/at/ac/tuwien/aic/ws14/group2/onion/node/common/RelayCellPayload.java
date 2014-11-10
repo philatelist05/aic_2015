@@ -11,15 +11,20 @@ public class RelayCellPayload {
     }
 
     /**
-     * Creates a Relay Cell Payload by encoding the specified command.
-     * @param command
+     * Creates a Relay Cell Payload by encoding the specified Command.
+     * Changes
      */
     public RelayCellPayload(Command command) {
-
+        payload = command.encode();
     }
 
     public RelayCellPayload decrypt(byte[] sessionKey) {
         // TODO: decrypt payload
+        return new RelayCellPayload(payload);
+    }
+
+    public RelayCellPayload encrypt(byte[] sessionKey) {
+        // TODO: encrypt payload
         return new RelayCellPayload(payload);
     }
 
@@ -28,5 +33,12 @@ public class RelayCellPayload {
      */
     public Command decode() throws DecodeException {
         return Command.decode(payload);
+    }
+
+    /**
+     * @return A byte array of size Cell.CELL_PAYLOAD_BYTES.
+     */
+    public byte[] encode() {
+        return payload;
     }
 }

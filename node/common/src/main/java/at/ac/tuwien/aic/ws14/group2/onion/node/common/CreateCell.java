@@ -24,4 +24,9 @@ public class CreateCell extends Cell {
         // TODO: decrypt
         return encryptedDiffieHalf;
     }
+
+    @Override
+    protected void encodePayload(ByteBuffer buffer) {
+        buffer.put(encryptedDiffieHalf);
+    }
 }

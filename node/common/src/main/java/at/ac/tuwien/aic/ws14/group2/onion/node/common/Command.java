@@ -20,6 +20,14 @@ public abstract class Command {
 //    static final byte COMMAND_TYPE_CLOSE_RESPONSE = 5;
     static final byte COMMAND_TYPE_DATA = 6;
 
+    protected Command() {
+        // used when decode() is called
+    }
+
+    protected Command(byte type) {
+        this.type = type;
+    }
+
     /**
      * Decodes a type packet.
      * @param packet A type packet of size Cell.CELL_PAYLOAD_BYTES
@@ -51,7 +59,8 @@ public abstract class Command {
 
     /**
      * Encodes this Command.
-     * @return A byte array of size Cell.CELL_PAYLOAD_BYTES
+     * @return A new byte array of size Cell.CELL_PAYLOAD_BYTES.
+     *         Changes in this object are not reflected in the returned array.
      */
     public byte[] encode() {
         byte[] command = new byte[COMMAND_BYTES];
@@ -66,5 +75,5 @@ public abstract class Command {
     /**
      * Encodes the Command payload into the specified buffer.
      */
-    public abstract void encodePayload(ByteBuffer buffer);
+    protected abstract void encodePayload(ByteBuffer buffer);
 }

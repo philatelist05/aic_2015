@@ -32,7 +32,7 @@ public class ExtendResponseCommand extends Command {
     }
 
     @Override
-    public void encodePayload(ByteBuffer buffer) {
+    protected void encodePayload(ByteBuffer buffer) {
         buffer.put(diffieHalf);
         buffer.put(signature);
     }

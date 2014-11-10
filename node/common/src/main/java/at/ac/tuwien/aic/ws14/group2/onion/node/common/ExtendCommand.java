@@ -37,7 +37,7 @@ public class ExtendCommand extends Command {
     }
 
     @Override
-    public void encodePayload(ByteBuffer buffer) {
+    protected void encodePayload(ByteBuffer buffer) {
         buffer.put(target.getAddress());
         buffer.put(encryptedDiffieHalf);
     }

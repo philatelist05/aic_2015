@@ -29,6 +29,8 @@ public class DataCommand extends Command {
      * @throws at.ac.tuwien.aic.ws14.group2.onion.node.common.DecodeException Thrown if end of stream is reached.
      */
     public DataCommand(InputStream source) throws IOException, DecodeException {
+        super(COMMAND_TYPE_DATA);
+
         data = new byte[MAX_DATA_LENGTH];
         length = (short)source.read(data);
 
@@ -41,7 +43,7 @@ public class DataCommand extends Command {
     }
 
     @Override
-    public void encodePayload(ByteBuffer buffer) {
+    protected void encodePayload(ByteBuffer buffer) {
         buffer.putShort(length);
         buffer.put(data, 0, length);
     }
