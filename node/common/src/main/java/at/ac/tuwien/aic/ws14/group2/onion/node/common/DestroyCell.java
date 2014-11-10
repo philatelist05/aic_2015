@@ -9,8 +9,9 @@ import java.nio.ByteBuffer;
 public class DestroyCell extends Cell {
     /**
      * Creates a Destroy Cell without setting the Cell header.
+     * Cell type and circuit ID will not be set.
      */
-    public DestroyCell() {
+    DestroyCell() {
     }
 
     public DestroyCell(short circuitID) {

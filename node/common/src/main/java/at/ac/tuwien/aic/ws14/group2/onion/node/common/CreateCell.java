@@ -13,11 +13,18 @@ public class CreateCell extends Cell {
 
     /**
      * Reads and decodes the payload of a Create Cell assuming that the cell header has already been read.
+     * Cell type and circuit ID will not be set.
      */
-    public CreateCell(ByteBuffer source) throws IOException {
+    CreateCell(ByteBuffer source) throws IOException {
         // TODO: read correct number of bytes
         encryptedDiffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
         source.get(encryptedDiffieHalf);
+    }
+
+    public CreateCell(short circuitID, byte[] encryptedDiffieHellmanHalf) {
+        super(Cell.CELL_TYPE_CREATE, circuitID);
+
+        this.encryptedDiffieHalf = encryptedDiffieHellmanHalf;
     }
 
     public byte[] getDiffieHellmanHalf(byte[] privateKey) {

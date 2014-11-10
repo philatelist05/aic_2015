@@ -13,8 +13,9 @@ public class CreateResponseCell extends Cell {
 
     /**
      * Reads and decodes the payload of a Create Response Cell assuming that the cell header has already been read.
+     * Cell type and circuit ID will not be set.
      */
-    public CreateResponseCell(ByteBuffer source) throws IOException {
+    CreateResponseCell(ByteBuffer source) throws IOException {
         // TODO: read correct number of bytes
 
         diffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
@@ -22,6 +23,13 @@ public class CreateResponseCell extends Cell {
 
         source.get(diffieHalf);
         source.get(signature);
+    }
+
+    public CreateResponseCell(short circuitID, byte[] diffieHellmanHalf, byte[] signature) {
+        super(Cell.CELL_TYPE_CREATE_RESPONSE, circuitID);
+
+        this.diffieHalf = diffieHellmanHalf;
+        this.signature = signature;
     }
 
     public byte[] getDiffieHellmanHalf() {

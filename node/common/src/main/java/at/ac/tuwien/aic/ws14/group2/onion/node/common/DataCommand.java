@@ -16,8 +16,9 @@ public class DataCommand extends Command {
 
     /**
      * Reads a Command assuming that the Command field has already been read.
+     * Command type will not be set.
      */
-    public DataCommand(ByteBuffer buffer) {
+    DataCommand(ByteBuffer buffer) {
         length = buffer.getShort();
 
         data  = new byte[length];

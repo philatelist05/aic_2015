@@ -13,8 +13,9 @@ public class ExtendCommand extends Command {
 
     /**
      * Reads a Command assuming that the Command field has already been read.
+     * Command type will not be set.
      */
-    public ExtendCommand(ByteBuffer buffer) {
+    ExtendCommand(ByteBuffer buffer) {
         try {
             byte[] ip = new byte[4];
             buffer.get(ip);
@@ -25,6 +26,13 @@ public class ExtendCommand extends Command {
 
         encryptedDiffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
         buffer.get(encryptedDiffieHalf);
+    }
+
+    public ExtendCommand(InetAddress target, byte[] encryptedDiffieHalf) {
+        super(COMMAND_TYPE_EXTEND);
+
+        this.target = target;
+        this.encryptedDiffieHalf = encryptedDiffieHalf;
     }
 
     public InetAddress getTarget() {

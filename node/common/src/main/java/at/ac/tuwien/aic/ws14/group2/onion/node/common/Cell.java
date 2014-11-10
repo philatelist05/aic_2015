@@ -10,7 +10,7 @@ public abstract class Cell {
     private short circuitID;
     private byte cellType;
 
-    public static final int CELL_BYTES = 512;
+    static final int CELL_BYTES = 512;
     static final int CELL_HEADER_BYTES = 3;   // sizeof(circuitID) + sizeof(cellType)
     static final int CELL_PAYLOAD_BYTES = CELL_BYTES - CELL_HEADER_BYTES;
 
@@ -52,6 +52,7 @@ public abstract class Cell {
                 break;
             case CELL_TYPE_DESTROY:
                 cell = new DestroyCell();
+                break;
             case CELL_TYPE_RELAY:
                 cell = new RelayCell(buffer);
                 break;

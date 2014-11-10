@@ -12,15 +12,16 @@ public class RelayCell extends Cell {
 
     /**
      * Reads and decodes the payload of a Relay Cell assuming that the cell header has already been read.
+     * Cell type and circuit ID will not be set.
      */
-    public RelayCell(ByteBuffer source) throws IOException {
+    RelayCell(ByteBuffer source) throws IOException {
         byte[] data = new byte[CELL_PAYLOAD_BYTES];
         source.get(data);
 
         payload = new RelayCellPayload(data);
     }
 
-    public RelayCell(RelayCellPayload payload, short circuitID) {
+    public RelayCell(short circuitID, RelayCellPayload payload) {
         super(CELL_TYPE_RELAY, circuitID);
 
         this.payload = payload;

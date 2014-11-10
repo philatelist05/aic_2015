@@ -12,7 +12,7 @@ public class RelayCellPayload {
 
     /**
      * Creates a Relay Cell Payload by encoding the specified Command.
-     * Changes
+     * Changes in the Command object will not be reflected in this payload.
      */
     public RelayCellPayload(Command command) {
         payload = command.encode();

@@ -14,13 +14,21 @@ public class ExtendResponseCommand extends Command {
 
     /**
      * Reads a Command assuming that the Command field has already been read.
+     * Command type will not be set.
      */
-    public ExtendResponseCommand(ByteBuffer buffer) {
+    ExtendResponseCommand(ByteBuffer buffer) {
         diffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
         signature = new byte[Cell.SIGNATURE_BYTES];
 
         buffer.get(diffieHalf);
         buffer.get(signature);
+    }
+
+    public ExtendResponseCommand(byte[] diffieHellmanHalf, byte[] signature) {
+        super(COMMAND_TYPE_EXTEND_RESPONSE);
+
+        this.diffieHalf = diffieHellmanHalf;
+        this.signature = signature;
     }
 
     public byte[] getDiffieHellmanHalf() {
