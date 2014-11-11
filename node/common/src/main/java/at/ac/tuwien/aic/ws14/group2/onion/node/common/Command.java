@@ -14,11 +14,9 @@ public abstract class Command {
 
     static final byte COMMAND_TYPE_EXTEND = 0;
     static final byte COMMAND_TYPE_EXTEND_RESPONSE = 1;
-//    static final byte COMMAND_TYPE_CONNECT = 2;
-//    static final byte COMMAND_TYPE_CONNECT_RESPONSE = 3;
-//    static final byte COMMAND_TYPE_CLOSE = 4;
-//    static final byte COMMAND_TYPE_CLOSE_RESPONSE = 5;
-    static final byte COMMAND_TYPE_DATA = 6;
+    static final byte COMMAND_TYPE_CONNECT = 2;
+    static final byte COMMAND_TYPE_CONNECT_RESPONSE = 3;
+    static final byte COMMAND_TYPE_DATA = 4;
 
     protected Command() {
         // used when decode() is called
@@ -43,7 +41,13 @@ public abstract class Command {
                 cmd = new ExtendCommand(buffer);
                 break;
             case COMMAND_TYPE_EXTEND_RESPONSE:
-                cmd =  new ExtendResponseCommand(buffer);
+                cmd = new ExtendResponseCommand(buffer);
+                break;
+            case COMMAND_TYPE_CONNECT:
+                cmd = new ConnectCommand(buffer);
+                break;
+            case COMMAND_TYPE_CONNECT_RESPONSE:
+                cmd = new ConnectResponseCommand();
                 break;
             case COMMAND_TYPE_DATA:
                 cmd = new DataCommand(buffer);

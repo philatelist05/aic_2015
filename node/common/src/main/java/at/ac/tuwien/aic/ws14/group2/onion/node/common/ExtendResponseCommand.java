@@ -13,8 +13,8 @@ public class ExtendResponseCommand extends Command {
     private byte[] signature;
 
     /**
-     * Reads a Command assuming that the Command field has already been read.
-     * Command type will not be set.
+     * Reads a Command assuming that the Command Type field has already been read.
+     * The Command type will not be set.
      */
     ExtendResponseCommand(ByteBuffer buffer) {
         diffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];

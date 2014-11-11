@@ -1,6 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local;
 
-import static at.ac.tuwien.aic.ws14.group2.onion.node.common.HelloNodeLib.testPrint;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.CreateCell;
 
 /**
  * Sample class to test Gradle setup.
@@ -11,12 +11,6 @@ public class HelloLocal {
      * @param args CLI arguments
      */
     public static void main(String [] args) {
-        if(args == null || args.length == 0) {
-            testPrint("No args");
-        } else {
-            for (String arg : args) {
-                testPrint(arg);
-            }
-        }
+        CreateCell cell = new CreateCell((short)10, null);
     }
 }

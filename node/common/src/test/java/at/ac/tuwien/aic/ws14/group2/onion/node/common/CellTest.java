@@ -2,7 +2,11 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common;
 
 import org.junit.Test;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Inet4Address;
 import java.nio.charset.Charset;
 
 import static org.junit.Assert.*;
@@ -112,6 +116,11 @@ public class CellTest {
     }
 
     @Test
+    public void createCell() {
+        // TODO
+    }
+
+    @Test
     public void createResponseCell() throws IOException {
         short circuitID = 123;
         byte[] dh = createDH();
@@ -140,6 +149,11 @@ public class CellTest {
     }
 
     @Test
+    public void extendCommand() {
+        // TODO
+    }
+
+    @Test
     public void extendResponseCommand() throws IOException, DecodeException {
         short circuitID = 123;
         byte[] dh = createDH();
@@ -162,5 +176,49 @@ public class CellTest {
 
         assertArrayEquals(dh, receivedExtendResponseCmd.getDiffieHellmanHalf());
         assertArrayEquals(signature, receivedExtendResponseCmd.getSignature());
+    }
+
+    @Test
+    public void connectCommand() throws IOException, DecodeException {
+        short circuitID = 123;
+        Inet4Address address = (Inet4Address)Inet4Address.getByName("127.0.0.1");
+        int port = 80;
+
+        ConnectCommand connectCommand = new ConnectCommand(address, port);
+        RelayCellPayload relayPayload = new RelayCellPayload(connectCommand).encrypt(null);
+        RelayCell relayCell = new RelayCell(circuitID, relayPayload);
+
+        // send and receive cell
+        Cell receivedCell = simulateCellTransfer(relayCell);
+        assertTrue(receivedCell instanceof RelayCell);
+        assertEquals(receivedCell.getCircuitID(), circuitID);
+        RelayCell receivedRelayCell = (RelayCell)receivedCell;
+
+        // decode command
+        Command receivedCmd = receivedRelayCell.getPayload().decrypt(null).decode();
+        assertTrue(receivedCmd instanceof ConnectCommand);
+        ConnectCommand receivedConnectCommand = (ConnectCommand)receivedCmd;
+
+        assertEquals(address, receivedConnectCommand.getTarget());
+        assertEquals(port, receivedConnectCommand.getPort());
+    }
+
+    @Test
+    public void connectResponseCommand() throws IOException, DecodeException {
+        short circuitID = 123;
+
+        ConnectResponseCommand connectResponseCommand = new ConnectResponseCommand();
+        RelayCellPayload relayPayload = new RelayCellPayload(connectResponseCommand).encrypt(null);
+        RelayCell relayCell = new RelayCell(circuitID, relayPayload);
+
+        // send and receive cell
+        Cell receivedCell = simulateCellTransfer(relayCell);
+        assertTrue(receivedCell instanceof RelayCell);
+        assertEquals(receivedCell.getCircuitID(), circuitID);
+        RelayCell receivedRelayCell = (RelayCell)receivedCell;
+
+        // decode command
+        Command receivedCmd = receivedRelayCell.getPayload().decrypt(null).decode();
+        assertTrue(receivedCmd instanceof ConnectResponseCommand);
     }
 }

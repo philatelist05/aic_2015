@@ -1,21 +1,22 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common;
 
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 /**
- * Created by Thomas on 09.11.2014.
+ * Created by Thomas on 11.11.2014.
  */
-public class ExtendCommand extends Command {
+public class ConnectCommand extends Command {
 
     private Inet4Address target;
-    private byte[] encryptedDiffieHalf;
+    private int port;
 
     /**
      * Reads a Command assuming that the Command Type field has already been read.
      * The Command type will not be set.
      */
-    ExtendCommand(ByteBuffer buffer) {
+    ConnectCommand(ByteBuffer buffer) {
         try {
             byte[] ip = new byte[4];
             buffer.get(ip);
@@ -24,29 +25,27 @@ public class ExtendCommand extends Command {
             // IP address cannot be of invalid length.
         }
 
-        encryptedDiffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
-        buffer.get(encryptedDiffieHalf);
+        port = buffer.getInt();
     }
 
-    public ExtendCommand(Inet4Address target, byte[] encryptedDiffieHalf) {
-        super(COMMAND_TYPE_EXTEND);
+    public ConnectCommand(Inet4Address target, int port) {
+        super(COMMAND_TYPE_CONNECT);
 
         this.target = target;
-        this.encryptedDiffieHalf = encryptedDiffieHalf;
+        this.port = port;
     }
 
-    public InetAddress getTarget() {
+    public Inet4Address getTarget() {
         return target;
     }
 
-    public byte[] getDiffieHellmanHalf(byte[] privateKey) {
-        // TODO: decrypt
-        return encryptedDiffieHalf;
+    public int getPort() {
+        return port;
     }
 
     @Override
     protected void encodePayload(ByteBuffer buffer) {
         buffer.put(target.getAddress());
-        buffer.put(encryptedDiffieHalf);
+        buffer.putInt(port);
     }
 }
