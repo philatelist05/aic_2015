@@ -26,7 +26,7 @@ public class CellTest {
         return new ByteArrayInputStream(data);
     }
 
-    private Cell simulateCellTransfer(Cell cell) throws IOException {
+    private Cell simulateCellTransfer(Cell cell) throws IOException, DecodeException {
         ByteArrayOutputStream sink = new ByteArrayOutputStream();
         cell.send(sink);
 
@@ -121,7 +121,7 @@ public class CellTest {
     }
 
     @Test
-    public void createResponseCell() throws IOException {
+    public void createResponseCell() throws IOException, DecodeException {
         short circuitID = 123;
         byte[] dh = createDH();
         byte[] signature = createSignature();
@@ -138,7 +138,7 @@ public class CellTest {
     }
 
     @Test
-    public void destroyCell() throws IOException {
+    public void destroyCell() throws IOException, DecodeException {
         short circuitID = 123;
 
         DestroyCell destroyCell = new DestroyCell(circuitID);
@@ -220,5 +220,17 @@ public class CellTest {
         // decode command
         Command receivedCmd = receivedRelayCell.getPayload().decrypt(null).decode();
         assertTrue(receivedCmd instanceof ConnectResponseCommand);
+    }
+
+    @Test(expected = DecodeException.class)
+    public void invalidCell() throws IOException, DecodeException {
+        byte[] packet = new byte[Cell.CELL_BYTES];
+        for (int i = 0; i < packet.length; i++) {
+            packet[i] = -1;
+        }
+
+        ByteArrayInputStream input = new ByteArrayInputStream(packet);
+
+        Cell receivedCell = Cell.receive(input);
     }
 }

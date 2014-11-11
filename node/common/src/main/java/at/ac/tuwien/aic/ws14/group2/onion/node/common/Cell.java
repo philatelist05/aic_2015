@@ -31,7 +31,7 @@ public abstract class Cell {
         this.circuitID = circuitID;
     }
 
-    public static Cell receive(InputStream source) throws IOException {
+    public static Cell receive(InputStream source) throws IOException, DecodeException {
         DataInputStream input = new DataInputStream(source);
 
         byte[] packet = new byte[CELL_BYTES];
@@ -57,7 +57,7 @@ public abstract class Cell {
                 cell = new RelayCell(buffer);
                 break;
             default:
-                return null;
+                throw new DecodeException();
         }
 
         cell.circuitID = circuitID;
