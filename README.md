@@ -24,7 +24,7 @@ own (and on demand).
 
 ### How to run tests ###
 
-Not yet, but using `gradle test`
+Not yet, but using `./gradlew test`
 
 ### Deployment instructions ###
 
