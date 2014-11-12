@@ -1,6 +1,8 @@
 package at.ac.tuwien.aic.ws14.group2.onion.directory.api;
 
+import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
+import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -8,6 +10,8 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.*;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -25,6 +29,21 @@ public class ThriftTest {
         @Override
         public void ping() throws TException {
             called = true;
+        }
+
+        @Override
+        public boolean heartbeat(NodeUsage nodeUsage) throws TException {
+            return false;
+        }
+
+        @Override
+        public boolean registerNode(ChainNodeInformation nodeInformation) throws TException {
+            return false;
+        }
+
+        @Override
+        public List<ChainNodeInformation> getChain(int chainLength) throws TException {
+            return null;
         }
     }
 
