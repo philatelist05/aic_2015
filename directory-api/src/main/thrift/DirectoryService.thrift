@@ -5,6 +5,15 @@ struct NodeUsage {
     2: string endTime,
     3: i64 relayMsgCount,
     4: i64 createMsgCount,
+    5: optional string signature
+}
+
+struct NodeUsageSummary {
+    1: string beginTime,
+    2: string endTime,
+    3: i64 relayMsgCount,
+    4: i64 createMsgCount,
+    5: optional string signature
 }
 
 struct ChainNodeInformation {
@@ -16,11 +25,11 @@ struct ChainNodeInformation {
 
 service DirectoryService {
 
-   void ping(),
+   void ping(), //TODO remove
 
-   bool heartbeat(1: NodeUsage nodeUsage),
+   bool heartbeat(1: ChainNodeInformation nodeInformation, 2: NodeUsage nodeUsage), //TODO switch to ID instead of nodeInformation?
 
-   bool registerNode(1: ChainNodeInformation nodeInformation),
+   bool registerNode(1: ChainNodeInformation nodeInformation), //TODO return ID instead of bool?
 
    list<ChainNodeInformation> getChain(1: optional i32 chainLength = 3),
 

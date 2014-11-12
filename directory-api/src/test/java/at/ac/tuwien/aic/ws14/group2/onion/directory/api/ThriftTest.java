@@ -32,7 +32,7 @@ public class ThriftTest {
         }
 
         @Override
-        public boolean heartbeat(NodeUsage nodeUsage) throws TException {
+        public boolean heartbeat(ChainNodeInformation nodeInformation, NodeUsage nodeUsage) throws TException {
             return false;
         }
 
