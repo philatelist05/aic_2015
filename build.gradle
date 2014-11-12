@@ -39,7 +39,7 @@ project(':node:common') {
 project(':node:chain') {
     apply plugin: 'application'
 
-    mainClassName = group+'.node.chain.HelloChain'
+    mainClassName = group + '.node.chain.HelloChain'
 
     dependencies {
         compile project(':node:common')
@@ -50,7 +50,7 @@ project(':node:chain') {
 project(':node:local') {
     apply plugin: 'application'
 
-    mainClassName = group+'.node.local.HelloLocal'
+    mainClassName = group + '.node.local.HelloLocal'
 
     dependencies {
         compile project(':node:common')
@@ -61,7 +61,7 @@ project(':node:local') {
 project(':directory') {
     apply plugin: 'application'
 
-    mainClassName = group+'.directory.HelloDirectory'
+    mainClassName = group + '.directory.HelloDirectory'
 
     dependencies {
         compile project(':directory-api')
@@ -77,7 +77,7 @@ project(':directory-api') {
 
     idea.module {
         excludeDirs -= file(buildDir)
-        buildDir.listFiles({d,f -> f != 'generated-sources'} as FilenameFilter).each {excludeDirs += it}
+        buildDir.listFiles({ d, f -> f != 'generated-sources' } as FilenameFilter).each { excludeDirs += it }
     }
 
     compileThrift {
@@ -90,5 +90,5 @@ project(':directory-api') {
 project(':target') {
     apply plugin: 'application'
 
-    mainClassName = group+'.target.HelloTarget'
+    mainClassName = group + '.target.HelloTarget'
 }
