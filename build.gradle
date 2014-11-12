@@ -26,7 +26,8 @@ subprojects {
     group = 'at.ac.tuwien.aic.ws14.group2.onion'
     version = '0.1.0'
 
-    idea.module.jdkName = '1.8'
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 project(':node:common') {
