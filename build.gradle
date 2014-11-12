@@ -61,7 +61,7 @@ project(':node:local') {
 project(':directory') {
     apply plugin: 'application'
 
-    mainClassName = group + '.directory.HelloDirectory'
+    mainClassName = group + '.directory.DirectoryStarter'
 
     dependencies {
         compile project(':directory-api')
@@ -82,7 +82,6 @@ project(':directory-api') {
 
     compileThrift {
         recurse true
-
         generator 'java', 'private-members'
     }
 }
