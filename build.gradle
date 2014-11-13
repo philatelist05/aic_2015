@@ -17,7 +17,6 @@ subprojects {
     }
 
     dependencies {
-        compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.51'
         compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.0.2'
         compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.0.2'
         compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.0.2'
@@ -27,40 +26,42 @@ subprojects {
     group = 'at.ac.tuwien.aic.ws14.group2.onion'
     version = '0.1.0'
 
-    idea.module.jdkName = '1.8'
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 project(':node:common') {
     dependencies {
         compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.51'
-		compile project(':directory-api')
-	}
+    }
 }
 
 project(':node:chain') {
     apply plugin: 'application'
 
-    mainClassName = group+'.node.chain.HelloChain'
+    mainClassName = group + '.node.chain.HelloChain'
 
     dependencies {
         compile project(':node:common')
+        compile project(':directory-api')
     }
 }
 
 project(':node:local') {
     apply plugin: 'application'
 
-    mainClassName = group+'.node.local.HelloLocal'
+    mainClassName = group + '.node.local.HelloLocal'
 
     dependencies {
         compile project(':node:common')
+        compile project(':directory-api')
     }
 }
 
 project(':directory') {
     apply plugin: 'application'
 
-    mainClassName = group+'.directory.HelloDirectory'
+    mainClassName = group + '.directory.DirectoryStarter'
 
     dependencies {
         compile project(':directory-api')
@@ -76,12 +77,11 @@ project(':directory-api') {
 
     idea.module {
         excludeDirs -= file(buildDir)
-        buildDir.listFiles({d,f -> f != 'generated-sources'} as FilenameFilter).each {excludeDirs += it}
+        buildDir.listFiles({ d, f -> f != 'generated-sources' } as FilenameFilter).each { excludeDirs += it }
     }
 
     compileThrift {
         recurse true
-
         generator 'java', 'private-members'
     }
 }
