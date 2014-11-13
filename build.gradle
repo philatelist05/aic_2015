@@ -88,6 +88,12 @@ project(':directory-api') {
 
 project(':target') {
     apply plugin: 'application'
+    apply plugin: 'war'
 
-    mainClassName = group+'.target.HelloTarget'
+    dependencies {
+        compile group: 'com.sun.jersey', name: 'jersey-bundle', version: '1.11'
+        compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.2'
+        testCompile group: 'com.sun.jersey.jersey-test-framework', name: 'jersey-test-framework-inmemory', version:
+                '1.11'
+    }
 }
