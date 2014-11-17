@@ -6,6 +6,9 @@ import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.paddings.BlockCipherPadding;
 import org.bouncycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import java.security.Security;
 
 /**
  * Created by Milan on 12.11.2014.
@@ -16,6 +19,12 @@ public class AESAlgorithm {
 
     private PaddedBufferedBlockCipher paddedBufferedBlockCipher;
     private KeyParameter keyParameter;
+
+    static {
+        synchronized (Security.class) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+    }
 
     public AESAlgorithm(){
 

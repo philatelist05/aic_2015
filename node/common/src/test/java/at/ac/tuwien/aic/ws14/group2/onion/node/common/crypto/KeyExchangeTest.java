@@ -5,7 +5,6 @@ import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.junit.Assert;
 import org.junit.Test;
-import sun.security.pkcs.PKCS7;
 
 import java.math.BigInteger;
 import java.security.*;

@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
 import java.math.BigInteger;
@@ -14,6 +16,12 @@ import java.security.spec.X509EncodedKeySpec;
 public class KeyExchange {
     private KeyPairGenerator keyPairGenerator;
     private KeyAgreement keyAgreement;
+
+    static {
+        synchronized (Security.class) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+    }
 
     public KeyExchange() throws NoSuchProviderException, NoSuchAlgorithmException {
         keyPairGenerator = KeyPairGenerator.getInstance("DH", "BC");
