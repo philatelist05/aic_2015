@@ -1,7 +1,6 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common;
+package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import java.io.*;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 
 /**
@@ -9,7 +8,7 @@ import java.nio.ByteBuffer;
  */
 public class DataCommand extends Command {
 
-    static final int MAX_DATA_LENGTH = Command.COMMAND_PAYLOAD_BYTES - 2;
+    static final int MAX_DATA_LENGTH = COMMAND_PAYLOAD_BYTES - 2;
 
     private byte[] data;
     private short length;
@@ -27,7 +26,7 @@ public class DataCommand extends Command {
 
     /**
      * Encapsulates the next bytes of a stream in a Data Command.
-     * @throws at.ac.tuwien.aic.ws14.group2.onion.node.common.DecodeException Thrown if end of stream is reached.
+     * @throws DecodeException Thrown if end of stream is reached.
      */
     public DataCommand(InputStream source) throws IOException, DecodeException {
         super(COMMAND_TYPE_DATA);

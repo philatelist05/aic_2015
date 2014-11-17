@@ -1,4 +1,4 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common;
+package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 /**
  * Created by Thomas on 09.11.2014.

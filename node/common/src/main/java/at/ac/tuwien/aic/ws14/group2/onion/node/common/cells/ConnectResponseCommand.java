@@ -1,7 +1,5 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common;
+package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 /**
@@ -9,7 +7,7 @@ import java.nio.ByteBuffer;
  */
 public class ConnectResponseCommand extends Command {
     public ConnectResponseCommand() {
-        super(Command.COMMAND_TYPE_CONNECT_RESPONSE);
+        super(COMMAND_TYPE_CONNECT_RESPONSE);
     }
 
     @Override

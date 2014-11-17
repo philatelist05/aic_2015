@@ -1,8 +1,6 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common;
+package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
-import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
@@ -17,12 +15,12 @@ public class CreateCell extends Cell {
      */
     CreateCell(ByteBuffer source) throws IOException {
         // TODO: read correct number of bytes
-        encryptedDiffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
+        encryptedDiffieHalf = new byte[DIFFIE_HELLMAN_HALF_BYTES];
         source.get(encryptedDiffieHalf);
     }
 
     public CreateCell(short circuitID, byte[] encryptedDiffieHellmanHalf) {
-        super(Cell.CELL_TYPE_CREATE, circuitID);
+        super(CELL_TYPE_CREATE, circuitID);
 
         this.encryptedDiffieHalf = encryptedDiffieHellmanHalf;
     }

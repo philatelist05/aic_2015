@@ -1,6 +1,5 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common;
+package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 /**
@@ -15,7 +14,7 @@ public class DestroyCell extends Cell {
     }
 
     public DestroyCell(short circuitID) {
-        super(Cell.CELL_TYPE_DESTROY, circuitID);
+        super(CELL_TYPE_DESTROY, circuitID);
     }
 
     @Override

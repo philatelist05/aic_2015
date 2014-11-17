@@ -1,4 +1,4 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common;
+package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import java.net.*;
 import java.nio.ByteBuffer;

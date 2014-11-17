@@ -1,6 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.CreateCell;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
 
 /**
  * Sample class to test Gradle setup.
