@@ -1,7 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
 
 import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.junit.Assert;
 import org.junit.Test;
@@ -13,21 +12,21 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
-public class KeyExchangeTest {
+public class DHKeyExchangeTest {
 
     @Test
     public void testInitExchange() throws Exception {
-        KeyExchange keyExchange = new KeyExchange();
-        keyExchange.initExchange(KeyExchange.generateRelativePrime(),KeyExchange.generateRelativePrime());
+        DHKeyExchange keyExchange = new DHKeyExchange();
+        keyExchange.initExchange(DHKeyExchange.generateRelativePrime(), DHKeyExchange.generateRelativePrime());
     }
 
     @Test
     public void testSharedSecret() throws Exception {
-        BigInteger p = KeyExchange.generateRelativePrime();
-        BigInteger g = KeyExchange.generateRelativePrime();
+        BigInteger p = DHKeyExchange.generateRelativePrime();
+        BigInteger g = DHKeyExchange.generateRelativePrime();
 
-        KeyExchange keyExchangeA = new KeyExchange();
-        KeyExchange keyExchangeB = new KeyExchange();
+        DHKeyExchange keyExchangeA = new DHKeyExchange();
+        DHKeyExchange keyExchangeB = new DHKeyExchange();
 
         byte[] publicKeyA = keyExchangeA.initExchange(p,g);
         byte[] publicKeyB = keyExchangeB.initExchange(p,g);
@@ -45,20 +44,20 @@ public class KeyExchangeTest {
 
     @Test(expected = NullPointerException.class)
     public void testCompleteExchangeWithNullBytes_ShouldFail() throws Exception {
-        KeyExchange keyExchange = new KeyExchange();
+        DHKeyExchange keyExchange = new DHKeyExchange();
         keyExchange.completeExchange(null);
     }
 
     @Test
     public void testCrypting() throws NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchProviderException, InvalidKeySpecException, InvalidCipherTextException {
-        KeyExchange keyExchange = new KeyExchange();
-        keyExchange.initExchange(KeyExchange.generateRelativePrime(),KeyExchange.generateRelativePrime());
+        DHKeyExchange keyExchange = new DHKeyExchange();
+        keyExchange.initExchange(DHKeyExchange.generateRelativePrime(), DHKeyExchange.generateRelativePrime());
 
-        BigInteger p = KeyExchange.generateRelativePrime();
-        BigInteger g = KeyExchange.generateRelativePrime();
+        BigInteger p = DHKeyExchange.generateRelativePrime();
+        BigInteger g = DHKeyExchange.generateRelativePrime();
 
-        KeyExchange keyExchangeA = new KeyExchange();
-        KeyExchange keyExchangeB = new KeyExchange();
+        DHKeyExchange keyExchangeA = new DHKeyExchange();
+        DHKeyExchange keyExchangeB = new DHKeyExchange();
 
         byte[] publicKeyA = keyExchangeA.initExchange(p,g);
         byte[] publicKeyB = keyExchangeB.initExchange(p,g);
@@ -85,5 +84,25 @@ public class KeyExchangeTest {
         String str1 = new String(decrypt);
         assertTrue(str1.startsWith(str));
        //assertEquals(str1, str);
+    }
+
+    public void testRSASignAndVerify() throws Exception {
+
+        RSAKeysGenerate keysGenerate = new RSAKeysGenerate();
+        KeyPair keyPair = keysGenerate.generateKeys(999);
+
+        byte[] data = { 65, 66, 67, 68, 69, 70, 71, 72, 73, 74 };
+
+        RSASignAndVerify signAndVerify = new RSASignAndVerify();
+        byte[] digitalSignature = signAndVerify.signData(data, keyPair.getPrivate());
+
+        boolean verified = false;
+
+        verified = signAndVerify.verifySig(data, keyPair.getPublic(), digitalSignature);
+        assertTrue(verified);
+
+        keyPair = keysGenerate.generateKeys(888);
+        verified = signAndVerify.verifySig(data, keyPair.getPublic(), digitalSignature);
+        assertTrue(verified);
     }
 }
