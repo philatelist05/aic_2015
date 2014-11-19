@@ -39,7 +39,7 @@ project(':node:common') {
 project(':node:chain') {
     apply plugin: 'application'
 
-    mainClassName = group + '.node.chain.HelloChain'
+    mainClassName = group + '.node.chain.ChainNodeStarter'
 
     dependencies {
         compile project(':node:common')
