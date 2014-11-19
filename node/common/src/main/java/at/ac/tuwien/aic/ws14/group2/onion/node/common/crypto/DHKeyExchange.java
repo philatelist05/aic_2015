@@ -13,7 +13,7 @@ import java.security.spec.X509EncodedKeySpec;
 /**
  * Created by Milan (thanks to Fabian) on 12.11.2014.
  */
-public class KeyExchange {
+public class DHKeyExchange {
     private KeyPairGenerator keyPairGenerator;
     private KeyAgreement keyAgreement;
 
@@ -23,7 +23,7 @@ public class KeyExchange {
         }
     }
 
-    public KeyExchange() throws NoSuchProviderException, NoSuchAlgorithmException {
+    public DHKeyExchange() throws NoSuchProviderException, NoSuchAlgorithmException {
         keyPairGenerator = KeyPairGenerator.getInstance("DH", "BC");
         keyAgreement = KeyAgreement.getInstance("DH", "BC");
     }
