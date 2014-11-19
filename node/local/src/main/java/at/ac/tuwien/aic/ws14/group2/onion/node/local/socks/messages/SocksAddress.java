@@ -50,11 +50,7 @@ public class SocksAddress {
 	}
 
 	public static SocksAddress fromByteArray(byte[] data) throws ParseMessageException, BufferUnderflowException {
-		final int MIN_LENGTH = 1 /* ATYP */ + 2 /* PORT */;
-
 		Objects.requireNonNull(data);
-		if (data.length < MIN_LENGTH)
-			throw new IllegalArgumentException("data must be at least " + MIN_LENGTH + " bytes long");
 
 		ByteBuffer bb = ByteBuffer.wrap(data);
 		bb.order(SocksMessage.NETWORK_BYTE_ORDER);
@@ -71,9 +67,6 @@ public class SocksAddress {
 		switch (addressType) {
 			case DOMAINNAME:
 				length = Byte.toUnsignedInt(bb.get());
-
-				if (data.length < MIN_LENGTH + 1 /* address length field */ + length)
-					throw new IllegalArgumentException("data array too short");
 
 				byte[] hostNameBytes = new byte[length];
 				bb.get(hostNameBytes);

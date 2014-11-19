@@ -1,6 +1,9 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ParseMessageException;
+
 import java.nio.BufferOverflowException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
@@ -18,9 +21,32 @@ public class MethodSelectionRequest extends SocksMessage {
 			throw new IllegalArgumentException("no more than " + 0xFF + " methods allowed");
 	}
 
-	public static MethodSelectionReply fromByteArray(byte[] data) {
-		// TODO (KK) Implement method selection request message parsing
-		return null;
+	public static MethodSelectionRequest fromByteArray(byte[] data) throws ParseMessageException, BufferUnderflowException {
+		Objects.requireNonNull(data);
+
+		ByteBuffer bb = ByteBuffer.wrap(data);
+		bb.order(SocksMessage.NETWORK_BYTE_ORDER);
+
+		byte version = bb.get();
+		if (version != SocksMessage.VERSION)
+			throw new ParseMessageException(String.format("wrong version byte: 0x%X expected to be 0x%X", version, SocksMessage.VERSION));
+
+		int length = Byte.toUnsignedInt(bb.get());
+		byte[] methodsBytes = new byte[length];
+		bb.get(methodsBytes);
+
+		Method[] methods = new Method[length];
+
+		// Convert the bytes to the enumeration
+		try {
+			for (int i = 0; i < methodsBytes.length; i++) {
+				methods[i] = Method.fromByte(methodsBytes[i]);
+			}
+		} catch (IllegalArgumentException e) {
+			throw new ParseMessageException(e);
+		}
+
+		return new MethodSelectionRequest(methods);
 	}
 
 	public Method[] getMethods() {
