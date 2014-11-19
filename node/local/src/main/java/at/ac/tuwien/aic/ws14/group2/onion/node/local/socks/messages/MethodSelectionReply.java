@@ -23,8 +23,7 @@ public class MethodSelectionReply extends SocksMessage {
 
 	@Override
 	public byte[] toByteArray() {
-		// TODO (KK) Implement method selection reply serialization
-		return new byte[0];
+		return new byte[]{SocksMessage.VERSION, method.getValue()};
 	}
 
 	@Override

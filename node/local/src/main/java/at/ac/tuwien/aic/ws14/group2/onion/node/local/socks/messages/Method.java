@@ -15,12 +15,12 @@ public enum Method {
 		this.value = value;
 	}
 
-	public static Method fromByte(byte data) throws EnumConstantNotPresentException {
+	public static Method fromByte(byte data) throws IllegalArgumentException {
 		for (Method m : Method.values()) {
 			if (m.value == data)
 				return m;
 		}
-		throw new EnumConstantNotPresentException(Method.class, String.format("0x%02X", data));
+		throw new IllegalArgumentException(String.format("Unknown method 0x%02X", data));
 	}
 
 	public byte getValue() {

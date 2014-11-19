@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -11,6 +13,9 @@ public class MethodSelectionRequest extends SocksMessage {
 
 	public MethodSelectionRequest(Method... methods) {
 		this.methods = Objects.requireNonNull(methods);
+
+		if (methods.length > 0xFF)
+			throw new IllegalArgumentException("no more than " + 0xFF + " methods allowed");
 	}
 
 	public static MethodSelectionReply fromByteArray(byte[] data) {
@@ -23,9 +28,18 @@ public class MethodSelectionRequest extends SocksMessage {
 	}
 
 	@Override
-	public byte[] toByteArray() {
-		// TODO (KK) Implement method selection request serialization
-		return new byte[0];
+	public byte[] toByteArray() throws BufferOverflowException {
+
+		ByteBuffer bb = ByteBuffer.allocate(1 /* VER */ + methods.length);
+
+		bb.put(SocksMessage.VERSION);
+		bb.put((byte) methods.length);
+
+		for (Method m : methods) {
+			bb.put(m.getValue());
+		}
+
+		return bb.array();
 	}
 
 	@Override

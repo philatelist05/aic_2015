@@ -14,12 +14,12 @@ public enum AddressType {
 		this.value = value;
 	}
 
-	public static AddressType fromByte(byte data) throws EnumConstantNotPresentException {
+	public static AddressType fromByte(byte data) throws IllegalArgumentException {
 		for (AddressType m : AddressType.values()) {
 			if (m.value == data)
 				return m;
 		}
-		throw new EnumConstantNotPresentException(AddressType.class, String.format("0x%02X", data));
+		throw new IllegalArgumentException(String.format("Unknown address type 0x%02X", data));
 	}
 
 	public byte getValue() {

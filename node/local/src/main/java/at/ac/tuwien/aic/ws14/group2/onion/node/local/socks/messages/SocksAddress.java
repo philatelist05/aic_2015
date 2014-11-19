@@ -1,11 +1,14 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ParseMessageException;
+
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.UnknownHostException;
+import java.nio.BufferOverflowException;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
@@ -46,9 +49,58 @@ public class SocksAddress {
 			throw new IllegalArgumentException("host name must not be longer than " + 0xFF + " bytes");
 	}
 
-	public static SocksAddress fromByteArray(byte[] data) {
-		// TODO (KK) Implement address block parsing
-		return null;
+	public static SocksAddress fromByteArray(byte[] data) throws ParseMessageException, BufferUnderflowException {
+		final int MIN_LENGTH = 1 /* ATYP */ + 2 /* PORT */;
+
+		Objects.requireNonNull(data);
+		if (data.length < MIN_LENGTH)
+			throw new IllegalArgumentException("data must be at least " + MIN_LENGTH + " bytes long");
+
+		ByteBuffer bb = ByteBuffer.wrap(data);
+		bb.order(SocksMessage.NETWORK_BYTE_ORDER);
+
+		AddressType addressType = null;
+		try {
+			addressType = AddressType.fromByte(bb.get());
+		} catch (IllegalArgumentException e) {
+			throw new ParseMessageException(e);
+		}
+
+		int port;
+		int length;
+		switch (addressType) {
+			case DOMAINNAME:
+				length = Byte.toUnsignedInt(bb.get());
+
+				if (data.length < MIN_LENGTH + 1 /* address length field */ + length)
+					throw new IllegalArgumentException("data array too short");
+
+				byte[] hostNameBytes = new byte[length];
+				bb.get(hostNameBytes);
+				String hostName = new String(hostNameBytes, SocksMessage.CHARSET);
+
+				port = Short.toUnsignedInt(bb.getShort());
+
+				return new SocksAddress(hostName, port);
+			case IP_V4_ADDRESS:
+			case IP_V6_ADDRESS:
+				length = AddressType.IP_V4_ADDRESS.equals(addressType) ? SocksMessage.IPV4_OCTETS : SocksMessage.IPV6_OCTETS;
+				byte[] addressBytes = new byte[length];
+				bb.get(addressBytes);
+
+				InetAddress address;
+				try {
+					address = InetAddress.getByAddress(addressBytes);
+				} catch (UnknownHostException e) {
+					throw new ParseMessageException(e);
+				}
+
+				port = Short.toUnsignedInt(bb.getShort());
+
+				return new SocksAddress(address, port);
+			default:
+				throw new IllegalStateException("address type is in an illegal state");
+		}
 	}
 
 	public String getHostName() {
@@ -68,13 +120,12 @@ public class SocksAddress {
 	}
 
 	private byte[] getHostNameBytes() {
-		return hostName.getBytes(Charset.defaultCharset());
+		return hostName.getBytes(SocksMessage.CHARSET);
 	}
 
-	public byte[] toByteArray() {
-		byte[] ret = null;
+	public byte[] toByteArray() throws BufferOverflowException {
+		ByteBuffer bb = null;
 
-		short i = 0;
 		int length = 1 /* ATYP */ + 2 /* PORT */;
 
 		switch (addressType) {
@@ -82,15 +133,14 @@ public class SocksAddress {
 				byte[] hostNameBytes = getHostNameBytes();
 				length += hostNameBytes.length;
 
-				ret = new byte[length];
+				bb = ByteBuffer.allocate(length);
+				bb.order(SocksMessage.NETWORK_BYTE_ORDER);
 
-				ret[i++] = addressType.getValue();
+				bb.put(addressType.getValue());
 
-				ret[i++] = (byte) hostNameBytes.length;
+				bb.put((byte) hostNameBytes.length);
 
-				for (byte hostNameByte : hostNameBytes) {
-					ret[i++] = hostNameByte;
-				}
+				bb.put(hostNameBytes);
 
 				break;
 			case IP_V4_ADDRESS:
@@ -98,26 +148,24 @@ public class SocksAddress {
 				byte[] addressBytes = address.getAddress();
 				length += addressBytes.length;
 
-				if (addressBytes.length != 4 && addressBytes.length != 16)
+				if (addressBytes.length != SocksMessage.IPV4_OCTETS && addressBytes.length != SocksMessage.IPV6_OCTETS)
 					throw new AssertionError();
 
-				ret = new byte[length];
+				bb = ByteBuffer.allocate(length);
+				bb.order(SocksMessage.NETWORK_BYTE_ORDER);
 
-				ret[i++] = addressType.getValue();
+				bb.put(addressType.getValue());
 
-				for (byte addressByte : addressBytes) {
-					ret[i++] = addressByte;
-				}
+				bb.put(addressBytes);
 
 				break;
 			default:
 				throw new IllegalStateException("address type is in an illegal state");
 		}
 
-		ret[i++] = (byte) (port >>> 8);
-		ret[i++] = (byte) port;
+		bb.putShort((short) port);
 
-		return ret;
+		return bb.array();
 	}
 
 	@Override

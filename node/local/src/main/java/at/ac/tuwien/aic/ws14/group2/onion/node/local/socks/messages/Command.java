@@ -14,12 +14,12 @@ public enum Command {
 		this.value = value;
 	}
 
-	public static Command fromByte(byte data) throws EnumConstantNotPresentException {
+	public static Command fromByte(byte data) throws IllegalArgumentException {
 		for (Command m : Command.values()) {
 			if (m.value == data)
 				return m;
 		}
-		throw new EnumConstantNotPresentException(Command.class, String.format("0x%02X", data));
+		throw new IllegalArgumentException(String.format("Unknown command 0x%02X", data));
 	}
 
 	public byte getValue() {

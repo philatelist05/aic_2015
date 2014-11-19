@@ -1,5 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
+import java.nio.ByteBuffer;
 import java.util.Objects;
 
 /**
@@ -29,8 +30,16 @@ public class CommandRequest extends SocksMessage {
 
 	@Override
 	public byte[] toByteArray() {
-		// TODO (KK) Implement command request serialization
-		return new byte[0];
+		byte[] addressBytes = destination.toByteArray();
+
+		ByteBuffer bb = ByteBuffer.allocate(1 /* VER */ + 1 /* CMD */ + 1 /* RSV */ + addressBytes.length);
+
+		bb.put(SocksMessage.VERSION);
+		bb.put(command.getValue());
+		bb.put(SocksMessage.RESERVED_BYTE);
+		bb.put(addressBytes);
+
+		return bb.array();
 	}
 
 	@Override
