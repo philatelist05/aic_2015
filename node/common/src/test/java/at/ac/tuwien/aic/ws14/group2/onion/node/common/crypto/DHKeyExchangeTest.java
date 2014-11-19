@@ -88,7 +88,7 @@ public class DHKeyExchangeTest {
 
     public void testRSASignAndVerify() throws Exception {
 
-        RSAKeysGenerate keysGenerate = new RSAKeysGenerate();
+        RSAKeyGenerator keysGenerate = new RSAKeyGenerator();
         KeyPair keyPair = keysGenerate.generateKeys(999);
 
         byte[] data = { 65, 66, 67, 68, 69, 70, 71, 72, 73, 74 };

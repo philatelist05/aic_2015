@@ -11,29 +11,23 @@ import java.security.Security;
 /**
  * Created by Milan on 18.11.2014.
  */
-public class RSAKeysGenerate {
+public class RSAKeyGenerator {
 
     private KeyPairGenerator keyPairGenerator;
    // private BASE64Encoder base64Encoder;
 
-    static {
-        synchronized (Security.class) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
+    public RSAKeyGenerator() throws NoSuchProviderException, NoSuchAlgorithmException {
+        keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
+       // base64Encoder = new BASE64Encoder();
     }
-
-        public RSAKeysGenerate() throws NoSuchProviderException, NoSuchAlgorithmException {
-            keyPairGenerator = KeyPairGenerator.getInstance("RSA", "BC");
-           // base64Encoder = new BASE64Encoder();
-        }
 
     public KeyPair generateKeys(long seed) {
        // try {
 
-            SecureRandom secureRandom = createFixedRandom();
+            SecureRandom secureRandom = createFixedRandom();   // TODO (FG) evaluate this, seems unnecessary -> use Default PRNG or something from BC
             //SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG", "SUN");
             secureRandom.setSeed(seed);
-            keyPairGenerator.initialize(1024, secureRandom);
+            keyPairGenerator.initialize(2048, secureRandom);
 
 
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
