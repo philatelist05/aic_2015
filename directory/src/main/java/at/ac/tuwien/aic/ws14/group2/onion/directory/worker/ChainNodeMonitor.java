@@ -8,6 +8,12 @@ import org.apache.logging.log4j.Logger;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
@@ -41,14 +47,13 @@ public class ChainNodeMonitor implements Runnable {
             NodeUsage usage = chainNodeRegistry.getLastNodeUsage(nodeInformation);
             if (usage != null) {
                 try {
-                    // FIXME use Java 8 java.time API (see node.chain.heartbeat.HeartBeatWorker for how this fields are currently encoded)
-                    Date then = DateFormat.getDateTimeInstance().parse(usage.getEndTime());
-                    Calendar cutoff = Calendar.getInstance();
-                    cutoff.add(Calendar.MILLISECOND, -this.timeout);
-                    if (then.before(cutoff.getTime())) {
+                    LocalDateTime then = LocalDateTime.parse(usage.getEndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime cutoff = now.minus(timeout, ChronoUnit.MILLIS);
+                    if (then.until(cutoff, ChronoUnit.MILLIS) < 0) {
                         chainNodeRegistry.deactivate(nodeInformation);
                     }
-                } catch (ParseException e) {
+                } catch (DateTimeParseException e) {
                     logger.warn("Cannot parse endDate '{}' of NodeUsageSummary for ChainNode '{}'", usage.getEndTime(), nodeInformation);
                     logger.debug(e.getStackTrace());
                 }
