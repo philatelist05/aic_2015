@@ -2,15 +2,21 @@ package at.ac.tuwien.aic.ws14.group2.onion.directory.worker;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.ChainNodeRegistry;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
-import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsageSummary;
+import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Map;
+import java.util.Set;
 
 public class ChainNodeMonitor implements Runnable {
     static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
@@ -27,27 +33,28 @@ public class ChainNodeMonitor implements Runnable {
     public void run() {
         logger.info("Starting health check");
 
-        Map<ChainNodeInformation, NodeUsageSummary> activeNodes = chainNodeRegistry.getActiveStatistics();
+        Set<ChainNodeInformation> activeNodes = chainNodeRegistry.getActiveNodes();
 
         if (activeNodes == null || activeNodes.isEmpty()) {
             logger.warn("No active ChainNodes, nothing to do..");
             logger.info("Finished health check");
             return;
+        } else {
+            logger.info("Found {} active nodes.", activeNodes.size());
         }
 
-        for (Map.Entry<ChainNodeInformation, NodeUsageSummary> entry : activeNodes.entrySet()) {
-            NodeUsageSummary usageSummary = entry.getValue();
-            if (usageSummary != null) {
+        for (ChainNodeInformation nodeInformation : activeNodes) {
+            NodeUsage usage = chainNodeRegistry.getLastNodeUsage(nodeInformation);
+            if (usage != null) {
                 try {
-                    // TODO discuss whether to switch to JodaTime for Date/Time handling
-                    Date then = DateFormat.getDateTimeInstance().parse(usageSummary.getEndTime());
-                    Calendar cutoff = Calendar.getInstance();
-                    cutoff.add(Calendar.MILLISECOND, -this.timeout);
-                    if (then.before(cutoff.getTime())) {
-                        chainNodeRegistry.deactivate(entry.getKey());
+                    LocalDateTime then = LocalDateTime.parse(usage.getEndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime cutoff = now.minus(timeout, ChronoUnit.MILLIS);
+                    if (then.until(cutoff, ChronoUnit.MILLIS) < 0) {
+                        chainNodeRegistry.deactivate(nodeInformation);
                     }
-                } catch (ParseException e) {
-                    logger.warn("Cannot parse endDate '{}' of NodeUsageSummary for ChainNode '{}'", usageSummary.getEndTime(), entry.getKey());
+                } catch (DateTimeParseException e) {
+                    logger.warn("Cannot parse endDate '{}' of NodeUsageSummary for ChainNode '{}'", usage.getEndTime(), nodeInformation);
                     logger.debug(e.getStackTrace());
                 }
             }

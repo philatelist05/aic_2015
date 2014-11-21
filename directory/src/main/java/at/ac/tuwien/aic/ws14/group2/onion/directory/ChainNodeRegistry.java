@@ -12,17 +12,18 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+
 public class ChainNodeRegistry {
     static final Logger logger = LogManager.getLogger(ChainNodeRegistry.class.getName());
-    ConcurrentHashMap<ChainNodeInformation, ConcurrentLinkedDeque<NodeUsage>> nodeUsages;
+    private ConcurrentHashMap<ChainNodeInformation, ConcurrentLinkedDeque<NodeUsage>> nodeUsages;
     private ConcurrentSkipListSet<ChainNodeInformation> activeNodes;
     private ConcurrentSkipListSet<ChainNodeInformation> inactiveNodes;
 
     public ChainNodeRegistry() {
         logger.info("Initializing ChainNodeRegistry");
-        activeNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
-        inactiveNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
-        nodeUsages = new ConcurrentHashMap<ChainNodeInformation, ConcurrentLinkedDeque<NodeUsage>>();
+        this.activeNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
+        this.inactiveNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
+        this.nodeUsages = new ConcurrentHashMap<ChainNodeInformation, ConcurrentLinkedDeque<NodeUsage>>();
     }
 
     //TODO check signature?
@@ -38,6 +39,9 @@ public class ChainNodeRegistry {
             return false;
         } else {
             usages.addLast(usage);
+            if (!activeNodes.contains(chainNodeInformation)) {
+                activate(chainNodeInformation);
+            }
             return true;
         }
     }
@@ -46,11 +50,12 @@ public class ChainNodeRegistry {
         logger.info("Adding new ChainNode '{}'", chainNodeInformation);
 
         ConcurrentLinkedDeque<NodeUsage> usages = new ConcurrentLinkedDeque<>();
-        boolean ret = nodeUsages.replace(chainNodeInformation, null, usages);
+        ConcurrentLinkedDeque<NodeUsage> existingUsages = nodeUsages.putIfAbsent(chainNodeInformation, usages);
 
-        activate(chainNodeInformation);
+        if (existingUsages != null)
+            activate(chainNodeInformation);
 
-        return ret;
+        return existingUsages == null;
     }
 
     public void activate(ChainNodeInformation chainNodeInformation) {
@@ -78,6 +83,11 @@ public class ChainNodeRegistry {
 
     public Set<ChainNodeInformation> getActiveNodes() {
         logger.info("Returning active ChainNodes");
-        return activeNodes.clone();
+        return activeNodes;
+    }
+
+    public NodeUsage getLastNodeUsage(ChainNodeInformation nodeInformation) {
+        ConcurrentLinkedDeque<NodeUsage> usages = nodeUsages.get(nodeInformation);
+        return usages == null ? null : usages.getLast();
     }
 }
