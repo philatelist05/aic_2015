@@ -4,19 +4,19 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions;
  * Created by klaus on 11/18/14.
  */
 public class AddressTypeNotSupportedException extends SocksException {
-	public AddressTypeNotSupportedException() {
-		super();
+	private final byte addressTypeByte;
+
+	public AddressTypeNotSupportedException(byte addressTypeByte) {
+		super(String.format("address type 0x%02X not supported", addressTypeByte));
+		this.addressTypeByte = addressTypeByte;
 	}
 
-	public AddressTypeNotSupportedException(String s) {
-		super(s);
+	public AddressTypeNotSupportedException(byte addressTypeByte, Throwable throwable) {
+		super(String.format("address type 0x%02X not supported", addressTypeByte), throwable);
+		this.addressTypeByte = addressTypeByte;
 	}
 
-	public AddressTypeNotSupportedException(String s, Throwable throwable) {
-		super(s, throwable);
-	}
-
-	public AddressTypeNotSupportedException(Throwable throwable) {
-		super(throwable);
+	public byte getAddressTypeByte() {
+		return addressTypeByte;
 	}
 }

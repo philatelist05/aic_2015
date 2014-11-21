@@ -1,6 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ParseMessageException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
 
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
@@ -21,7 +21,13 @@ public class MethodSelectionRequest extends SocksMessage {
 			throw new IllegalArgumentException("no more than " + 0xFF + " methods allowed");
 	}
 
-	public static MethodSelectionRequest fromByteArray(byte[] data) throws ParseMessageException, BufferUnderflowException {
+	/**
+	 * Parses a byte array to a new instance of this class.
+	 *
+	 * @throws MessageParsingException  if the data cannot be parsed because it doesn't match the RFC 1928 specification
+	 * @throws BufferUnderflowException if the byte array provided is shorter than the expected length
+	 */
+	public static MethodSelectionRequest fromByteArray(byte[] data) throws MessageParsingException, BufferUnderflowException {
 		Objects.requireNonNull(data);
 
 		ByteBuffer bb = ByteBuffer.wrap(data);
@@ -29,7 +35,7 @@ public class MethodSelectionRequest extends SocksMessage {
 
 		byte version = bb.get();
 		if (version != SocksMessage.VERSION)
-			throw new ParseMessageException(String.format("wrong version byte: 0x%X expected to be 0x%X", version, SocksMessage.VERSION));
+			throw new MessageParsingException(String.format("wrong version byte: expected: 0x%02X; found: 0x%02X", SocksMessage.VERSION, version));
 
 		int length = Byte.toUnsignedInt(bb.get());
 		byte[] methodsBytes = new byte[length];
@@ -43,7 +49,7 @@ public class MethodSelectionRequest extends SocksMessage {
 				methods[i] = Method.fromByte(methodsBytes[i]);
 			}
 		} catch (IllegalArgumentException e) {
-			throw new ParseMessageException(e);
+			throw new MessageParsingException("method not found", e);
 		}
 
 		return new MethodSelectionRequest(methods);

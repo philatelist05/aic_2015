@@ -1,5 +1,10 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.AddressTypeNotSupportedException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.CommandNotSupportedException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
+
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -15,9 +20,38 @@ public class CommandRequest extends SocksMessage {
 		this.destination = Objects.requireNonNull(destination);
 	}
 
-	public static CommandRequest fromByteArray(byte[] data) {
-		// TODO (KK) Implement command request message parsing
-		return null;
+	/**
+	 * Parses a byte array to a new instance of this class.
+	 *
+	 * @throws MessageParsingException  if the data cannot be parsed because it doesn't match the RFC 1928 specification
+	 * @throws BufferUnderflowException if the byte array provided is shorter than the expected length
+	 */
+	public static CommandRequest fromByteArray(byte[] data) throws MessageParsingException, BufferUnderflowException, AddressTypeNotSupportedException, CommandNotSupportedException {
+		Objects.requireNonNull(data);
+
+		ByteBuffer bb = ByteBuffer.wrap(data);
+		bb.order(SocksMessage.NETWORK_BYTE_ORDER);
+
+		byte version = bb.get();
+		if (version != SocksMessage.VERSION)
+			throw new MessageParsingException(String.format("wrong version byte: expected: 0x%02X; found: 0x%02X", SocksMessage.VERSION, version));
+
+		// Convert the byte to the Command enumeration
+		Command command = null;
+		byte commandByte = bb.get();
+		try {
+			command = Command.fromByte(commandByte);
+		} catch (IllegalArgumentException e) {
+			throw new CommandNotSupportedException(commandByte, e);
+		}
+
+		byte reserved = bb.get();
+		if (reserved != SocksMessage.RESERVED_BYTE)
+			throw new MessageParsingException(String.format("wrong 'reserved' byte: expected: 0x%02X; found: 0x%02X", SocksMessage.RESERVED_BYTE, reserved));
+
+		SocksAddress destination = SocksAddress.fromByteArray(bb);
+
+		return new CommandRequest(command, destination);
 	}
 
 	public Command getCommand() {
