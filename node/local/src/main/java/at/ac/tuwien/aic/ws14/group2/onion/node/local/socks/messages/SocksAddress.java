@@ -69,10 +69,10 @@ public class SocksAddress {
 	 * bytes read from the buffer.
 	 *
 	 * @return a new instance of this class
-	 * @throws MessageParsingException  if the data cannot be parsed because it doesn't match the RFC 1928 specification
 	 * @throws BufferUnderflowException if the byte array provided is shorter than the expected length
+	 * @throws AddressTypeNotSupportedException if an invalid address type byte was provided
 	 */
-	public static SocksAddress fromByteArray(ByteBuffer bb) throws MessageParsingException, BufferUnderflowException, AddressTypeNotSupportedException {
+	public static SocksAddress fromByteArray(ByteBuffer bb) throws BufferUnderflowException, AddressTypeNotSupportedException {
 		Objects.requireNonNull(bb);
 
 		// Set the right byte order and save the previous one
@@ -81,7 +81,7 @@ public class SocksAddress {
 			bb.order(SocksMessage.NETWORK_BYTE_ORDER);
 
 		try {
-			AddressType addressType = null;
+			AddressType addressType;
 			byte addressTypeByte = bb.get();
 			try {
 				addressType = AddressType.fromByte(addressTypeByte);
@@ -108,11 +108,11 @@ public class SocksAddress {
 					byte[] addressBytes = new byte[length];
 					bb.get(addressBytes);
 
-					InetAddress address;
+					InetAddress address = null;
 					try {
 						address = InetAddress.getByAddress(addressBytes);
-					} catch (UnknownHostException e) {
-						throw new MessageParsingException(e);
+					} catch (UnknownHostException ignored) {
+						// since we specify the length, this exception can not occur
 					}
 
 					port = Short.toUnsignedInt(bb.getShort());
@@ -149,14 +149,14 @@ public class SocksAddress {
 	}
 
 	public byte[] toByteArray() throws BufferOverflowException {
-		ByteBuffer bb = null;
+		ByteBuffer bb;
 
 		int length = 1 /* ATYP */ + 2 /* PORT */;
 
 		switch (addressType) {
 			case DOMAINNAME:
 				byte[] hostNameBytes = getHostNameBytes();
-				length += hostNameBytes.length;
+				length += 1 /* ADDR LEN */ + hostNameBytes.length;
 
 				bb = ByteBuffer.allocate(length);
 				bb.order(SocksMessage.NETWORK_BYTE_ORDER);
