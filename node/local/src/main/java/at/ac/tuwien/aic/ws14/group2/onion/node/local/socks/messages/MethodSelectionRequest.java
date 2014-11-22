@@ -1,8 +1,9 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -12,6 +13,8 @@ import java.util.Objects;
  * Created by klaus on 11/11/14.
  */
 public class MethodSelectionRequest extends SocksMessage {
+	static final Logger logger = LoggerFactory.getLogger(MethodSelectionRequest.class.getName());
+
 	private final Method[] methods;
 
 	public MethodSelectionRequest(Method... methods) {
@@ -44,12 +47,13 @@ public class MethodSelectionRequest extends SocksMessage {
 		Method[] methods = new Method[length];
 
 		// Convert the bytes to the enumeration
-		try {
-			for (int i = 0; i < methodsBytes.length; i++) {
+		for (int i = 0; i < methodsBytes.length; i++) {
+			try {
 				methods[i] = Method.fromByte(methodsBytes[i]);
+			} catch (IllegalArgumentException e) {
+				methods[i] = Method.UNKNOWN_METHOD;
+				logger.debug(e.getMessage());
 			}
-		} catch (IllegalArgumentException e) {
-			throw new MessageParsingException("method not found", e);
 		}
 
 		return new MethodSelectionRequest(methods);
@@ -60,9 +64,9 @@ public class MethodSelectionRequest extends SocksMessage {
 	}
 
 	@Override
-	public byte[] toByteArray() throws BufferOverflowException {
+	public byte[] toByteArray() {
 
-		ByteBuffer bb = ByteBuffer.allocate(1 /* VER */ + methods.length);
+		ByteBuffer bb = ByteBuffer.allocate(1 /* VER */ + 1 /* NMETHODS */ + methods.length);
 
 		bb.put(SocksMessage.VERSION);
 		bb.put((byte) methods.length);

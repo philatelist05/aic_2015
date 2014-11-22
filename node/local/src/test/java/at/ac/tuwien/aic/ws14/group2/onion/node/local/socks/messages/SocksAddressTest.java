@@ -13,13 +13,13 @@ import static org.junit.Assert.assertEquals;
 
 public class SocksAddressTest {
 
-	private static final byte[] ipv4Sample = new byte[]{
+	private static final byte[] IPV4_SAMPLE = new byte[]{
 			(byte) 0x01, // IPv4
 			(byte) 0xC0, (byte) 0xA8, (byte) 0x00, (byte) 0x01, // 192.168.0.1
 			(byte) 0x00, (byte) 0x50 // port  80
 	};
 
-	private static final byte[] ipv6Sample = new byte[]{
+	private static final byte[] IPV6_SAMPLE = new byte[]{
 			(byte) 0x04, // IPv6
 			(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
 			(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
@@ -28,7 +28,7 @@ public class SocksAddressTest {
 			(byte) 0x23, (byte) 0x82 // Port  9090
 	};
 
-	private static final byte[] domainNameSample = new byte[]{
+	private static final byte[] DOMAIN_NAME_SAMPLE = new byte[]{
 			(byte) 0x03, // domain name
 			(byte) 0x0B, // length 11
 			(byte) 0x65, (byte) 0x78, (byte) 0x61, (byte) 0x6d, (byte) 0x70, (byte) 0x6c,
@@ -38,7 +38,7 @@ public class SocksAddressTest {
 
 	@Test
 	public void testFromByteArrayIp4ShouldPass() throws Exception {
-		SocksAddress address = SocksAddress.fromByteArray(ipv4Sample);
+		SocksAddress address = SocksAddress.fromByteArray(IPV4_SAMPLE);
 
 		assertEquals(address.getAddressType(), AddressType.IP_V4_ADDRESS);
 		assertEquals(address.getAddress().getHostAddress(), "192.168.0.1");
@@ -47,7 +47,7 @@ public class SocksAddressTest {
 
 	@Test
 	public void testFromByteArrayIp6ShouldPass() throws Exception {
-		SocksAddress address = SocksAddress.fromByteArray(ipv6Sample);
+		SocksAddress address = SocksAddress.fromByteArray(IPV6_SAMPLE);
 
 		assertEquals(address.getAddressType(), AddressType.IP_V6_ADDRESS);
 		assertEquals(address.getAddress().getHostAddress(), "0:0:0:0:ffff:ffff:c0a8:1");
@@ -56,7 +56,7 @@ public class SocksAddressTest {
 
 	@Test
 	public void testFromByteArrayDomainNameShouldPass() throws Exception {
-		SocksAddress address = SocksAddress.fromByteArray(domainNameSample);
+		SocksAddress address = SocksAddress.fromByteArray(DOMAIN_NAME_SAMPLE);
 
 		assertEquals(address.getAddressType(), AddressType.DOMAINNAME);
 		assertEquals(address.getHostName(), "example.com");
@@ -96,7 +96,7 @@ public class SocksAddressTest {
 
 	@Test
 	public void testFromByteArrayWithByteBuffer() throws Exception {
-		ByteBuffer bb = ByteBuffer.wrap(ipv6Sample);
+		ByteBuffer bb = ByteBuffer.wrap(IPV6_SAMPLE);
 		bb.order(ByteOrder.LITTLE_ENDIAN);
 
 		SocksAddress address = SocksAddress.fromByteArray(bb);
@@ -111,7 +111,7 @@ public class SocksAddressTest {
 		SocksAddress input = new SocksAddress(InetAddress.getByAddress(new byte[]{(byte) 0xC0, (byte) 0xA8, (byte) 0x00, (byte) 0x01}), 80);
 		byte[] actual = input.toByteArray();
 
-		assertArrayEquals(ipv4Sample, actual);
+		assertArrayEquals(IPV4_SAMPLE, actual);
 	}
 
 	@Test
@@ -119,7 +119,7 @@ public class SocksAddressTest {
 		SocksAddress input = new SocksAddress("example.com", 8080);
 		byte[] actual = input.toByteArray();
 
-		assertArrayEquals(domainNameSample, actual);
+		assertArrayEquals(DOMAIN_NAME_SAMPLE, actual);
 	}
 
 	@Test
@@ -132,6 +132,6 @@ public class SocksAddressTest {
 		}), 9090);
 		byte[] actual = input.toByteArray();
 
-		assertArrayEquals(ipv6Sample, actual);
+		assertArrayEquals(IPV6_SAMPLE, actual);
 	}
 }

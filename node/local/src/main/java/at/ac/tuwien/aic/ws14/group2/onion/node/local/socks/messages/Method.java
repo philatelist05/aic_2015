@@ -7,6 +7,7 @@ public enum Method {
 	NO_AUTHENTICATION_REQUIRED((byte) 0x00),
 	GSSAPI((byte) 0x01),
 	USERNAME_PASSWORD((byte) 0x02),
+	UNKNOWN_METHOD((byte) 0xFE),
 	NO_ACCEPTABLE_METHODS((byte) 0xFF);
 
 	private byte value;
