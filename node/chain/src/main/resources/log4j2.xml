@@ -1,4 +1,4 @@
-<Configuration status="DEBUG">
+<Configuration status="INFO">
 
     <Appenders>
         <Console name="STDOUT" target="SYSTEM_OUT">
