@@ -45,13 +45,16 @@ public class HeartBeatWorker implements Runnable {
                 break;
             }
 
+            if (Thread.interrupted()) {
+                logger.warn("Interrupted");
+                break;
+            }
+
             LocalDateTime currentEndTime = LocalDateTime.now();
             long relayMsgCountSnapshot = UsageCollector.currentRelayMsgCount.get();
             long createMsgCountSnapshot = UsageCollector.currentCreateMsgCount.get();
             NodeUsage usage = new NodeUsage(lastSuccessfulHeartBeat.format(dateTimeFormatter), currentEndTime.format(dateTimeFormatter), relayMsgCountSnapshot, createMsgCountSnapshot);
-
             usage.setSignature(Base64.toBase64String(RSASignAndVerify.signData(usage.toString().getBytes(), privateKey)));
-
 
             logger.debug("Trying to send heartbeat");
             boolean ret;
