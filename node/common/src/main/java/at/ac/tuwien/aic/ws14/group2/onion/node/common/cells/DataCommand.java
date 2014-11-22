@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 
@@ -26,7 +28,7 @@ public class DataCommand extends Command {
 
     /**
      * Encapsulates the next bytes of a stream in a Data Command.
-     * @throws DecodeException Thrown if end of stream is reached.
+     * @throws at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException Thrown if end of stream is reached.
      */
     public DataCommand(InputStream source) throws IOException, DecodeException {
         super(COMMAND_TYPE_DATA);

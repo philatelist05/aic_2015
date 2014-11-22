@@ -3,7 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions;
 /**
  * Created by Thomas on 09.11.2014.
  */
-public class DecodeException extends Exception {
+public class DecodeException extends CellException {
     public DecodeException() {
     }
 

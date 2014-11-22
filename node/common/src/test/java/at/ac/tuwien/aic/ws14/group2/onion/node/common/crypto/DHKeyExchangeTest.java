@@ -72,18 +72,19 @@ public class DHKeyExchangeTest {
 
         AESAlgorithm aes = new AESAlgorithm();
         aes.setKey(sharedSecretA);
-        aes.setPadding(new PKCS7Padding());
+        //aes.setPadding(new PKCS7Padding());
 
-        String str = "Test";
+        String str = "12345678901234567890";
         byte[] bytes = str.getBytes();
+        assertTrue(bytes.length >= aes.getMinimumLength());
+
         byte[] encrypt = aes.encrypt(bytes);
 
         assertFalse(Arrays.equals(encrypt, bytes));
 
         byte[] decrypt = aes.decrypt(encrypt);
         String str1 = new String(decrypt);
-        assertTrue(str1.startsWith(str));
-       //assertEquals(str1, str);
+        assertTrue(str1.equals(str));
     }
 
     public void testRSASignAndVerify() throws Exception {

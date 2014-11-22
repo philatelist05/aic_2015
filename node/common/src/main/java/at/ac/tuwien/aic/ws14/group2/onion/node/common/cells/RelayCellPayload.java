@@ -1,12 +1,25 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.AESAlgorithm;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
+import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.paddings.PKCS7Padding;
+
 /**
  * Created by Thomas on 09.11.2014.
  */
 public class RelayCellPayload {
+    private AESAlgorithm aes = new AESAlgorithm();
     private byte[] payload;
 
+    private RelayCellPayload() {
+        //aes.setPadding(new PKCS7Padding());
+    }
+
     public RelayCellPayload(byte[] payload) {
+        this();
         this.payload = payload;
     }
 
@@ -15,17 +28,26 @@ public class RelayCellPayload {
      * Changes in the Command object will not be reflected in this payload.
      */
     public RelayCellPayload(Command command) {
+        this();
         payload = command.encode();
     }
 
-    public RelayCellPayload decrypt(byte[] sessionKey) {
-        // TODO: decrypt payload
-        return new RelayCellPayload(payload);
+    public RelayCellPayload decrypt(byte[] sessionKey) throws DecryptException {
+        try {
+            aes.setKey(sessionKey);
+            return new RelayCellPayload(aes.decrypt(payload));
+        } catch (InvalidCipherTextException ex) {
+            throw new DecryptException(ex);
+        }
     }
 
-    public RelayCellPayload encrypt(byte[] sessionKey) {
-        // TODO: encrypt payload
-        return new RelayCellPayload(payload);
+    public RelayCellPayload encrypt(byte[] sessionKey) throws EncryptException {
+        try {
+            aes.setKey(sessionKey);
+            return new RelayCellPayload(aes.encrypt(payload));
+        } catch (InvalidCipherTextException ex) {
+            throw new EncryptException(ex);
+        }
     }
 
     /**

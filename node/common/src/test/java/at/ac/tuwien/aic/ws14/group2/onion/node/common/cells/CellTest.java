@@ -1,14 +1,19 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CellException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -44,12 +49,17 @@ public class CellTest {
         return new String(sink.toByteArray(), "ASCII");
     }
 
-    private String sendAndReceiveDataCommand(InputStream input) throws IOException, DecodeException {
+    private String sendAndReceiveDataCommand(InputStream input) throws Exception {
         short circuitID = 123;
+
+        byte[] key1 = createSessionKey();
+        byte[] key2 = createSessionKey();
+
+        assertFalse(Arrays.equals(key1, key2));
 
         // build encrypted Data Relay Cell
         DataCommand dataCmd = new DataCommand(input);
-        RelayCellPayload relayPayload = new RelayCellPayload(dataCmd).encrypt(null);
+        RelayCellPayload relayPayload = new RelayCellPayload(dataCmd).encrypt(key1).encrypt(key2);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
         // send and receive cell
@@ -59,7 +69,7 @@ public class CellTest {
         RelayCell receivedRelayCell = (RelayCell)receivedCell;
 
         // decode command
-        Command receivedCmd = receivedRelayCell.getPayload().decrypt(null).decode();
+        Command receivedCmd = receivedRelayCell.getPayload().decrypt(key2).decrypt(key1).decode();
         assertTrue(receivedCmd instanceof DataCommand);
         DataCommand receivedDataCmd = (DataCommand)receivedCmd;
 
@@ -84,8 +94,24 @@ public class CellTest {
         return data;
     }
 
+    private byte[] createSessionKey() throws Exception {
+        DHKeyExchange keyExchange = new DHKeyExchange();
+        keyExchange.initExchange(DHKeyExchange.generateRelativePrime(), DHKeyExchange.generateRelativePrime());
+
+        BigInteger p = DHKeyExchange.generateRelativePrime();
+        BigInteger g = DHKeyExchange.generateRelativePrime();
+
+        DHKeyExchange keyExchangeA = new DHKeyExchange();
+        DHKeyExchange keyExchangeB = new DHKeyExchange();
+
+        keyExchangeA.initExchange(p, g);
+        byte[] publicKeyB = keyExchangeB.initExchange(p,g);
+
+        return keyExchangeA.completeExchange(publicKeyB);
+    }
+
     @Test
-    public void singleDataCommand() throws IOException, DecodeException {
+    public void singleDataCommand() throws Exception {
         InputStream input = getDataInput(shortText);
 
         String data = sendAndReceiveDataCommand(input);
@@ -100,7 +126,7 @@ public class CellTest {
     }
 
     @Test
-    public void manyDataCommands() throws IOException, DecodeException {
+    public void manyDataCommands() throws Exception {
         InputStream input = getDataInput(longText);
 
         String part0 = sendAndReceiveDataCommand(input);
@@ -155,13 +181,14 @@ public class CellTest {
     }
 
     @Test
-    public void extendResponseCommand() throws IOException, DecodeException {
+    public void extendResponseCommand() throws Exception {
         short circuitID = 123;
         byte[] dh = createDH();
         byte[] signature = createSignature();
+        byte[] key = createSessionKey();
 
         ExtendResponseCommand extendResponseCommand = new ExtendResponseCommand(dh, signature);
-        RelayCellPayload relayPayload = new RelayCellPayload(extendResponseCommand).encrypt(null);
+        RelayCellPayload relayPayload = new RelayCellPayload(extendResponseCommand).encrypt(key);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
         // send and receive cell
@@ -171,7 +198,7 @@ public class CellTest {
         RelayCell receivedRelayCell = (RelayCell)receivedCell;
 
         // decode command
-        Command receivedCmd = receivedRelayCell.getPayload().decrypt(null).decode();
+        Command receivedCmd = receivedRelayCell.getPayload().decrypt(key).decode();
         assertTrue(receivedCmd instanceof ExtendResponseCommand);
         ExtendResponseCommand receivedExtendResponseCmd = (ExtendResponseCommand)receivedCmd;
 
@@ -180,13 +207,14 @@ public class CellTest {
     }
 
     @Test
-    public void connectCommand() throws IOException, DecodeException {
+    public void connectCommand() throws Exception {
         short circuitID = 123;
         Inet4Address address = (Inet4Address)Inet4Address.getByName("127.0.0.1");
         int port = 80;
+        byte[] key = createSessionKey();
 
         ConnectCommand connectCommand = new ConnectCommand(address, port);
-        RelayCellPayload relayPayload = new RelayCellPayload(connectCommand).encrypt(null);
+        RelayCellPayload relayPayload = new RelayCellPayload(connectCommand).encrypt(key);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
         // send and receive cell
@@ -196,7 +224,7 @@ public class CellTest {
         RelayCell receivedRelayCell = (RelayCell)receivedCell;
 
         // decode command
-        Command receivedCmd = receivedRelayCell.getPayload().decrypt(null).decode();
+        Command receivedCmd = receivedRelayCell.getPayload().decrypt(key).decode();
         assertTrue(receivedCmd instanceof ConnectCommand);
         ConnectCommand receivedConnectCommand = (ConnectCommand)receivedCmd;
 
@@ -205,11 +233,12 @@ public class CellTest {
     }
 
     @Test
-    public void connectResponseCommand() throws IOException, DecodeException {
+    public void connectResponseCommand() throws Exception {
         short circuitID = 123;
+        byte[] key = createSessionKey();
 
         ConnectResponseCommand connectResponseCommand = new ConnectResponseCommand();
-        RelayCellPayload relayPayload = new RelayCellPayload(connectResponseCommand).encrypt(null);
+        RelayCellPayload relayPayload = new RelayCellPayload(connectResponseCommand).encrypt(key);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
         // send and receive cell
@@ -219,7 +248,7 @@ public class CellTest {
         RelayCell receivedRelayCell = (RelayCell)receivedCell;
 
         // decode command
-        Command receivedCmd = receivedRelayCell.getPayload().decrypt(null).decode();
+        Command receivedCmd = receivedRelayCell.getPayload().decrypt(key).decode();
         assertTrue(receivedCmd instanceof ConnectResponseCommand);
     }
 
