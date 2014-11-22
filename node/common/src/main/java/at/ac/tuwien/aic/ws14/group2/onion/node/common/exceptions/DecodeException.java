@@ -1,4 +1,4 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
+package at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions;
 
 /**
  * Created by Thomas on 09.11.2014.
