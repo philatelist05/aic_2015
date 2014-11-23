@@ -13,5 +13,5 @@ public interface CellWorkerFactory {
      * @param circuit The circuit object for the circuit ID that is encoded in the given cell.
      * @return
      */
-    CellWorker createCellWorker(Cell cell, Circuit circuit);
+    CellWorker createCellWorker(ConnectionWorker connectionWorker, Cell cell, Circuit circuit);
 }

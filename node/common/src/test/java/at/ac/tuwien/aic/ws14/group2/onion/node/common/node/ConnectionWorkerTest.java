@@ -5,6 +5,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
@@ -22,6 +23,8 @@ public class ConnectionWorkerTest {
     @Test
     public void sendReceiveCells() throws Exception {
         try (ServerSocket server1 = new ServerSocket(SERVER_PORT_1)) {
+            Endpoint endpoint = new Endpoint(InetAddress.getLocalHost(), 10101);
+
             Socket client1 = new Socket("localhost", SERVER_PORT_1);
 
             Socket acceptedSocket1 = server1.accept();
@@ -29,10 +32,15 @@ public class ConnectionWorkerTest {
             Vector<Cell> receivedCells = new Vector<>();
 
             CellWorkerFactory cellWorkerFactory = mock(CellWorkerFactory.class);
-            when(cellWorkerFactory.createCellWorker(any(Cell.class), any(Circuit.class))).thenAnswer((InvocationOnMock invocation) -> {
-                Cell cell = invocation.getArgumentAt(0, Cell.class);
-                Circuit circuit = invocation.getArgumentAt(1, Circuit.class);
+            when(cellWorkerFactory.createCellWorker(any(ConnectionWorker.class), any(Cell.class), any(Circuit.class))).thenAnswer((InvocationOnMock invocation) -> {
+                ConnectionWorker connectionWorker = invocation.getArgumentAt(0, ConnectionWorker.class);
+                Cell cell = invocation.getArgumentAt(1, Cell.class);
+                Circuit circuit = invocation.getArgumentAt(2, Circuit.class);
 
+                if (circuit == null) {
+                    circuit = new Circuit(cell.getCircuitID(), endpoint);
+                    connectionWorker.addCircuit(circuit);
+                }
                 assertEquals(circuit.getCircuitID(), cell.getCircuitID());
 
                 return new CellCollector(cell, circuit, receivedCells);
@@ -43,7 +51,7 @@ public class ConnectionWorkerTest {
 
             assertEquals(0, receivedCells.size());
 
-            c2.handleCellAndCreateCircuit(new CreateCell((short)10, new byte[]{1}));
+            c2.handleCell(new CreateCell((short)10, new byte[]{1}));
             c1.sendCell(new CreateCell((short)10, new byte[] {2}));
             c1.sendCell(new CreateCell((short)10, new byte[] {3}));
             Thread.sleep(100);
@@ -54,7 +62,7 @@ public class ConnectionWorkerTest {
             receivedCells.clear();
             assertEquals(0, receivedCells.size());
 
-            c2.handleCellAndCreateCircuit(new CreateCell((short)20, new byte[]{1}));
+            c2.handleCell(new CreateCell((short)20, new byte[]{1}));
             c1.sendCell(new CreateCell((short)20, new byte[] {2}));
             c1.sendCell(new CreateCell((short)20, new byte[] {3}));
             Thread.sleep(100);

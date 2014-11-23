@@ -1,11 +1,11 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.NodeIDExistsAlreadyException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.ConnectionWorkerAlreadyExistsException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.ConnectionWorkerException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,7 +22,7 @@ public class ConnectionWorkerFactory {
     private ConcurrentHashMap<Endpoint, ConnectionWorker> connectionWorkers = new ConcurrentHashMap<>();
     private CellWorkerFactory cellWorkerFactory;
 
-    ConnectionWorkerFactory(CellWorkerFactory cellWorkerFactory) {
+    private ConnectionWorkerFactory(CellWorkerFactory cellWorkerFactory) {
         this.cellWorkerFactory = cellWorkerFactory;
     }
 
@@ -33,14 +33,13 @@ public class ConnectionWorkerFactory {
         }
 
         instance = new ConnectionWorkerFactory(cellWorkerFactory);
-        instance.cellWorkerFactory = cellWorkerFactory;
     }
 
     /**
      * Returns a singleton instance of this class.
      * Requires setCellWorkerFactory to be called beforehand.
      */
-    public static ConnectionWorkerFactory getSingleton() {
+    public static ConnectionWorkerFactory getInstance() {
         return instance;
     }
 
@@ -72,18 +71,20 @@ public class ConnectionWorkerFactory {
     /**
      * Creates a ConnectionWorker for the specified socket.
      *
-     * @param socket The socket created when accepting an incoming connection.
-     * @exception NodeIDExistsAlreadyException Thrown if there is already a ConnectionWorker for the specified connection.
+     * @param endpoint The endpoint of this connection (address + listening port of other node).
+     * @param socket The socket that was created when the incoming connection was accepted.
+     * @exception at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.ConnectionWorkerAlreadyExistsException Thrown if there is already a ConnectionWorker for the specified connection.
      */
-    public ConnectionWorker createIncomingConnectionWorker(Socket socket) throws NodeIDExistsAlreadyException {
-        InetAddress remoteAddress = socket.getInetAddress();
-        int remotePort = socket.getPort();
-
-        Endpoint endpoint = new Endpoint(remoteAddress, remotePort);
-
-        ConnectionWorker worker = new ConnectionWorker(socket, cellWorkerFactory);
+    public ConnectionWorker createIncomingConnectionWorker(Endpoint endpoint, Socket socket) throws ConnectionWorkerAlreadyExistsException, ConnectionWorkerException {
+        ConnectionWorker worker = null;
+        try {
+            worker = new ConnectionWorker(socket, cellWorkerFactory);
+        } catch (IOException e) {
+            logger.warn("Encountered IOException while creating new ConnectionWorker: {}", e.getMessage());
+            throw new ConnectionWorkerException();
+        }
         if (connectionWorkers.putIfAbsent(endpoint, worker) != null)
-            throw new NodeIDExistsAlreadyException("There is already a connection worker for node " + endpoint + ".");
+            throw new ConnectionWorkerAlreadyExistsException("There is already a connection worker for node " + endpoint + ".");
 
         return worker;
     }

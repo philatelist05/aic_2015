@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -21,6 +22,8 @@ public class ConnectionWorker implements AutoCloseable {
     private static final Logger logger = LogManager.getLogger(ConnectionWorker.class);
 
     private Socket socket;
+    private OutputStream outputStream;
+    private InputStream inputStream;
 
     private ConcurrentHashMap<Short, Circuit> circuits = new ConcurrentHashMap<>();             // circuit ID to circuit
     private ConcurrentHashMap<Short, TargetWorker> targetWorkers = new ConcurrentHashMap<>();   // circuit ID to target worker
@@ -33,10 +36,12 @@ public class ConnectionWorker implements AutoCloseable {
     /**
      * @param socket Takes ownership of this socket.
      */
-    public ConnectionWorker(Socket socket, CellWorkerFactory cellWorkerFactory) {
+    public ConnectionWorker(Socket socket, CellWorkerFactory cellWorkerFactory) throws IOException {
         this.socket = socket;
+        this.outputStream = socket.getOutputStream();
+        this.inputStream = socket.getInputStream();
 
-        cellReceiverThread = new Thread(new CellReceiver());
+        cellReceiverThread = new Thread(new CellReceiver(inputStream));
         cellReceiverThread.start();
 
         this.cellWorkerFactory = cellWorkerFactory;
@@ -60,7 +65,9 @@ public class ConnectionWorker implements AutoCloseable {
     }
 
     public void sendCell(Cell cell) throws IOException {
-        cell.send(socket.getOutputStream());
+        synchronized (this.outputStream) {
+            cell.send(this.outputStream);
+        }
     }
 
     /**
@@ -82,36 +89,17 @@ public class ConnectionWorker implements AutoCloseable {
     }
 
     /**
-     * Handles a cell that has been received by this connection and creates a circuit for that cell.
-     */
-    public void handleCellAndCreateCircuit(Cell cell) throws WrongCircuitIDException, CircuitIDExistsAlreadyException {
-        handleCell(cell, false);
-    }
-
-    /**
      * Handles a cell that has been received by this connection.
-     * @param useExistingCircuit True if the cell belongs to an existing circuit.
-     *                           False if a new circuit should be created for the cell. This is necessary for the very first cell.
+     * @param cell The incoming cell that is handled.
      */
-    private void handleCell(Cell cell, boolean useExistingCircuit) throws WrongCircuitIDException, CircuitIDExistsAlreadyException {
+    public void handleCell(Cell cell) throws WrongCircuitIDException, CircuitIDExistsAlreadyException {
         Circuit circuit;
 
         // get circuit for received cell
-        if (useExistingCircuit) {
-            circuit = circuits.get(cell.getCircuitID());
-
-            if (circuit == null)
-                throw new WrongCircuitIDException("Cell received, which references a non-existing circuit.");
-        } else {
-            InetAddress remoteAddress = socket.getInetAddress();
-            int remotePort = socket.getPort();
-
-            circuit = new Circuit(cell.getCircuitID(), new Endpoint(remoteAddress, remotePort));
-            addCircuit(circuit);
-        }
+        circuit = circuits.get(cell.getCircuitID());
 
         // process cell
-        cellWorkerPool.execute(cellWorkerFactory.createCellWorker(cell, circuit));
+        cellWorkerPool.execute(cellWorkerFactory.createCellWorker(this, cell, circuit));
     }
 
     /**
@@ -136,12 +124,17 @@ public class ConnectionWorker implements AutoCloseable {
      * Receives cells from the other node and hands them over to the cell workers.
      */
     private class CellReceiver implements Runnable {
+        private final InputStream inputStream;
+
+        public CellReceiver(InputStream inputStream) {
+            this.inputStream = inputStream;
+        }
+
         @Override
         public void run() {
             try {
-                InputStream stream = socket.getInputStream();
                 while (true) {
-                    handleCell(Cell.receive(stream), true);
+                    handleCell(Cell.receive(this.inputStream));
                 }
             } catch (SocketException e) {
                 logger.info("Connection closed.");

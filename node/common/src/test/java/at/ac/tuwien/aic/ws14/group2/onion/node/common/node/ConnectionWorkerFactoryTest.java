@@ -1,6 +1,5 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.NodeIDExistsAlreadyException;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -10,9 +9,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Vector;
 
 /**
  * Created by Thomas on 22.11.2014.
@@ -24,6 +20,10 @@ public class ConnectionWorkerFactoryTest {
 
     @Test
     public void getConnectionWorker() throws IOException {
+        CellWorkerFactory cellWorkerFactory = mock(CellWorkerFactory.class);
+        ConnectionWorkerFactory.setCellWorkerFactory(cellWorkerFactory);
+        ConnectionWorkerFactory conWorkerFactory = ConnectionWorkerFactory.getInstance();
+
         try (
             ServerSocket server1 = new ServerSocket(SERVER_PORT_1);
             ServerSocket server2 = new ServerSocket(SERVER_PORT_2);
@@ -31,10 +31,6 @@ public class ConnectionWorkerFactoryTest {
             Endpoint e1 = new Endpoint(InetAddress.getByName("localhost"), SERVER_PORT_1);
             Endpoint e2 = new Endpoint(InetAddress.getByName("localhost"), SERVER_PORT_2);
             Endpoint e3 = new Endpoint(InetAddress.getByName("localhost"), SERVER_PORT_1);
-
-            CellWorkerFactory cellWorkerFactory = mock(CellWorkerFactory.class);
-
-            ConnectionWorkerFactory conWorkerFactory = new ConnectionWorkerFactory(cellWorkerFactory);
 
             try (
                 ConnectionWorker c1 = conWorkerFactory.getConnectionWorker(e1);
@@ -58,14 +54,17 @@ public class ConnectionWorkerFactoryTest {
             Socket client1 = new Socket("localhost", SERVER_PORT_1);
             Socket client2 = new Socket("localhost", SERVER_PORT_1);
 
+            Endpoint endpoint1 = new Endpoint(InetAddress.getLocalHost(), SERVER_PORT_1);
+            Endpoint endpoint2 = new Endpoint(InetAddress.getLocalHost(), SERVER_PORT_2);
             Socket acceptedSocket1 = server1.accept();
             Socket acceptedSocket2 = server1.accept();
 
             CellWorkerFactory cellWorkerFactory = mock(CellWorkerFactory.class);
 
-            ConnectionWorkerFactory conWorkerFactory = new ConnectionWorkerFactory(cellWorkerFactory);
-            ConnectionWorker c1 = conWorkerFactory.createIncomingConnectionWorker(acceptedSocket1);
-            ConnectionWorker c2 = conWorkerFactory.createIncomingConnectionWorker(acceptedSocket2);
+            ConnectionWorkerFactory.setCellWorkerFactory(cellWorkerFactory);
+            ConnectionWorkerFactory conWorkerFactory = ConnectionWorkerFactory.getInstance();
+            ConnectionWorker c1 = conWorkerFactory.createIncomingConnectionWorker(endpoint1, acceptedSocket1);
+            ConnectionWorker c2 = conWorkerFactory.createIncomingConnectionWorker(endpoint2, acceptedSocket2);
 
             assertNotNull(c1);
             assertNotNull(c2);
