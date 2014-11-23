@@ -14,12 +14,7 @@ public class RelayCellPayload {
     private AESAlgorithm aes = new AESAlgorithm();
     private byte[] payload;
 
-    private RelayCellPayload() {
-        //aes.setPadding(new PKCS7Padding());
-    }
-
     public RelayCellPayload(byte[] payload) {
-        this();
         this.payload = payload;
     }
 
@@ -28,7 +23,6 @@ public class RelayCellPayload {
      * Changes in the Command object will not be reflected in this payload.
      */
     public RelayCellPayload(Command command) {
-        this();
         payload = command.encode();
     }
 
