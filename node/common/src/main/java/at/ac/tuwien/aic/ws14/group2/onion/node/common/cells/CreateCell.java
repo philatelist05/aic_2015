@@ -2,18 +2,22 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CellException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 
 /**
  * Created by Thomas on 09.11.2014.
  */
 public class CreateCell extends Cell {
     private byte[] encryptedDiffieHalf;
-    private int port;
+    private Endpoint endpoint;
+
 
     /**
      * Reads and decodes the payload of a Create Cell assuming that the cell header has already been read.
@@ -25,23 +29,19 @@ public class CreateCell extends Cell {
         source.get(encryptedDiffieHalf);
     }
 
-    public CreateCell(short circuitID, byte[] encryptedDiffieHellmanHalf) {
+    public CreateCell(short circuitID, byte[] encryptedDiffieHellmanHalf, Endpoint endpoint) {
         super(CELL_TYPE_CREATE, circuitID);
-
+        this.endpoint = endpoint;
         this.encryptedDiffieHalf = encryptedDiffieHellmanHalf;
     }
 
-    public byte[] getDiffieHellmanHalf(byte[] privateKey) {
+    public byte[] getDiffieHellmanHalf(PrivateKey privateKey) {
         // TODO: decrypt
         return encryptedDiffieHalf;
     }
 
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
 
     @Override

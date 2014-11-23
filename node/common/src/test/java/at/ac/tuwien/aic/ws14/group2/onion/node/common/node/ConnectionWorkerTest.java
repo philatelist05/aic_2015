@@ -51,9 +51,9 @@ public class ConnectionWorkerTest {
 
             assertEquals(0, receivedCells.size());
 
-            c2.handleCell(new CreateCell((short)10, new byte[]{1}));
-            c1.sendCell(new CreateCell((short)10, new byte[] {2}));
-            c1.sendCell(new CreateCell((short)10, new byte[] {3}));
+            c2.handleCell(new CreateCell((short)10, new byte[]{1}, endpoint));
+            c1.sendCell(new CreateCell((short)10, new byte[] {2}, endpoint));
+            c1.sendCell(new CreateCell((short)10, new byte[] {3}, endpoint));
             Thread.sleep(100);
 
             assertEquals(3, receivedCells.size());
@@ -62,9 +62,9 @@ public class ConnectionWorkerTest {
             receivedCells.clear();
             assertEquals(0, receivedCells.size());
 
-            c2.handleCell(new CreateCell((short)20, new byte[]{1}));
-            c1.sendCell(new CreateCell((short)20, new byte[] {2}));
-            c1.sendCell(new CreateCell((short)20, new byte[] {3}));
+            c2.handleCell(new CreateCell((short)20, new byte[]{1}, endpoint));
+            c1.sendCell(new CreateCell((short)20, new byte[] {2}, endpoint));
+            c1.sendCell(new CreateCell((short)20, new byte[] {3}, endpoint));
             Thread.sleep(100);
 
             assertEquals(3, receivedCells.size());

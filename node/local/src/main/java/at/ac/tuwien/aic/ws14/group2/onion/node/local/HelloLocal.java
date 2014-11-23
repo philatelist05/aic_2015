@@ -11,6 +11,6 @@ public class HelloLocal {
      * @param args CLI arguments
      */
     public static void main(String [] args) {
-        CreateCell cell = new CreateCell((short)10, null);
+        CreateCell cell = new CreateCell((short)10, null, null);
     }
 }
