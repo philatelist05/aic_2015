@@ -13,6 +13,7 @@ import java.security.NoSuchProviderException;
  */
 public class CreateCell extends Cell {
     private byte[] encryptedDiffieHalf;
+    private int port;
 
     /**
      * Reads and decodes the payload of a Create Cell assuming that the cell header has already been read.
@@ -33,6 +34,14 @@ public class CreateCell extends Cell {
     public byte[] getDiffieHellmanHalf(byte[] privateKey) {
         // TODO: decrypt
         return encryptedDiffieHalf;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     @Override
