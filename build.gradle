@@ -66,6 +66,7 @@ project(':directory') {
 
     dependencies {
         compile project(':directory-api')
+        compile project(':node:common')
     }
 }
 
