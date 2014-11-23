@@ -40,11 +40,10 @@ public class ConnectionWorker implements AutoCloseable {
         this.socket = socket;
         this.outputStream = socket.getOutputStream();
         this.inputStream = socket.getInputStream();
+        this.cellWorkerFactory = cellWorkerFactory;
 
         cellReceiverThread = new Thread(new CellReceiver(inputStream));
         cellReceiverThread.start();
-
-        this.cellWorkerFactory = cellWorkerFactory;
     }
 
     /**
@@ -92,7 +91,7 @@ public class ConnectionWorker implements AutoCloseable {
      * Handles a cell that has been received by this connection.
      * @param cell The incoming cell that is handled.
      */
-    public void handleCell(Cell cell) throws WrongCircuitIDException, CircuitIDExistsAlreadyException {
+    public void handleCell(Cell cell) {
         Circuit circuit;
 
         // get circuit for received cell
