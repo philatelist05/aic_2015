@@ -6,15 +6,11 @@ import org.apache.logging.log4j.Logger;
 
 import java.security.*;
 
-/**
- * Created by Milan on 18.11.2014.
- */
 public class RSASignAndVerify {
 
     static final Logger logger = LogManager.getLogger(RSASignAndVerify.class.getName());
 
     public RSASignAndVerify(){
-
     }
 
     public static byte[] signData(byte[] data, PrivateKey key)  {

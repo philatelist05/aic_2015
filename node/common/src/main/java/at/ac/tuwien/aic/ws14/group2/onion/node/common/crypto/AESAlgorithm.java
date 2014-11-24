@@ -11,9 +11,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.Security;
 
-/**
- * Created by Milan on 12.11.2014.
- */
 public class AESAlgorithm {
 
     private final BlockCipher cipherBlock = new AESEngine();
@@ -60,6 +57,4 @@ public class AESAlgorithm {
     public byte[] decrypt(byte[] bytes) throws InvalidCipherTextException {
         return crypting(bytes, false);
     }
-
-
 }

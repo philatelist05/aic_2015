@@ -10,9 +10,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
-/**
- * Created by Milan (thanks to Fabian) on 12.11.2014.
- */
 public class DHKeyExchange {
     private KeyPairGenerator keyPairGenerator;
     private KeyAgreement keyAgreement;
