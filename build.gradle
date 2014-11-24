@@ -51,7 +51,7 @@ project(':node:chain') {
 project(':node:local') {
     apply plugin: 'application'
 
-    mainClassName = group + '.node.local.HelloLocal'
+    mainClassName = group + '.node.local.LocalNodeStarter'
 
     dependencies {
         compile project(':node:common')
