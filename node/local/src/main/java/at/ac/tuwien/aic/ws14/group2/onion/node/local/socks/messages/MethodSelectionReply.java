@@ -1,6 +1,8 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -10,6 +12,8 @@ import java.util.Objects;
  * Created by klaus on 11/11/14.
  */
 public class MethodSelectionReply extends SocksMessage {
+	static final Logger logger = LoggerFactory.getLogger(MethodSelectionReply.class.getName());
+
 	private final Method method;
 
 	public MethodSelectionReply(Method method) {
@@ -37,7 +41,8 @@ public class MethodSelectionReply extends SocksMessage {
 		try {
 			method = Method.fromByte(bb.get());
 		} catch (IllegalArgumentException e) {
-			throw new MessageParsingException("method not found", e);
+			method = Method.UNKNOWN_METHOD;
+			logger.debug(e.getMessage());
 		}
 
 		return new MethodSelectionReply(method);
