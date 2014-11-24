@@ -1,9 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CellException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;

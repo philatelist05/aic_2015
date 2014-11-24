@@ -3,7 +3,10 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.chain;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat.HeartBeatWorker;
+import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainCellWorkerFactory;
+import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainNodeCore;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,6 +18,9 @@ import org.apache.thrift.transport.TTransportException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -24,7 +30,6 @@ public class ChainNodeStarter {
     static final Logger logger = LogManager.getLogger(ChainNodeStarter.class.getName());
 
     private static final int THRIFT_PORT = 9091;    // TODO read from config
-    private static final int NODE_PORT = (int) (9092 + (100 * Math.random()));
 
     public static void main(String[] args) {
 
@@ -47,8 +52,23 @@ public class ChainNodeStarter {
             System.exit(-1);
         }
 
-        ChainNodeInformation nodeInformation = new ChainNodeInformation(NODE_PORT, "localhost", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
+        logger.info("Setting up CellWorkerFactory");
+        ConnectionWorkerFactory.setCellWorkerFactory(new ChainCellWorkerFactory(rsaKeyPair.getPrivate()));
+
+        logger.info("Starting node core");
+        ServerSocket listeningSocket = null;
+        try {
+            listeningSocket = new ServerSocket(0, 100, InetAddress.getLocalHost());
+        } catch (IOException e) {
+            logger.fatal("Failed to create listening Socket!");
+            System.exit(-1);
+        }
+        Thread nodeCoreThread =  new Thread(new ChainNodeCore(listeningSocket));
+        nodeCoreThread.start();
+
+        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), listeningSocket.getLocalSocketAddress().toString(), Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         logger.info("ChainNodeInformation: {}", nodeInformation);
+
 
         logger.info("Establishing Thrift client connection");
         long sleepInterval = 2000; //TODO read from config
@@ -70,11 +90,8 @@ public class ChainNodeStarter {
         TProtocol protocol = new TBinaryProtocol(transport);
         DirectoryService.Client client = new DirectoryService.Client(protocol);
 
-        logger.debug("Starting Heartbeat worker thread");
+        logger.info("Starting Heartbeat worker thread");
         Thread heartBeatWorker = new Thread(new HeartBeatWorker(client, nodeInformation, sleepInterval, rsaKeyPair.getPrivate()));
-        heartBeatWorker.setDaemon(true);
-        heartBeatWorker.run();
-
-
+        heartBeatWorker.start();
     }
 }

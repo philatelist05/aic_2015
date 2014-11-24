@@ -24,7 +24,7 @@ public class HeartBeatWorkerTest {
     private static ChainNodeInformation information;
     private static PrivateKey privateKey;
     private long sleepInterval = 300;
-    private long waitTime = 100;
+    private long waitTime = 250;
 
     @BeforeClass
     public static void setUp() throws NoSuchProviderException, NoSuchAlgorithmException {
@@ -41,7 +41,7 @@ public class HeartBeatWorkerTest {
     public void testRegistration() throws Exception {
         logger.info("Testing registration");
         DirectoryService.Client client = mock(DirectoryService.Client.class);
-        when(client.heartbeat(eq(information), anyObject())).thenReturn(false);
+        when(client.heartbeat(eq(information), anyObject())).thenReturn(false).thenReturn(true);
         when(client.registerNode(information)).thenReturn(true);
 
         logger.info("Starting HeartBeatWorker");
