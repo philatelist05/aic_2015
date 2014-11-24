@@ -2,6 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CellException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 
 import java.io.IOException;
@@ -23,10 +24,12 @@ public class CreateCell extends Cell {
      * Reads and decodes the payload of a Create Cell assuming that the cell header has already been read.
      * Cell type and circuit ID will not be set.
      */
-    CreateCell(ByteBuffer source) throws IOException {
+    CreateCell(ByteBuffer source) throws DecodeException {
         // TODO: read correct number of bytes
         encryptedDiffieHalf = new byte[DIFFIE_HELLMAN_HALF_BYTES];
         source.get(encryptedDiffieHalf);
+
+        endpoint = new Endpoint(source);
     }
 
     public CreateCell(short circuitID, byte[] encryptedDiffieHellmanHalf, Endpoint endpoint) {
@@ -47,5 +50,6 @@ public class CreateCell extends Cell {
     @Override
     protected void encodePayload(ByteBuffer buffer) {
         buffer.put(encryptedDiffieHalf);
+        endpoint.encode(buffer);
     }
 }

@@ -2,6 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -209,9 +210,10 @@ public class CellTest {
         short circuitID = 123;
         Inet4Address address = (Inet4Address)Inet4Address.getByName("127.0.0.1");
         int port = 80;
+        Endpoint endpoint = new Endpoint(address, port);
         byte[] key = createSessionKey();
 
-        ConnectCommand connectCommand = new ConnectCommand(address, port);
+        ConnectCommand connectCommand = new ConnectCommand(endpoint);
         RelayCellPayload relayPayload = new RelayCellPayload(connectCommand).encrypt(key);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
@@ -226,8 +228,7 @@ public class CellTest {
         assertTrue(receivedCmd instanceof ConnectCommand);
         ConnectCommand receivedConnectCommand = (ConnectCommand)receivedCmd;
 
-        assertEquals(address, receivedConnectCommand.getTarget());
-        assertEquals(port, receivedConnectCommand.getPort());
+        assertEquals(endpoint, receivedConnectCommand.getEndpoint());
     }
 
     @Test

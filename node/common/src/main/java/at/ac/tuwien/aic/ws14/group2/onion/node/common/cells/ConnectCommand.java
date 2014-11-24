@@ -1,5 +1,8 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
+
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -9,43 +12,27 @@ import java.nio.ByteBuffer;
  */
 public class ConnectCommand extends Command {
 
-    private Inet4Address target;
-    private int port;
+    private Endpoint endpoint;
 
     /**
      * Reads a Command assuming that the Command Type field has already been read.
      * The Command type will not be set.
      */
-    ConnectCommand(ByteBuffer buffer) {
-        try {
-            byte[] ip = new byte[4];
-            buffer.get(ip);
-            target = (Inet4Address)Inet4Address.getByAddress(ip);
-        } catch (UnknownHostException ex) {
-            // IP address cannot be of invalid length.
-        }
-
-        port = buffer.getInt();
+    ConnectCommand(ByteBuffer buffer) throws DecodeException {
+        endpoint = new Endpoint(buffer);
     }
 
-    public ConnectCommand(Inet4Address target, int port) {
+    public ConnectCommand(Endpoint endpoint) {
         super(COMMAND_TYPE_CONNECT);
-
-        this.target = target;
-        this.port = port;
+        this.endpoint = endpoint;
     }
 
-    public Inet4Address getTarget() {
-        return target;
-    }
-
-    public int getPort() {
-        return port;
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
 
     @Override
     protected void encodePayload(ByteBuffer buffer) {
-        buffer.put(target.getAddress());
-        buffer.putInt(port);
+        endpoint.encode(buffer);
     }
 }

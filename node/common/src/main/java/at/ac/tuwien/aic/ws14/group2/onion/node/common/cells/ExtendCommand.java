@@ -1,5 +1,8 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
+
 import java.net.*;
 import java.nio.ByteBuffer;
 
@@ -8,35 +11,29 @@ import java.nio.ByteBuffer;
  */
 public class ExtendCommand extends Command {
 
-    private Inet4Address target;
+    private Endpoint endpoint;
     private byte[] encryptedDiffieHalf;
 
     /**
      * Reads a Command assuming that the Command Type field has already been read.
      * The Command type will not be set.
      */
-    ExtendCommand(ByteBuffer buffer) {
-        try {
-            byte[] ip = new byte[4];
-            buffer.get(ip);
-            target = (Inet4Address)Inet4Address.getByAddress(ip);
-        } catch (UnknownHostException ex) {
-            // IP address cannot be of invalid length.
-        }
+    ExtendCommand(ByteBuffer buffer) throws DecodeException {
+        endpoint = new Endpoint(buffer);
 
         encryptedDiffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
         buffer.get(encryptedDiffieHalf);
     }
 
-    public ExtendCommand(Inet4Address target, byte[] encryptedDiffieHalf) {
+    public ExtendCommand(Endpoint endpoint, byte[] encryptedDiffieHalf) {
         super(COMMAND_TYPE_EXTEND);
 
-        this.target = target;
+        this.endpoint = endpoint;
         this.encryptedDiffieHalf = encryptedDiffieHalf;
     }
 
-    public InetAddress getTarget() {
-        return target;
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
 
     public byte[] getDiffieHellmanHalf(byte[] privateKey) {
@@ -46,7 +43,7 @@ public class ExtendCommand extends Command {
 
     @Override
     protected void encodePayload(ByteBuffer buffer) {
-        buffer.put(target.getAddress());
+        endpoint.encode(buffer);
         buffer.put(encryptedDiffieHalf);
     }
 }
