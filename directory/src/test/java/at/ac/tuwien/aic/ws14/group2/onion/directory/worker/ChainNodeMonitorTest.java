@@ -2,96 +2,113 @@ package at.ac.tuwien.aic.ws14.group2.onion.directory.worker;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.ChainNodeRegistry;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
-import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.apache.thrift.TException;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Base64;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-
-import java.security.*;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Set;
+import java.time.temporal.ChronoUnit;
+import java.util.concurrent.ConcurrentSkipListSet;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
 
 public class ChainNodeMonitorTest {
 
     static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
-
-    private static ChainNodeRegistry chainNodeRegistry;
-    private int timeout = 10;
-
     private static ChainNodeInformation information;
-    private static NodeUsage nodeUsage;
-    private static PrivateKey privateKey;
-    private long sleepInterval = 300;
-    private long waitTime = 100;
-
-    private static LocalDateTime lastSuccessfulHeartBeat = LocalDateTime.now();
+    private static ConcurrentSkipListSet<ChainNodeInformation> emptyNodeSet;
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
+    private int timeout = 1000;
 
     @BeforeClass
     public static void startUp() throws NoSuchProviderException, NoSuchAlgorithmException {
         logger.info("Setting up Test environment");
-        Security.addProvider(new BouncyCastleProvider());
+
+        emptyNodeSet = new ConcurrentSkipListSet<>();
+        /*Security.addProvider(new BouncyCastleProvider());
 
         RSAKeyGenerator keyGenerator = new RSAKeyGenerator();
         KeyPair rsaKeyPair = keyGenerator.generateKeys(0);
         privateKey = rsaKeyPair.getPrivate();
-        information = new ChainNodeInformation(23456, "localhost", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
-
-        LocalDateTime now = LocalDateTime.now();
-        nodeUsage = new NodeUsage(lastSuccessfulHeartBeat.format(dateTimeFormatter), now.format(dateTimeFormatter), 3, 3);
-
-        chainNodeRegistry.addNewChainNode(information);
-        chainNodeRegistry.addNodeUsage(information, nodeUsage);
-    }
-
-    @Test
-    public void testTimeParsing() {
-        logger.info("Testing time parsing");
-        fail("Not implemented yet");
+        information = new ChainNodeInformation(23456, "localhost", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));                                      */
+        information = new ChainNodeInformation(23456, "localhost", "PUBLICKEYFAKE");
 
     }
 
     @Test
-    public void testRun() throws TException, InterruptedException {
-        logger.info("Testing health");
-        DirectoryService.Client client = mock(DirectoryService.Client.class);
-        when(client.registerNode(information)).thenReturn(true);
+    public void testDeactivateInactiveNode() {
+        logger.info("Testing deactivation of inactive node");
 
-        logger.info("Starting ChainNodeMonitor");
-        Thread chainNodeMonitor = new Thread (new ChainNodeMonitor(chainNodeRegistry, timeout));
-        chainNodeMonitor.start();
-        when(client.heartbeat(information, nodeUsage)).thenReturn(true);
+        ConcurrentSkipListSet<ChainNodeInformation> activeNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
+        activeNodes.add(information);
 
-        Set<ChainNodeInformation> active = chainNodeRegistry.getActiveNodes();
-        assertEquals(active, information);
+        NodeUsage deadNodeUsage = new NodeUsage(
+                dateTimeFormatter.format(LocalDateTime.now().minusDays(1)),
+                dateTimeFormatter.format(LocalDateTime.now().minus(timeout * 2, ChronoUnit.MILLIS)),
+                0,
+                0);
 
-        Thread.sleep(sleepInterval + waitTime);
+        ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
+        when(registry.getActiveNodes()).thenReturn(activeNodes);
+        when(registry.getLastNodeUsage(information)).thenReturn(deadNodeUsage);
 
-        Set<ChainNodeInformation> notactive = chainNodeRegistry.getActiveNodes();
-        boolean inactive = false;
-        if(notactive.isEmpty()){
-            inactive = true;
-        }
 
-        assertEquals(true, inactive);
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout));
+        chainNodeMonitor.run();
 
+        verify(registry).getActiveNodes();
+        verify(registry).getLastNodeUsage(information);
+        verify(registry).deactivate(information);
+
+    }
+
+    @Test
+    public void testDoNotDeactivateActiveNode() {
+        logger.info("Testing deactivation of inactive node");
+
+        ConcurrentSkipListSet<ChainNodeInformation> activeNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
+        activeNodes.add(information);
+
+        NodeUsage activeNodeUsage = new NodeUsage(
+                dateTimeFormatter.format(LocalDateTime.now().minusDays(1)),
+                dateTimeFormatter.format(LocalDateTime.now()),
+                0,
+                0);
+
+        ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
+        when(registry.getActiveNodes()).thenReturn(activeNodes);
+        when(registry.getLastNodeUsage(information)).thenReturn(activeNodeUsage);
+
+
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, 5000));
+        chainNodeMonitor.run();
+
+        verify(registry).getActiveNodes();
+        verify(registry).getLastNodeUsage(information);
+        verify(registry, never()).deactivate(information);
+
+    }
+
+    @Test
+    public void testNoChangeWithNoActiveNodes() throws TException, InterruptedException {
+        logger.info("Testing that nothing changes in the registry when there are no active nodes");
+
+        ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
+        when(registry.getActiveNodes()).thenReturn(emptyNodeSet);
+
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, 0));
+        chainNodeMonitor.run();
+
+        verify(registry, never()).activate(any(ChainNodeInformation.class));
+        verify(registry, never()).deactivate(any(ChainNodeInformation.class));
+        verify(registry, never()).getLastNodeUsage(any(ChainNodeInformation.class));
     }
 
 
