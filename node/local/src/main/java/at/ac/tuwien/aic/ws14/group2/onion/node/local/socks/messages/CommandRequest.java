@@ -37,7 +37,7 @@ public class CommandRequest extends SocksMessage {
 			throw new MessageParsingException(String.format("wrong version byte: expected: 0x%02X; found: 0x%02X", SocksMessage.VERSION, version));
 
 		// Convert the byte to the Command enumeration
-		Command command = null;
+		Command command;
 		byte commandByte = bb.get();
 		try {
 			command = Command.fromByte(commandByte);

@@ -13,7 +13,7 @@ import java.util.Objects;
  * Created by klaus on 11/11/14.
  */
 public class MethodSelectionRequest extends SocksMessage {
-	static final Logger logger = LoggerFactory.getLogger(MethodSelectionRequest.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(MethodSelectionRequest.class.getName());
 
 	private final Method[] methods;
 

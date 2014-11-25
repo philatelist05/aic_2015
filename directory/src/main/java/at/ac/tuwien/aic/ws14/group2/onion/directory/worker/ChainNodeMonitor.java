@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.directory.worker;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.ChainNodeRegistry;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,13 +50,16 @@ public class ChainNodeMonitor implements Runnable {
                 try {
                     LocalDateTime then = LocalDateTime.parse(usage.getEndTime(), DateTimeFormatter.ISO_DATE_TIME);
                     LocalDateTime now = LocalDateTime.now();
-                    LocalDateTime cutoff = now.minus(timeout, ChronoUnit.MILLIS);
-                    if (then.until(cutoff, ChronoUnit.MILLIS) < 0) {
+                    if (then.until(now, ChronoUnit.MILLIS) > timeout) {
                         chainNodeRegistry.deactivate(nodeInformation);
                     }
                 } catch (DateTimeParseException e) {
                     logger.warn("Cannot parse endDate '{}' of NodeUsageSummary for ChainNode '{}'", usage.getEndTime(), nodeInformation);
                     logger.debug(e.getStackTrace());
+                } catch (ArithmeticException e) {
+                    logger.warn("Overflow occurred while calculation timeout, deactivating..");
+                    logger.catching(Level.DEBUG, e);
+                    chainNodeRegistry.deactivate(nodeInformation);
                 }
             }
         }
