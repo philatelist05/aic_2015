@@ -1,7 +1,10 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
 
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -12,6 +15,11 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 public class DHKeyExchangeTest {
+
+    @BeforeClass
+    public static void init() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     @Test
     public void testInitExchange() throws Exception {

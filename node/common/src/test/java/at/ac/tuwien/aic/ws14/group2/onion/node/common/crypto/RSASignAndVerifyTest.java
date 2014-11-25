@@ -1,12 +1,20 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.security.KeyPair;
+import java.security.Security;
 
 import static org.junit.Assert.*;
 
 public class RSASignAndVerifyTest {
+
+    @BeforeClass
+    public static void init() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     @Test
     public void testSignData() throws Exception {

@@ -14,12 +14,6 @@ public class DHKeyExchange {
     private KeyPairGenerator keyPairGenerator;
     private KeyAgreement keyAgreement;
 
-    static {
-        synchronized (Security.class) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-    }
-
     public DHKeyExchange() throws NoSuchProviderException, NoSuchAlgorithmException {
         keyPairGenerator = KeyPairGenerator.getInstance("DH", "BC");
         keyAgreement = KeyAgreement.getInstance("DH", "BC");

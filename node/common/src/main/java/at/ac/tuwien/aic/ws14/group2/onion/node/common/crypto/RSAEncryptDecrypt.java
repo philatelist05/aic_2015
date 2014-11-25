@@ -16,12 +16,6 @@ public class RSAEncryptDecrypt {
 
     static final Logger logger = LogManager.getLogger(RSAEncryptDecrypt.class.getName());
 
-    static {
-        synchronized (Security.class) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-    }
-
     public RSAEncryptDecrypt(){
     }
 

@@ -18,12 +18,6 @@ public class AESAlgorithm {
     private CTSBlockCipher blockCipher;
     private KeyParameter keyParameter;
 
-    static {
-        synchronized (Security.class) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
-    }
-
     public AESAlgorithm(){
         this.blockCipher = new CTSBlockCipher(cipherBlock);
     }
