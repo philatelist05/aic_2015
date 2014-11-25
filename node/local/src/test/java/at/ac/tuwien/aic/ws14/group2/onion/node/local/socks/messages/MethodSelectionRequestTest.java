@@ -61,12 +61,12 @@ public class MethodSelectionRequestTest {
 
 	@Test(expected = MessageParsingException.class)
 	public void testFromByteArrayShouldFail1() throws Exception {
-		MethodSelectionRequest request = MethodSelectionRequest.fromByteArray(SAMPLE_WRONG_VER);
+		MethodSelectionRequest.fromByteArray(SAMPLE_WRONG_VER);
 	}
 
 	@Test(expected = BufferUnderflowException.class)
 	public void testFromByteArrayShouldFail2() throws Exception {
-		MethodSelectionRequest request = MethodSelectionRequest.fromByteArray(SAMPLE_WRONG_LENGTH);
+		MethodSelectionRequest.fromByteArray(SAMPLE_WRONG_LENGTH);
 	}
 
 	@Test

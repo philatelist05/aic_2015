@@ -1,13 +1,11 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.AddressTypeNotSupportedException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -54,10 +52,9 @@ public class SocksAddress {
 	/**
 	 * Parses a byte array to a new instance of this class.
 	 *
-	 * @throws at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException if the data cannot be parsed because it doesn't match the RFC 1928 specification
-	 * @throws BufferUnderflowException                                                               if the byte array provided is shorter than the expected length
+	 * @throws BufferUnderflowException if the byte array provided is shorter than the expected length
 	 */
-	public static SocksAddress fromByteArray(byte[] data) throws MessageParsingException, BufferUnderflowException, AddressTypeNotSupportedException {
+	public static SocksAddress fromByteArray(byte[] data) throws BufferUnderflowException, AddressTypeNotSupportedException {
 		Objects.requireNonNull(data);
 
 		ByteBuffer bb = ByteBuffer.wrap(data);
@@ -69,7 +66,7 @@ public class SocksAddress {
 	 * bytes read from the buffer.
 	 *
 	 * @return a new instance of this class
-	 * @throws BufferUnderflowException if the byte array provided is shorter than the expected length
+	 * @throws BufferUnderflowException         if the byte array provided is shorter than the expected length
 	 * @throws AddressTypeNotSupportedException if an invalid address type byte was provided
 	 */
 	public static SocksAddress fromByteArray(ByteBuffer bb) throws BufferUnderflowException, AddressTypeNotSupportedException {
@@ -148,7 +145,7 @@ public class SocksAddress {
 		return hostName.getBytes(SocksMessage.CHARSET);
 	}
 
-	public byte[] toByteArray() throws BufferOverflowException {
+	public byte[] toByteArray() {
 		ByteBuffer bb;
 
 		int length = 1 /* ATYP */ + 2 /* PORT */;

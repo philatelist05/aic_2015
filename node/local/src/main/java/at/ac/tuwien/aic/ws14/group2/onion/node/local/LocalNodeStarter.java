@@ -1,7 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalCellWorkerFactory;
@@ -22,8 +21,8 @@ import java.security.NoSuchProviderException;
 import java.security.Security;
 
 public class LocalNodeStarter {
-    static final Logger logger = LogManager.getLogger(LocalNodeStarter.class.getName());
-    private static final int THRIFT_PORT = 9091;
+    private static final Logger logger = LogManager.getLogger(LocalNodeStarter.class.getName());
+    private static final int THRIFT_PORT = 9091; // TODO read from config
 
     /**
      * Main method

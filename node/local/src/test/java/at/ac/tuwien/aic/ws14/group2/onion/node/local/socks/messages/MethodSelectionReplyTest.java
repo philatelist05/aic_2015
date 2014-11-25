@@ -42,12 +42,12 @@ public class MethodSelectionReplyTest {
 
 	@Test(expected = MessageParsingException.class)
 	public void testFromByteArrayShouldFail1() throws Exception {
-		MethodSelectionReply reply = MethodSelectionReply.fromByteArray(SAMPLE_WRONG_VER);
+		MethodSelectionReply.fromByteArray(SAMPLE_WRONG_VER);
 	}
 
 	@Test(expected = BufferUnderflowException.class)
 	public void testFromByteArrayShouldFail2() throws Exception {
-		MethodSelectionReply reply = MethodSelectionReply.fromByteArray(SAMPLE_WRONG_LENGTH);
+		MethodSelectionReply.fromByteArray(SAMPLE_WRONG_LENGTH);
 	}
 
 	@Test

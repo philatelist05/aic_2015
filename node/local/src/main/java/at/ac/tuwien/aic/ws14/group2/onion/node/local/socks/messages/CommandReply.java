@@ -3,7 +3,6 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.AddressTypeNotSupportedException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
 
-import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -37,7 +36,7 @@ public class CommandReply extends SocksMessage {
 			throw new MessageParsingException(String.format("wrong version byte: expected: 0x%02X; found: 0x%02X", SocksMessage.VERSION, version));
 
 		// Convert the byte to the ReplyType enumeration
-		ReplyType replyType = null;
+		ReplyType replyType;
 		try {
 			replyType = ReplyType.fromByte(bb.get());
 		} catch (IllegalArgumentException e) {
@@ -62,7 +61,7 @@ public class CommandReply extends SocksMessage {
 	}
 
 	@Override
-	public byte[] toByteArray() throws BufferOverflowException {
+	public byte[] toByteArray() {
 		byte[] addressBytes = boundAddress.toByteArray();
 
 		ByteBuffer bb = ByteBuffer.allocate(1 /* VER */ + 1 /* REP */ + 1 /* RSV */ + addressBytes.length);
