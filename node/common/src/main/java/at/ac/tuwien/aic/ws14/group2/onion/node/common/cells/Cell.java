@@ -16,7 +16,7 @@ public abstract class Cell {
     static final int CELL_HEADER_BYTES = 3;   // sizeof(circuitID) + sizeof(cellType)
     static final int CELL_PAYLOAD_BYTES = CELL_BYTES - CELL_HEADER_BYTES;
 
-    static final int DIFFIE_HELLMAN_HALF_BYTES = 128;   // TODO: dummy value
+    public static final int DIFFIE_HELLMAN_HALF_BYTES = 128;   // TODO: dummy value
     static final int SIGNATURE_BYTES = 64;              // TODO: dummy value
 
     static final byte CELL_TYPE_CREATE = 0;

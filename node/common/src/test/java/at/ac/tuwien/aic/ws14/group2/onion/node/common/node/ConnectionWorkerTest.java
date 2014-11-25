@@ -8,6 +8,7 @@ import org.mockito.invocation.InvocationOnMock;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Vector;
 
 import static org.junit.Assert.*;
@@ -19,6 +20,12 @@ import static org.mockito.Mockito.*;
 public class ConnectionWorkerTest {
 
     private static final int SERVER_PORT_1 = 10100;
+
+    private byte[] createDummyDH() {
+        byte[] result = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
+        Arrays.fill(result, (byte)100);
+        return result;
+    }
 
     @Test
     public void sendReceiveCells() throws Exception {
@@ -51,9 +58,9 @@ public class ConnectionWorkerTest {
 
             assertEquals(0, receivedCells.size());
 
-            c2.handleCell(new CreateCell((short)10, new byte[]{1}, endpoint));
-            c1.sendCell(new CreateCell((short)10, new byte[] {2}, endpoint));
-            c1.sendCell(new CreateCell((short)10, new byte[] {3}, endpoint));
+            c2.handleCell(new CreateCell((short)10, createDummyDH(), endpoint));
+            c1.sendCell(new CreateCell((short)10, createDummyDH(), endpoint));
+            c1.sendCell(new CreateCell((short)10, createDummyDH(), endpoint));
             Thread.sleep(100);
 
             assertEquals(3, receivedCells.size());
@@ -62,9 +69,9 @@ public class ConnectionWorkerTest {
             receivedCells.clear();
             assertEquals(0, receivedCells.size());
 
-            c2.handleCell(new CreateCell((short)20, new byte[]{1}, endpoint));
-            c1.sendCell(new CreateCell((short)20, new byte[] {2}, endpoint));
-            c1.sendCell(new CreateCell((short)20, new byte[] {3}, endpoint));
+            c2.handleCell(new CreateCell((short)20, createDummyDH(), endpoint));
+            c1.sendCell(new CreateCell((short)20, createDummyDH(), endpoint));
+            c1.sendCell(new CreateCell((short)20, createDummyDH(), endpoint));
             Thread.sleep(100);
 
             assertEquals(3, receivedCells.size());

@@ -3,6 +3,8 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -12,6 +14,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.nio.charset.Charset;
+import java.security.Security;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
@@ -107,6 +110,11 @@ public class CellTest {
         byte[] publicKeyB = keyExchangeB.initExchange(p,g);
 
         return keyExchangeA.completeExchange(publicKeyB);
+    }
+
+    @BeforeClass
+    public static void init() {
+        Security.addProvider(new BouncyCastleProvider());
     }
 
     @Test
