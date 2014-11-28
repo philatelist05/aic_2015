@@ -12,6 +12,12 @@ public class ChainMetaData {
 
     private ConcurrentHashMap<Integer, ChainNodeMetaData> nodes;
     private Integer lastNode;
+    private Short circuitID;
+
+    public ChainMetaData(Short circuitID, ConcurrentHashMap<Integer, ChainNodeMetaData> nodes) {
+        this.circuitID = circuitID;
+        this.nodes = nodes;
+    }
 
     public ChainMetaData(ConcurrentHashMap<Integer, ChainNodeMetaData> nodes) {
         this.nodes = nodes;
@@ -53,5 +59,13 @@ public class ChainMetaData {
                 return false;
             }
         }
+    }
+
+    public Short getCircuitID() {
+        return circuitID;
+    }
+
+    public void setCircuitID(Short circuitID) {
+        this.circuitID = circuitID;
     }
 }
