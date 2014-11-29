@@ -35,6 +35,8 @@ public class RSASignAndVerifyTest {
         keyPair = keysGenerate.generateKeys(888);
         verified = signAndVerify.verifySig(data, keyPair.getPublic(), digitalSignature);
         assertFalse(verified);
+
+        System.out.println("length: " + keyPair.getPublic().getEncoded().length);
     }
 
     @Test

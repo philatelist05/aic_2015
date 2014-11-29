@@ -2,6 +2,8 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DHHalf;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.EncryptedDHHalf;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
@@ -105,8 +107,8 @@ public class LocalNodeCore {
             return;
         }
 
-        //FIXME update when CreateCell is updated to incorporate p, q and public key
-        CreateCell cell = new CreateCell(circuit.getCircuitID(), publicKey, firstNode.getEndPoint());
+        EncryptedDHHalf encryptedDHHalf = new DHHalf(publicKey).encrypt(p, q, firstNode.getPublicKey());
+        CreateCell cell = new CreateCell(circuit.getCircuitID(), firstNode.getEndPoint(), p, q, encryptedDHHalf);
         sendCell(cell, circuit, callBack);
     }
 

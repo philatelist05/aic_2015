@@ -6,8 +6,7 @@ import java.nio.ByteBuffer;
  * Created by Thomas on 09.11.2014.
  */
 public class ExtendResponseCommand extends Command {
-
-    private byte[] diffieHalf;
+    private DHHalf dhHalf;
     private byte[] signature;
 
     /**
@@ -15,22 +14,19 @@ public class ExtendResponseCommand extends Command {
      * The Command type will not be set.
      */
     ExtendResponseCommand(ByteBuffer buffer) {
-        diffieHalf = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
-        signature = new byte[Cell.SIGNATURE_BYTES];
-
-        buffer.get(diffieHalf);
-        buffer.get(signature);
+        dhHalf = new DHHalf(buffer);
+        signature = EncodingUtil.readByteArray(buffer);
     }
 
-    public ExtendResponseCommand(byte[] diffieHellmanHalf, byte[] signature) {
+    public ExtendResponseCommand(DHHalf dhHalf, byte[] signature) {
         super(COMMAND_TYPE_EXTEND_RESPONSE);
 
-        this.diffieHalf = diffieHellmanHalf;
+        this.dhHalf = dhHalf;
         this.signature = signature;
     }
 
-    public byte[] getDiffieHellmanHalf() {
-        return diffieHalf;
+    public DHHalf getDHHalf() {
+        return dhHalf;
     }
 
     public byte[] getSignature() {
@@ -39,7 +35,7 @@ public class ExtendResponseCommand extends Command {
 
     @Override
     protected void encodePayload(ByteBuffer buffer) {
-        buffer.put(diffieHalf);
-        buffer.put(signature);
+        dhHalf.encode(buffer);
+        EncodingUtil.writeByteArray(signature, buffer);
     }
 }

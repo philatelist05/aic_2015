@@ -47,19 +47,12 @@ public class RSAEncryptDecryptTest {
             logger.catching(Level.DEBUG, e);
         }
 
-        final String text = "Original text";
+        final byte[] clearText = "Original text".getBytes();
 
-        RSAEncryptDecrypt a = new RSAEncryptDecrypt();
+        byte[] encText = RSAEncryptDecrypt.encrypt(clearText, keyPair.getPublic());
 
-        byte[] encText = a.encrypt(text, keyPair.getPublic());
+        final byte[] decText = RSAEncryptDecrypt.decrypt(encText, keyPair.getPrivate());
 
-        final String decText = a.decrypt(encText, keyPair.getPrivate());
-
-        assertEquals(text, decText);
-    }
-
-    @Test
-    public void testDecrypt() throws Exception {
-
+        assertArrayEquals(clearText, decText);
     }
 }

@@ -2,12 +2,25 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DHHalf;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.EncryptedDHHalf;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 
+import javax.crypto.EncryptedPrivateKeyInfo;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -21,16 +34,28 @@ public class ConnectionWorkerTest {
 
     private static final int SERVER_PORT_1 = 10100;
 
-    private byte[] createDummyDH() {
-        byte[] result = new byte[Cell.DIFFIE_HELLMAN_HALF_BYTES];
-        Arrays.fill(result, (byte)100);
-        return result;
+    private static final BigInteger prime1 = DHKeyExchange.generateRelativePrime();
+    private static final BigInteger prime2 = DHKeyExchange.generateRelativePrime();
+    private static KeyPair keyPair;
+
+
+    private EncryptedDHHalf createEncryptedDHHalf() {
+        DHHalf dhHalf = new DHHalf(new byte[]{1, 2, 3});
+        return dhHalf.encrypt(prime1, prime2, keyPair.getPublic());
+    }
+
+    @BeforeClass
+    public static void init() throws NoSuchProviderException, NoSuchAlgorithmException {
+        Security.addProvider(new BouncyCastleProvider());
+        keyPair = new RSAKeyGenerator().generateKeys(0);
     }
 
     @Test
     public void sendReceiveCells() throws Exception {
         try (ServerSocket server1 = new ServerSocket(SERVER_PORT_1)) {
             Endpoint endpoint = new Endpoint(InetAddress.getLocalHost(), 10101);
+            BigInteger prime1 = DHKeyExchange.generateRelativePrime();
+            BigInteger prime2 = DHKeyExchange.generateRelativePrime();
 
             Socket client1 = new Socket("localhost", SERVER_PORT_1);
 
@@ -58,9 +83,9 @@ public class ConnectionWorkerTest {
 
             assertEquals(0, receivedCells.size());
 
-            c2.handleCell(new CreateCell((short)10, createDummyDH(), endpoint));
-            c1.sendCell(new CreateCell((short)10, createDummyDH(), endpoint));
-            c1.sendCell(new CreateCell((short)10, createDummyDH(), endpoint));
+            c2.handleCell(new CreateCell((short)10, endpoint, prime1, prime2, createEncryptedDHHalf()));
+            c1.sendCell(new CreateCell((short)10, endpoint, prime1, prime2, createEncryptedDHHalf()));
+            c1.sendCell(new CreateCell((short)10, endpoint, prime1, prime2, createEncryptedDHHalf()));
             Thread.sleep(100);
 
             assertEquals(3, receivedCells.size());
@@ -69,9 +94,9 @@ public class ConnectionWorkerTest {
             receivedCells.clear();
             assertEquals(0, receivedCells.size());
 
-            c2.handleCell(new CreateCell((short)20, createDummyDH(), endpoint));
-            c1.sendCell(new CreateCell((short)20, createDummyDH(), endpoint));
-            c1.sendCell(new CreateCell((short)20, createDummyDH(), endpoint));
+            c2.handleCell(new CreateCell((short)20, endpoint, prime1, prime2, createEncryptedDHHalf()));
+            c1.sendCell(new CreateCell((short)20, endpoint, prime1, prime2, createEncryptedDHHalf()));
+            c1.sendCell(new CreateCell((short)20, endpoint, prime1, prime2, createEncryptedDHHalf()));
             Thread.sleep(100);
 
             assertEquals(3, receivedCells.size());

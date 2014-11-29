@@ -19,7 +19,7 @@ public class RSAEncryptDecrypt {
     public RSAEncryptDecrypt(){
     }
 
-    public static byte[] encrypt(String plainText, PublicKey publicKey){
+    public static byte[] encrypt(byte[] clearText, PublicKey publicKey){
 
         byte[] encryptedText = null;
 
@@ -27,7 +27,7 @@ public class RSAEncryptDecrypt {
         try {
             rsa = Cipher.getInstance("RSA/ECB/OAEPWithSHA1AndMGF1Padding", "BC");
             rsa.init(Cipher.ENCRYPT_MODE, publicKey);
-            encryptedText =  rsa.doFinal(plainText.getBytes());
+            encryptedText = rsa.doFinal(clearText);
         } catch (NoSuchAlgorithmException e) {
             logger.warn("Cannot find RSA Algorithm.");
             logger.catching(Level.DEBUG, e);
@@ -51,9 +51,9 @@ public class RSAEncryptDecrypt {
         return encryptedText;
     }
 
-    public static String decrypt(byte[] encryptedData, PrivateKey privateKey) {
+    public static byte[] decrypt(byte[] encryptedData, PrivateKey privateKey) {
 
-        byte[] decryptedText = null;
+        byte[] decrypted = null;
 
         final Cipher rsa;
         try {
@@ -64,7 +64,7 @@ public class RSAEncryptDecrypt {
                 e.printStackTrace();
             }
             try {
-                decryptedText =  rsa.doFinal(encryptedData);
+                decrypted =  rsa.doFinal(encryptedData);
             } catch (IllegalBlockSizeException e) {
                 logger.warn("Illegal block size.");
                 logger.catching(Level.DEBUG, e);
@@ -83,6 +83,6 @@ public class RSAEncryptDecrypt {
             logger.catching(Level.DEBUG, e);
         }
 
-        return new String(decryptedText);
+        return decrypted;
     }
 }

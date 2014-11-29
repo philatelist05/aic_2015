@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.chain.node;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateResponseCell;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DHHalf;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.AESAlgorithm;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSASignAndVerify;
@@ -54,14 +55,15 @@ public class ChainCellWorker implements CellWorker {
             //TODO send ErrorCell
             return null;
         }
-        byte[] dhPart = createCell.getDiffieHellmanHalf(this.privateKey);
+
+        DHHalf dhHalf = createCell.getDHHalf().decrypt(this.privateKey);
 
         byte[] sharedSecret;
         byte[] dhPublicKey;
         try {
             DHKeyExchange keyExchange = new DHKeyExchange();
-            dhPublicKey = keyExchange.initExchange(null, null); //TODO get p and q from dhPart
-            sharedSecret = keyExchange.completeExchange(null);
+            dhPublicKey = keyExchange.initExchange(createCell.getPrime1(), createCell.getPrime2());
+            sharedSecret = keyExchange.completeExchange(dhHalf.getPublicKey());
         } catch (NoSuchProviderException e) {
             logger.warn("Could not find BouncyCastle provider: {}", e.getMessage());
             //TODO send ErrorCell
@@ -85,6 +87,6 @@ public class ChainCellWorker implements CellWorker {
         }
 
         newCircuit.setSessionKey(sharedSecret);
-        return new CreateResponseCell(newCircuit.getCircuitID(), dhPublicKey, RSASignAndVerify.signData(dhPublicKey, this.privateKey));
+        return new CreateResponseCell(newCircuit.getCircuitID(), new DHHalf(dhPublicKey), RSASignAndVerify.signData(dhPublicKey, this.privateKey));
     }
 }
