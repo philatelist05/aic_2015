@@ -13,6 +13,8 @@ import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import java.io.*;
+import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,8 +33,27 @@ public class DirectoryStarter {
         ServiceImplementation handler = new ServiceImplementation(chainNodeRegistry);
         DirectoryService.Processor<DirectoryService.Iface> processor = new DirectoryService.Processor<>(handler);
 
+        logger.info("Creating temp file for keystore");
+        ClassLoader cl = DirectoryStarter.class.getClassLoader();
+        File keyStoreFile = null;
+        try {
+            InputStream input = cl.getResourceAsStream("keys/thrift-directory.jks");
+            keyStoreFile = File.createTempFile("directory-ks", ".tmp");
+            OutputStream out = new FileOutputStream(keyStoreFile);
+            int read;
+            byte[] bytes = new byte[1024];
+
+            while ((read = input.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            keyStoreFile.deleteOnExit();
+        } catch (IOException e) {
+            logger.fatal("Could not load keys for Thrift service");
+            logger.catching(Level.DEBUG, e);
+            System.exit(-1);
+        }
         TSSLTransportFactory.TSSLTransportParameters serverParams = new TSSLTransportFactory.TSSLTransportParameters();
-        serverParams.setKeyStore("keys/thrift-directory.jks", "password");
+        serverParams.setKeyStore(keyStoreFile.getPath(), "password");
 
         TServerTransport serverTransport = null;
         try {

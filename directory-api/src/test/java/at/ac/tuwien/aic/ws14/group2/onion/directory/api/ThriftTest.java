@@ -9,8 +9,11 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.*;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.*;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -21,6 +24,7 @@ import static org.junit.Assert.*;
 public class ThriftTest {
 
     private static final int THRIFT_PORT = 9090;
+    private static File keyStoreFile;
 
     private static class ServiceImpl implements DirectoryService.Iface {
 
@@ -47,6 +51,25 @@ public class ThriftTest {
         }
     }
 
+    @Before
+    public void setUp() {
+        ClassLoader cl = ThriftTest.class.getClassLoader();
+        keyStoreFile = null;
+        try {
+            InputStream input = cl.getResourceAsStream("keys/thrift-test.jks");
+            keyStoreFile = File.createTempFile("thrifttest-ks", ".tmp");
+            OutputStream out = new FileOutputStream(keyStoreFile);
+            int read;
+            byte[] bytes = new byte[1024];
+
+            while ((read = input.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            keyStoreFile.deleteOnExit();
+        } catch (IOException e) {
+        }
+    }
+    
     @Test
     public void cleartext() throws TException, InterruptedException {
 
@@ -95,7 +118,7 @@ public class ThriftTest {
         DirectoryService.Processor<DirectoryService.Iface> processor = new DirectoryService.Processor<>(handler);
 
         TSSLTransportFactory.TSSLTransportParameters serverParams = new TSSLTransportFactory.TSSLTransportParameters();
-        serverParams.setKeyStore("keys/thrift-test.jks", "password");
+        serverParams.setKeyStore(keyStoreFile.getPath(), "password");
 
         TServerTransport serverTransport = TSSLTransportFactory.getServerSocket(9090, 0, null, serverParams);
         final TServer server = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
@@ -113,7 +136,7 @@ public class ThriftTest {
         // Client Code
 
         TSSLTransportFactory.TSSLTransportParameters clientParams = new TSSLTransportFactory.TSSLTransportParameters();
-        clientParams.setTrustStore("keys/thrift-test.jks", "password");
+        clientParams.setTrustStore(keyStoreFile.getPath(), "password");
 
         TTransport transport = TSSLTransportFactory.getClientSocket("localhost", THRIFT_PORT, 0, clientParams);
 

@@ -15,6 +15,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import java.io.*;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -55,8 +56,28 @@ public class LocalNodeStarter {
         ConnectionWorkerFactory.setCellWorkerFactory(new LocalCellWorkerFactory(nodeCore));
 
         logger.info("Establishing Thrift client connection");
+        logger.info("Creating temp file for keystore");
+        ClassLoader cl = LocalNodeStarter.class.getClassLoader();
+        File keyStoreFile = null;
+        try {
+            InputStream input = cl.getResourceAsStream("keys/thrift-directory-clients.jks");
+            keyStoreFile = File.createTempFile("directory-ks", ".tmp");
+            OutputStream out = new FileOutputStream(keyStoreFile);
+            int read;
+            byte[] bytes = new byte[1024];
+
+            while ((read = input.read(bytes)) != -1) {
+                out.write(bytes, 0, read);
+            }
+            keyStoreFile.deleteOnExit();
+        } catch (IOException e) {
+            logger.fatal("Could not load keys for Thrift service");
+            logger.catching(Level.DEBUG, e);
+            System.exit(-1);
+        }
+
         TSSLTransportFactory.TSSLTransportParameters clientParams = new TSSLTransportFactory.TSSLTransportParameters();
-        clientParams.setTrustStore("keys/thrift-directory-clients.jks", "password");  //TODO use keystore with directory public key here!
+        clientParams.setTrustStore(keyStoreFile.getPath(), "password");  //TODO use keystore with directory public key here!
 
         logger.debug("Creating SSL Transport using Thrift");
         TTransport transport = null;
