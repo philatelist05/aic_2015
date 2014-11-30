@@ -108,7 +108,15 @@ public class LocalNodeCore {
 
         circuit.setDHKeyExchange(keyExchange);
 
-        EncryptedDHHalf encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(firstNode.getPublicKey());
+        EncryptedDHHalf encryptedDHHalf;
+        try {
+            encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(firstNode.getPublicKey());
+        } catch (EncryptException e) {
+            logger.warn("Could not encrypt DH half, aborting Chain creation.");
+            logger.catching(Level.DEBUG, e);
+            callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+            return;
+        }
         CreateCell cell = new CreateCell(circuit.getCircuitID(), firstNode.getEndPoint(), encryptedDHHalf);
         try {
             sendCell(cell, circuit.getEndpoint());

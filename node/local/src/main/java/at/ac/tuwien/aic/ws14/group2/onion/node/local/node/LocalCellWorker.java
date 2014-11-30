@@ -287,7 +287,15 @@ public class LocalCellWorker implements CellWorker {
                 }
 
                 circuit.setDHKeyExchange(keyExchange);
-                EncryptedDHHalf encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(nextNode.getPublicKey());
+                EncryptedDHHalf encryptedDHHalf = null;
+                try {
+                    encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(nextNode.getPublicKey());
+                } catch (EncryptException e) {
+                    logger.warn("Could not encrypt DH half, aborting Chain creation.");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                    return;
+                }
                 ExtendCommand command = new ExtendCommand(nextNode.getEndPoint(), p, g, encryptedDHHalf);
                 RelayCellPayload payload = new RelayCellPayload(command);
                 for(int i = 0; i < nextNodeIndex; i++) {
