@@ -11,7 +11,7 @@
 
     <Loggers>
         <Root level="trace">
-            <AppenderRef ref="STDOUT" level="DEBUG"/>
+            <AppenderRef ref="STDOUT" level="INFO"/>
             <AppenderRef ref="LF5_SOCKET" level="DEBUG"/>
         </Root>
     </Loggers>
