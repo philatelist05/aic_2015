@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.security.*;
+import java.util.Arrays;
 
 public class ChainCellWorker implements CellWorker {
     static final Logger logger = LogManager.getLogger(ChainCellWorker.class.getName());
@@ -114,6 +115,9 @@ public class ChainCellWorker implements CellWorker {
         RelayCell relayCell = (RelayCell)cell;
 
         if (circuit.getAssociatedCircuit() == null) {   // unencrypted payload coming from local node
+            logger.debug("Final destination of relay cell");
+            logger.debug("Encrypted payload: {}", relayCell.getPayload());
+            logger.debug("Decrypting with {} as session key", Arrays.toString(circuit.getSessionKey()));
             RelayCellPayload decryptedPayload = relayCell.getPayload().decrypt(circuit.getSessionKey());
             logger.info("Decrypted payload: {}", decryptedPayload);
             Command cmd = decryptedPayload.decode();
@@ -139,10 +143,13 @@ public class ChainCellWorker implements CellWorker {
             ConnectionWorker assocConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(assocCircuit.getEndpoint());
             assocConnectionWorker.sendCell(newRelayCell);
         } else {   // coming from local node
-
+            logger.debug("Non-final destination of relay cell");
+            logger.debug("Encrypted payload: {}", relayCell.getPayload());
             // remove layer of encryption and forward
             Circuit assocCircuit = circuit.getAssociatedCircuit();
+            logger.debug("Decrypting with {} as session key", Arrays.toString(circuit.getSessionKey()));
             RelayCellPayload decryptedPayload = relayCell.getPayload().decrypt(circuit.getSessionKey());
+            logger.info("Decrypted payload: {}", decryptedPayload);
             RelayCell newRelayCell = new RelayCell(assocCircuit.getCircuitID(), decryptedPayload);
 
             // forward
