@@ -1,0 +1,138 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://onion.ws14group2.aic.tuwien.ac.at"
+           xmlns:onion="http://onion.ws14group2.aic.tuwien.ac.at">
+
+	<xs:element name="config" type="onion:configType"/>
+
+	<xs:complexType name="configType">
+		<xs:all>
+			<xs:element name="node" type="onion:nodeType"/>
+			<xs:element name="target-service" type="onion:targetServiceType"/>
+		</xs:all>
+	</xs:complexType>
+
+	<xs:complexType name="nodeType">
+		<xs:all>
+			<xs:element name="common" type="onion:commonType"/>
+			<xs:element name="local" type="onion:localType"/>
+			<xs:element name="chain" type="onion:chainType"/>
+			<xs:element name="directory" type="onion:directoryType"/>
+		</xs:all>
+	</xs:complexType>
+
+	<xs:complexType name="targetServiceType">
+		<xs:annotation>
+			<xs:documentation xml:lang="en">
+				Configuration for the
+				RESTful service to provide
+				random quotes.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:all>
+			<xs:element name="host" type="xs:string">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+						The hostname where the
+						server will be listening
+						for incoming requests.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="port" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+						The port where the
+						server will be listening
+						for incoming requests.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+
+	<xs:complexType name="commonType">
+		<xs:all>
+			<xs:element name="host" type="xs:string">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="port" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+
+	<xs:complexType name="localType">
+		<xs:all>
+			<xs:element name="server-port" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="listening-host" type="xs:string">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="cellworkers-per-connectionworker" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+
+	<xs:complexType name="chainType">
+		<xs:all>
+			<xs:element name="heartbeat-interval" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="cellworkers-per-connectionworker" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+
+	<xs:complexType name="directoryType">
+		<xs:all>
+			<xs:element name="heartbeat-timeout" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="thriftworker" type="onion:thriftworkerType"/>
+		</xs:all>
+	</xs:complexType>
+
+	<xs:complexType name="thriftworkerType">
+		<xs:all>
+			<xs:element name="min" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="max" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:all>
+	</xs:complexType>
+</xs:schema>
