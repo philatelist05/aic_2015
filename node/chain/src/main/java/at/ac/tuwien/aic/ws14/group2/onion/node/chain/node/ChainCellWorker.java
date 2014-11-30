@@ -1,25 +1,16 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.chain.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.AESAlgorithm;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSASignAndVerify;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.*;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.interfaces.DHKey;
 import java.io.IOException;
-import java.lang.annotation.Target;
-import java.math.BigInteger;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 
 public class ChainCellWorker implements CellWorker {
     static final Logger logger = LogManager.getLogger(ChainCellWorker.class.getName());
@@ -48,10 +39,14 @@ public class ChainCellWorker implements CellWorker {
             } else if (cell instanceof DestroyCell) {
                 handleDestroyCell();
             } else {
-                logger.error("Cannot handle cell {}", cell.getClass().getName());
+                logger.error("Cannot handle cell {}, so shutting down chain.", cell.getClass().getName());
+
+                shutdownChain(circuit);
             }
         } catch (Exception e) {
-            logger.error("Could not send response/forwarded cell: {}", e);
+            logger.error("Exception while handling cell, so shutting down chain.", e);
+
+            shutdownChain(circuit);
         }
     }
 
@@ -76,7 +71,7 @@ public class ChainCellWorker implements CellWorker {
             dhPublicKey = keyExchange.initExchange(dhHalf.getP(), dhHalf.getG());
             sharedSecret = keyExchange.completeExchange(dhHalf.getPublicKey());
         } catch (Exception e) {
-            logger.error("Cannot initiate DH key exchange.", e);
+            logger.error("Cannot initiate DH key exchange, so shutting down chain.", e);
 
             // unrecoverable error
             shutdownChain(circuit);
@@ -87,12 +82,25 @@ public class ChainCellWorker implements CellWorker {
         connectionWorker.sendCell(new CreateResponseCell(newCircuit.getCircuitID(), dhPublicKey, RSASignAndVerify.signData(dhPublicKey, this.privateKey)));
     }
 
-    private void handleCreateResponseCell() {
+    private void handleCreateResponseCell() throws IOException {
         CreateResponseCell createResponseCell = (CreateResponseCell)cell;
-        // TODO
+        Circuit assocCircuit = circuit.getAssociatedCircuit();
+
+        if (createResponseCell.getStatus() == CreateStatus.CircuitIDAlreadyExists) {
+            connectionWorker.removeCircuit(circuit);
+
+            extendChain(connectionWorker, assocCircuit, circuit.getEndpoint(), circuit.getDHHalf());
+        } else {
+            ExtendResponseCommand cmd = new ExtendResponseCommand(createResponseCell.getDhPublicKey(), createResponseCell.getSignature());
+            RelayCellPayload payload = new RelayCellPayload(cmd);
+            RelayCell cell = new RelayCell(assocCircuit.getCircuitID(), payload);
+
+            ConnectionWorker incomingConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(assocCircuit.getEndpoint());
+            incomingConnectionWorker.sendCell(cell);
+        }
     }
 
-    private void handleRelayCell() throws DecryptException, DecodeException, IOException, EncryptException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchProviderException, InvalidKeyException, CircuitIDExistsAlreadyException {
+    private void handleRelayCell() throws Exception {
         RelayCell relayCell = (RelayCell)cell;
 
         if (circuit.getAssociatedCircuit() == null) {   // unencrypted payload coming from local node
@@ -105,7 +113,9 @@ public class ChainCellWorker implements CellWorker {
             } else if (cmd instanceof DataCommand) {
                 handleDataCommand((DataCommand)cmd);
             } else {
-                logger.error("Cannot handle command {}", cmd.getClass().getName());
+                logger.error("Chain node is in invalid state in order to handle command {}, so shutting down chain.", cmd.getClass().getName());
+
+                shutdownChain(circuit);
             }
         } else if (circuit.getSessionKey() == null) {   // coming from target
 
@@ -148,11 +158,7 @@ public class ChainCellWorker implements CellWorker {
 
     private void handleExtendCommand(ExtendCommand cmd) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
         ConnectionWorker outgoingConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(cmd.getEndpoint());
-        Circuit outgoingCircuit = outgoingConnectionWorker.createAndAddCircuit(cmd.getEndpoint());
-
-        CreateCell createCell = new CreateCell(outgoingCircuit.getCircuitID(), cmd.getEndpoint(), cmd.getDHHalf());
-
-        outgoingConnectionWorker.sendCell(createCell);
+        extendChain(outgoingConnectionWorker, circuit, cmd.getEndpoint(), cmd.getDHHalf());
     }
 
     private void handleConnectCommand(ConnectCommand cmd) throws CircuitIDExistsAlreadyException, IOException {
@@ -161,6 +167,20 @@ public class ChainCellWorker implements CellWorker {
 
     private void handleDataCommand(DataCommand cmd) {
         connectionWorker.getTargetWorker(circuit).sendData(cmd.getData(), cmd.getSequenceNumber());
+    }
+
+    private void extendChain(ConnectionWorker connectionWorker, Circuit incomingCircuit, Endpoint nextNode, EncryptedDHHalf dhHalf) throws IOException {
+        // create circuit
+        Circuit outgoingCircuit = connectionWorker.createAndAddCircuit(nextNode);
+        outgoingCircuit.setAssociatedCircuit(incomingCircuit);
+        incomingCircuit.setAssociatedCircuit(outgoingCircuit);
+
+        // remember DH half in case we have to retry the operation
+        outgoingCircuit.setDHHalf(dhHalf);
+
+        CreateCell createCell = new CreateCell(outgoingCircuit.getCircuitID(), nextNode, dhHalf);
+
+        connectionWorker.sendCell(createCell);
     }
 
     /**
@@ -183,7 +203,7 @@ public class ChainCellWorker implements CellWorker {
                 connectionWorker.removeTargetWorker(assocCircuit);
             }
         } catch (IOException e) {
-            logger.error("Could not send DestroyCell during chain destruction.", e);
+            logger.warn("Could not send DestroyCell during chain destruction.", e);
         }
     }
 }

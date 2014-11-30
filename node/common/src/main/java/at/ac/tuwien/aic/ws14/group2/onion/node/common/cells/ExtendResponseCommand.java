@@ -10,7 +10,6 @@ import java.nio.ByteBuffer;
 public class ExtendResponseCommand extends Command {
     private byte[] dhPublicKey;
     private byte[] signature;
-    private CreateStatus status;
 
     /**
      * Reads a Command assuming that the Command Type field has already been read.
@@ -19,15 +18,13 @@ public class ExtendResponseCommand extends Command {
     ExtendResponseCommand(ByteBuffer buffer) throws DecodeException {
         dhPublicKey = EncodingUtil.readByteArray(buffer);
         signature = EncodingUtil.readByteArray(buffer);
-        status = CreateStatus.fromByte(buffer.get());
     }
 
-    public ExtendResponseCommand(byte[] dhPublicKey, byte[] signature, CreateStatus status) {
+    public ExtendResponseCommand(byte[] dhPublicKey, byte[] signature) {
         super(COMMAND_TYPE_EXTEND_RESPONSE);
 
         this.dhPublicKey = dhPublicKey;
         this.signature = signature;
-        this.status = status;
     }
 
     public byte[] getDHPublicKey() {
@@ -38,12 +35,9 @@ public class ExtendResponseCommand extends Command {
         return signature;
     }
 
-    public CreateStatus getStatus() { return status; }
-
     @Override
     protected void encodePayload(ByteBuffer buffer) {
         EncodingUtil.writeByteArray(dhPublicKey, buffer);
         EncodingUtil.writeByteArray(signature, buffer);
-        buffer.put(status.toByte());
     }
 }
