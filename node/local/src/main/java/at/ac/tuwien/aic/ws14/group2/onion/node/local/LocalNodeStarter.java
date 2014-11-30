@@ -100,6 +100,7 @@ public class LocalNodeStarter {
 		DirectoryService.Client client = new DirectoryService.Client(protocol);
 
 		// Create and start SOCKS server
+		logger.debug("Creating and starting SOCKS server");
 		// TODO (KK) get SOCKS port from config
 		int port = 1080;
 		SocksServer socksServer = new SocksServer(port, nodeCore, client);
@@ -107,6 +108,7 @@ public class LocalNodeStarter {
 		socksServer.start();
 
 		// Block main thread until SOCKS server is interrupted
+		logger.debug("Waiting for SOCKS server to be interrupted");
 		try {
 			socksServer.join();
 		} catch (InterruptedException ignored) {

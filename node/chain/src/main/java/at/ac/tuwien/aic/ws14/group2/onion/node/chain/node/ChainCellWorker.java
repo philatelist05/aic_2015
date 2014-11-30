@@ -21,12 +21,18 @@ public class ChainCellWorker implements CellWorker {
     private final Cell cell;
     private final ConnectionWorker connectionWorker;
     private final PrivateKey privateKey;
+    private final ConnectionWorkerFactory connectionWorkerFactory;
 
     public ChainCellWorker(ConnectionWorker connectionWorker, Cell cell, Circuit circuit, PrivateKey privateKey) {
+        this(connectionWorker, cell, circuit, privateKey, ConnectionWorkerFactory.getInstance());
+    }
+
+    ChainCellWorker(ConnectionWorker connectionWorker, Cell cell, Circuit circuit, PrivateKey privateKey, ConnectionWorkerFactory connectionWorkerFactory) {
         this.connectionWorker = connectionWorker;
         this.cell = cell;
         this.circuit = circuit;
         this.privateKey = privateKey;
+        this.connectionWorkerFactory = connectionWorkerFactory;
     }
 
     @Override
@@ -106,7 +112,7 @@ public class ChainCellWorker implements CellWorker {
             }
             RelayCell cell = new RelayCell(assocCircuit.getCircuitID(), payload);
 
-            ConnectionWorker incomingConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(assocCircuit.getEndpoint());
+            ConnectionWorker incomingConnectionWorker = connectionWorkerFactory.getConnectionWorker(assocCircuit.getEndpoint());
             incomingConnectionWorker.sendCell(cell);
         }
     }
@@ -140,7 +146,7 @@ public class ChainCellWorker implements CellWorker {
             RelayCell newRelayCell = new RelayCell(assocCircuit.getCircuitID(), newPayload);
 
             // forward
-            ConnectionWorker assocConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(assocCircuit.getEndpoint());
+            ConnectionWorker assocConnectionWorker = connectionWorkerFactory.getConnectionWorker(assocCircuit.getEndpoint());
             assocConnectionWorker.sendCell(newRelayCell);
         } else {   // coming from local node
             logger.debug("Non-final destination of relay cell");
@@ -153,7 +159,7 @@ public class ChainCellWorker implements CellWorker {
             RelayCell newRelayCell = new RelayCell(assocCircuit.getCircuitID(), decryptedPayload);
 
             // forward
-            ConnectionWorker assocConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(assocCircuit.getEndpoint());
+            ConnectionWorker assocConnectionWorker = connectionWorkerFactory.getConnectionWorker(assocCircuit.getEndpoint());
             assocConnectionWorker.sendCell(newRelayCell);
         }
     }
@@ -175,7 +181,7 @@ public class ChainCellWorker implements CellWorker {
     }
 
     private void handleExtendCommand(ExtendCommand cmd) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
-        ConnectionWorker outgoingConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(cmd.getEndpoint());
+        ConnectionWorker outgoingConnectionWorker = connectionWorkerFactory.getConnectionWorker(cmd.getEndpoint());
         extendChain(outgoingConnectionWorker, circuit, cmd.getEndpoint(), cmd.getDHHalf());
     }
 
