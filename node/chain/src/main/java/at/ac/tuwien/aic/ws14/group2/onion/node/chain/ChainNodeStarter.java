@@ -68,7 +68,7 @@ public class ChainNodeStarter {
         Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
         nodeCoreThread.start();
 
-        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), listeningSocket.getLocalSocketAddress().toString(), Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
+        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), listeningSocket.getInetAddress().getHostAddress(), Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         logger.info("ChainNodeInformation: {}", nodeInformation);
 
 
