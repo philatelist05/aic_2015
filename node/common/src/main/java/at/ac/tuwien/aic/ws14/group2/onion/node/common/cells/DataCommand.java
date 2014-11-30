@@ -14,7 +14,7 @@ public class DataCommand extends Command {
 
     private byte[] data;
     private short length;
-    private Short sequenceNumber;
+    private short sequenceNumber;
 
     /**
      * Reads a Command assuming that the Command Type field has already been read.
