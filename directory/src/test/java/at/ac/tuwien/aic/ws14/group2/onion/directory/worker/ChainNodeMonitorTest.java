@@ -22,7 +22,9 @@ import static org.mockito.Mockito.*;
 public class ChainNodeMonitorTest {
 
     static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
-    private static ChainNodeInformation information;
+    private static ChainNodeInformation firstNodeInfo;
+    private static ChainNodeInformation secondNodeInfo;
+    private static ChainNodeInformation thirdNodeInfo;
     private static ConcurrentSkipListSet<ChainNodeInformation> emptyNodeSet;
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
     private int timeout = 1000;
@@ -37,8 +39,10 @@ public class ChainNodeMonitorTest {
         RSAKeyGenerator keyGenerator = new RSAKeyGenerator();
         KeyPair rsaKeyPair = keyGenerator.generateKeys(0);
         privateKey = rsaKeyPair.getPrivate();
-        information = new ChainNodeInformation(23456, "localhost", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));                                      */
-        information = new ChainNodeInformation(23456, "localhost", "PUBLICKEYFAKE");
+        firstNodeInfo = new ChainNodeInformation(23456, "localhost", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));                                      */
+        firstNodeInfo = new ChainNodeInformation(23456, "localhost", "PUBLICKEYFAKE");
+        secondNodeInfo = new ChainNodeInformation(34567, "localhost", "PUBLICKEYFAKEONE");
+        thirdNodeInfo = new ChainNodeInformation(45678, "localhost", "PUBLICKEYFAKETWO");
 
     }
 
@@ -47,7 +51,7 @@ public class ChainNodeMonitorTest {
         logger.info("Testing deactivation of inactive node");
 
         ConcurrentSkipListSet<ChainNodeInformation> activeNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
-        activeNodes.add(information);
+        activeNodes.add(firstNodeInfo);
 
         NodeUsage deadNodeUsage = new NodeUsage(
                 dateTimeFormatter.format(LocalDateTime.now().minusDays(1)),
@@ -57,15 +61,15 @@ public class ChainNodeMonitorTest {
 
         ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
         when(registry.getActiveNodes()).thenReturn(activeNodes);
-        when(registry.getLastNodeUsage(information)).thenReturn(deadNodeUsage);
+        when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(deadNodeUsage);
 
 
         Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout));
         chainNodeMonitor.run();
 
         verify(registry).getActiveNodes();
-        verify(registry).getLastNodeUsage(information);
-        verify(registry).deactivate(information);
+        verify(registry).getLastNodeUsage(firstNodeInfo);
+        verify(registry).deactivate(firstNodeInfo);
 
     }
 
@@ -74,7 +78,7 @@ public class ChainNodeMonitorTest {
         logger.info("Testing deactivation of inactive node");
 
         ConcurrentSkipListSet<ChainNodeInformation> activeNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
-        activeNodes.add(information);
+        activeNodes.add(firstNodeInfo);
 
         NodeUsage activeNodeUsage = new NodeUsage(
                 dateTimeFormatter.format(LocalDateTime.now().minusDays(1)),
@@ -84,15 +88,15 @@ public class ChainNodeMonitorTest {
 
         ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
         when(registry.getActiveNodes()).thenReturn(activeNodes);
-        when(registry.getLastNodeUsage(information)).thenReturn(activeNodeUsage);
+        when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(activeNodeUsage);
 
 
         Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, 5000));
         chainNodeMonitor.run();
 
         verify(registry).getActiveNodes();
-        verify(registry).getLastNodeUsage(information);
-        verify(registry, never()).deactivate(information);
+        verify(registry).getLastNodeUsage(firstNodeInfo);
+        verify(registry, never()).deactivate(firstNodeInfo);
 
     }
 
@@ -111,5 +115,52 @@ public class ChainNodeMonitorTest {
         verify(registry, never()).getLastNodeUsage(any(ChainNodeInformation.class));
     }
 
+    @Test
+    public void testDeactivateInactiveAndDoNotDeactivateActiveNodes(){
+        ConcurrentSkipListSet<ChainNodeInformation> activeNodes = new ConcurrentSkipListSet<>();
+        activeNodes.add(firstNodeInfo);
+        activeNodes.add(secondNodeInfo);
+        activeNodes.add(thirdNodeInfo);
+
+        NodeUsage firstActiveNodeUsage = new NodeUsage(
+                dateTimeFormatter.format(LocalDateTime.now().minusHours(3)),
+                dateTimeFormatter.format(LocalDateTime.now()),
+                2,
+                3
+        );
+
+        NodeUsage secondActiveNodeUsage = new NodeUsage(
+                dateTimeFormatter.format(LocalDateTime.now().minusHours(4)),
+                dateTimeFormatter.format(LocalDateTime.now()),
+                2,
+                3
+        );
+
+        NodeUsage deadNodeUsage = new NodeUsage(
+                dateTimeFormatter.format(LocalDateTime.now().minusHours(3)),
+                dateTimeFormatter.format(LocalDateTime.now().minus(timeout, ChronoUnit.MILLIS)),
+                3,
+                4
+        );
+
+        ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
+        when(registry.getActiveNodes()).thenReturn(activeNodes);
+        when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(firstActiveNodeUsage);
+        when(registry.getLastNodeUsage(secondNodeInfo)).thenReturn(secondActiveNodeUsage);
+        when(registry.getLastNodeUsage(thirdNodeInfo)).thenReturn(deadNodeUsage);
+
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout));
+        chainNodeMonitor.run();
+
+        verify(registry).getActiveNodes();
+        verify(registry).getLastNodeUsage(firstNodeInfo);
+        verify(registry, never()).deactivate(firstNodeInfo);
+
+        verify(registry).getLastNodeUsage(secondNodeInfo);
+        verify(registry, never()).deactivate(secondNodeInfo);
+
+        verify(registry).getLastNodeUsage(thirdNodeInfo);
+        verify(registry).deactivate(thirdNodeInfo);
+    }
 
 }
