@@ -84,4 +84,12 @@ public abstract class Cell {
     public short getCircuitID() {
         return circuitID;
     }
+
+    @Override
+    public String toString() {
+        return "Cell{" +
+                "circuitID=" + circuitID +
+                ", cellType=" + cellType +
+                '}';
+    }
 }

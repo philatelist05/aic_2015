@@ -69,4 +69,13 @@ public class Circuit {
     public void setDHHalf(EncryptedDHHalf dhHalf) {
         this.dhHalf = dhHalf;
     }
+
+    @Override
+    public String toString() {
+        return "Circuit{" +
+                "circuitID=" + circuitID +
+                ", endpoint=" + endpoint +
+                ", associatedCircuit=" + (associatedCircuit==null) +
+                '}';
+    }
 }
