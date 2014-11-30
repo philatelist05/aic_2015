@@ -73,7 +73,7 @@ public class LocalCellWorker implements CellWorker {
         int lastNode = metaData.getLastNode();
         logger.debug("Current last node in chain is at position {}", lastNode);
         RelayCellPayload payload = relayCell.getPayload();
-        for (int i = lastNode; i >= 0; i--) {
+        for (int i = 0; i <= lastNode; i++) {
             ChainNodeMetaData currentNode = metaData.getNodes().get(i);
             try {
                 payload = payload.decrypt(currentNode.getSessionKey());
@@ -261,11 +261,13 @@ public class LocalCellWorker implements CellWorker {
                 }
                 ExtendCommand command = new ExtendCommand(nextNode.getEndPoint(), p, g, encryptedDHHalf);
                 RelayCellPayload payload = new RelayCellPayload(command);
-                for(int i = 0; i < nextNodeIndex; i++) {
-                    logger.debug("Encrypting payload with Node #{}'s session key", i);
+                logger.debug("Decrypted payload: {}", payload);
+                for(int i = nextNodeIndex - 1; i >= 0; i--) {
                     ChainNodeMetaData currentNode = nodes.get(i);
+                    logger.debug("Encrypting payload with session key for node {}", currentNode);
                     try {
                         payload = payload.encrypt(currentNode.getSessionKey());
+                        logger.debug("Payload after encryption: {}", payload);
                     } catch (EncryptException e) {
                         logger.warn("Failed to encrypt ExtendCommand, aborting Chain creation");
                         logger.catching(Level.DEBUG, e);
