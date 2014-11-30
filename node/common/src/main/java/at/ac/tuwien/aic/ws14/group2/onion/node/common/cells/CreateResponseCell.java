@@ -38,6 +38,13 @@ public class CreateResponseCell extends Cell {
         this.status = status;
     }
 
+    /**
+     * Creates a CreateResponseCell with an empty public key and signature.
+     */
+    public CreateResponseCell(short circuitID, CreateStatus status) {
+        this(circuitID, new byte[0], new byte[0], status);
+    }
+
     public byte[] getDhPublicKey() {
         return dhPublicKey;
     }

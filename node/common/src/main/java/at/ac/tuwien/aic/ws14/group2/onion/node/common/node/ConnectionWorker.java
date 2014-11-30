@@ -78,12 +78,32 @@ public class ConnectionWorker implements AutoCloseable {
             throw new CircuitIDExistsAlreadyException("Cannot create two circuits with the same ID on the same connection.");
     }
 
+    /**
+     * Removes the specified circuit or does nothing if it does not exist.
+     */
+    public void removeCircuit(Circuit circuit) {
+        circuits.remove(circuit.getCircuitID());
+    }
+
     public void createTargetWorker(Circuit incomingCircuit, Endpoint target) throws CircuitIDExistsAlreadyException, IOException {
         TargetWorker worker = new TargetWorker(this, target);
         if (targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), worker) != null) {
             worker.close();
 
             throw new CircuitIDExistsAlreadyException("Only one target worker allowed for a single chain.");
+        }
+    }
+
+    /**
+     * Closes a target worker and removes it from the list or does nothing if there is no target worker for the specified circuit.
+     */
+    public void removeTargetWorker(Circuit incomingCircuit) {
+        try {
+            TargetWorker targetWorker = targetWorkers.remove(incomingCircuit.getCircuitID());
+            if (targetWorker != null)
+                targetWorker.close();
+        } catch (IOException e) {
+            logger.error("Exception when closing the target worker.", e);
         }
     }
 
