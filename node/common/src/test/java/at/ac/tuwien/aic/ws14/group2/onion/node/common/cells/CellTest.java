@@ -181,7 +181,7 @@ public class CellTest {
         byte[] dhPublicKey = createDHPublicKey();
         byte[] signature = createSignature();
 
-        CreateResponseCell createResultCell = new CreateResponseCell(circuitID, dhPublicKey, signature);
+        CreateResponseCell createResultCell = new CreateResponseCell(circuitID, dhPublicKey, signature, CreateStatus.CircuitIDAlreadyExists);
         Cell receivedCell = simulateCellTransfer(createResultCell);
 
         assertTrue(receivedCell instanceof CreateResponseCell);
@@ -190,6 +190,7 @@ public class CellTest {
 
         assertArrayEquals(dhPublicKey, receivedCreateResponseCell.getDhPublicKey());
         assertArrayEquals(signature, receivedCreateResponseCell.getSignature());
+        assertEquals(CreateStatus.CircuitIDAlreadyExists, receivedCreateResponseCell.getStatus());
     }
 
     @Test
@@ -241,7 +242,7 @@ public class CellTest {
         byte[] signature = createSignature();
         byte[] key = createSessionKey();
 
-        ExtendResponseCommand extendResponseCommand = new ExtendResponseCommand(dhPublicKey, signature);
+        ExtendResponseCommand extendResponseCommand = new ExtendResponseCommand(dhPublicKey, signature, CreateStatus.Success);
         RelayCellPayload relayPayload = new RelayCellPayload(extendResponseCommand).encrypt(key);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
