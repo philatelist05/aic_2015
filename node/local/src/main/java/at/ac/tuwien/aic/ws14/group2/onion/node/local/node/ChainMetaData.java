@@ -46,6 +46,10 @@ public class ChainMetaData {
         return lastNode;
     }
 
+    public int getNextNode() {
+        return lastNode + 1;
+    }
+
     public boolean growChain(byte[] sessionKey) {
         synchronized (lastNode) {
             if (lastNode < nodes.size()) {
