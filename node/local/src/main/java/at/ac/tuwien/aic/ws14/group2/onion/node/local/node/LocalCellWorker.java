@@ -103,7 +103,12 @@ public class LocalCellWorker implements CellWorker {
     }
 
     private void handleDataCommand(DataCommand dataCommand) {
-        //TODO
+        logger.debug("Handling DataCommand");
+
+        SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
+
+        callback.responseData(dataCommand.getSequenceNumber(), dataCommand.getData());
+        return;
     }
 
     private void handleConnectResponse(ConnectResponseCommand connectResponseCommand) {
@@ -114,7 +119,7 @@ public class LocalCellWorker implements CellWorker {
         logger.debug("Handling ExtendResponseCommand");
 
         SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
-        ChainMetaData metaData = this.nodeCore.getChainMetaData(this.circuit.getCircuitID());
+        ChainMetaData metaData = nodeCore.getChainMetaData(this.circuit.getCircuitID());
 
         if (extendResponseCommand.getStatus() != CreateStatus.Success) {
             retryExtendCommand(metaData, callback);
@@ -162,7 +167,7 @@ public class LocalCellWorker implements CellWorker {
         logger.debug("Handling CreateResponseCell");
 
         SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
-        ChainMetaData metaData = this.nodeCore.getChainMetaData(this.circuit.getCircuitID());
+        ChainMetaData metaData = nodeCore.getChainMetaData(circuit.getCircuitID());
 
         if (createResponseCell.getStatus() != CreateStatus.Success) {
             retryCreateCell(metaData, callback);
