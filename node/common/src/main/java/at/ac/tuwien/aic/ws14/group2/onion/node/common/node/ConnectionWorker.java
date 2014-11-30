@@ -10,6 +10,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.annotation.Target;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
@@ -85,6 +86,10 @@ public class ConnectionWorker implements AutoCloseable {
         circuits.remove(circuit.getCircuitID());
     }
 
+    /**
+     * Creates a new TargetWorker for the specified circuit and endpoint.
+     * @throws CircuitIDExistsAlreadyException Thrown if there is already a TargetWorker for the specified circuit.
+     */
     public void createTargetWorker(Circuit incomingCircuit, Endpoint target) throws CircuitIDExistsAlreadyException, IOException {
         TargetWorker worker = new TargetWorker(this, target);
         if (targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), worker) != null) {
@@ -92,6 +97,10 @@ public class ConnectionWorker implements AutoCloseable {
 
             throw new CircuitIDExistsAlreadyException("Only one target worker allowed for a single chain.");
         }
+    }
+
+    public TargetWorker getTargetWorker(Circuit incomingCircuit) {
+        return targetWorkers.get(incomingCircuit);
     }
 
     /**
@@ -125,7 +134,7 @@ public class ConnectionWorker implements AutoCloseable {
      * Creates a new circuit and adds it to this connection worker.
      * The new circuit is guaranteed to have a unique ID on this connection.
      */
-    private Circuit createAndAddCircuit(Endpoint endpoint) {
+    public Circuit createAndAddCircuit(Endpoint endpoint) {
         boolean success = false;
         Circuit circuit = null;
 

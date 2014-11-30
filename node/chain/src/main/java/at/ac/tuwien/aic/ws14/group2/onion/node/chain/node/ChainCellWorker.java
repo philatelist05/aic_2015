@@ -5,12 +5,19 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.AESAlgorithm;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSASignAndVerify;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.interfaces.DHKey;
 import java.io.IOException;
+import java.lang.annotation.Target;
+import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 
@@ -34,16 +41,18 @@ public class ChainCellWorker implements CellWorker {
         try {
             if (circuit == null && cell instanceof CreateCell) {
                 handleCreateCell();
+            } else if (cell instanceof CreateResponseCell) {
+                handleCreateResponseCell();
+            } else if (cell instanceof RelayCell) {
+                handleRelayCell();
             } else if (cell instanceof DestroyCell) {
                 handleDestroyCell();
             } else {
                 logger.error("Cannot handle cell {}", cell.getClass().getName());
             }
-        } catch (IOException e) {
-            logger.warn("Could not send response/forwarded cell: {}", e.getMessage());
-            logger.catching(Level.DEBUG, e);
+        } catch (Exception e) {
+            logger.error("Could not send response/forwarded cell: {}", e);
         }
-        //TODO implement other cells
     }
 
     private void handleCreateCell() throws IOException {
@@ -78,8 +87,51 @@ public class ChainCellWorker implements CellWorker {
         connectionWorker.sendCell(new CreateResponseCell(newCircuit.getCircuitID(), dhPublicKey, RSASignAndVerify.signData(dhPublicKey, this.privateKey)));
     }
 
+    private void handleCreateResponseCell() {
+        CreateResponseCell createResponseCell = (CreateResponseCell)cell;
+        // TODO
+    }
+
+    private void handleRelayCell() throws DecryptException, DecodeException, IOException, EncryptException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, NoSuchProviderException, InvalidKeyException, CircuitIDExistsAlreadyException {
+        RelayCell relayCell = (RelayCell)cell;
+
+        if (circuit.getAssociatedCircuit() == null) {   // unencrypted payload coming from local node
+            RelayCellPayload decryptedPayload = relayCell.getPayload().decrypt(circuit.getSessionKey());
+            Command cmd = decryptedPayload.decode();
+            if (cmd instanceof ExtendCommand) {
+                handleExtendCommand((ExtendCommand)cmd);
+            } else if (cmd instanceof ConnectCommand) {
+                handleConnectCommand((ConnectCommand)cmd);
+            } else if (cmd instanceof DataCommand) {
+                handleDataCommand((DataCommand)cmd);
+            } else {
+                logger.error("Cannot handle command {}", cmd.getClass().getName());
+            }
+        } else if (circuit.getSessionKey() == null) {   // coming from target
+
+            // add layer of encryption
+            Circuit assocCircuit = circuit.getAssociatedCircuit();
+            RelayCellPayload newPayload = relayCell.getPayload().encrypt(assocCircuit.getSessionKey());
+            RelayCell newRelayCell = new RelayCell(assocCircuit.getCircuitID(), newPayload);
+
+            // forward
+            ConnectionWorker assocConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(assocCircuit.getEndpoint());
+            assocConnectionWorker.sendCell(newRelayCell);
+        } else {   // coming from local node
+
+            // remove layer of encryption and forward
+            Circuit assocCircuit = circuit.getAssociatedCircuit();
+            RelayCellPayload decryptedPayload = relayCell.getPayload().decrypt(circuit.getSessionKey());
+            RelayCell newRelayCell = new RelayCell(assocCircuit.getCircuitID(), decryptedPayload);
+
+            // forward
+            ConnectionWorker assocConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(assocCircuit.getEndpoint());
+            assocConnectionWorker.sendCell(newRelayCell);
+        }
+    }
+
     private void handleDestroyCell() throws IOException {
-        DestroyCell receivedCell = (DestroyCell)this.cell;
+        DestroyCell receivedCell = (DestroyCell)cell;
         Circuit assocCircuit = circuit.getAssociatedCircuit();
 
         if (assocCircuit != null)
@@ -92,6 +144,24 @@ public class ChainCellWorker implements CellWorker {
             connectionWorker.removeCircuit(assocCircuit);
             connectionWorker.removeTargetWorker(assocCircuit);
         }
+    }
+
+    private void handleExtendCommand(ExtendCommand cmd) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
+        ConnectionWorker outgoingConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(cmd.getEndpoint());
+        Circuit outgoingCircuit = outgoingConnectionWorker.createAndAddCircuit(cmd.getEndpoint());
+
+        CreateCell createCell = new CreateCell(outgoingCircuit.getCircuitID(), cmd.getEndpoint(), cmd.getDHHalf());
+
+        outgoingConnectionWorker.sendCell(createCell);
+    }
+
+    private void handleConnectCommand(ConnectCommand cmd) throws CircuitIDExistsAlreadyException, IOException {
+        connectionWorker.createTargetWorker(circuit, cmd.getEndpoint());
+    }
+
+    private void handleDataCommand(DataCommand cmd) {
+        // TODO: pass sequence number
+        connectionWorker.getTargetWorker(circuit).sendData(cmd.getData());
     }
 
     /**
