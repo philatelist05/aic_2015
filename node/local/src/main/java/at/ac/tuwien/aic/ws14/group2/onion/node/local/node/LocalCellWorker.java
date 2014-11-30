@@ -127,10 +127,11 @@ public class LocalCellWorker implements CellWorker {
         }
 
         //TODO verify signature
+        //TODO maybe move the non-Create DHKeyExchange to the ChainMetaData or ChainNodeMetaData?
 
         DHKeyExchange keyExchange = circuit.getDHKeyExchange();
-        if (keyExchange == null || circuit.getSessionKey() != null) {
-            logger.warn("This circuit is already established, ignoring CreateResponseCell");
+        if (keyExchange == null) {
+            logger.warn("No keyexchagne available, ignoring extendResponseCommand");
             return;
         }
 
@@ -157,6 +158,9 @@ public class LocalCellWorker implements CellWorker {
                 return;
             }
         }
+
+        metaData.growChain(sessionKey);
+        nextChainBuildingStep(metaData, callback);
     }
 
     private void retryExtendCommand(ChainMetaData metaData, SocksCallBack callback) {
@@ -175,11 +179,10 @@ public class LocalCellWorker implements CellWorker {
         }
 
         //TODO verify signature
-        //TODO maybe move the non-Create DHKeyExchange to the ChainMetaData or ChainNodeMetaData?
 
         DHKeyExchange keyExchange = circuit.getDHKeyExchange();
-        if (keyExchange == null) {
-            logger.warn("No KeyExchange available, ignoring ExtendResponseCommand");
+        if (keyExchange == null || circuit.getSessionKey() != null) {
+            logger.warn("No KeyExchange available or first Circuit already established, ignoring CreateResponseCell");
             return;
         }
 
@@ -207,6 +210,7 @@ public class LocalCellWorker implements CellWorker {
             }
         }
 
+        circuit.setSessionKey(sessionKey);
         circuit.setDHKeyExchange(null);
 
         metaData.growChain(sessionKey);
