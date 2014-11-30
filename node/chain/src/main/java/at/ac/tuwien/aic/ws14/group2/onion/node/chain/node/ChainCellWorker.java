@@ -55,7 +55,7 @@ public class ChainCellWorker implements CellWorker {
         }
     }
 
-    private void handleCreateCell() throws IOException {
+    private void handleCreateCell() throws IOException, DecryptException {
         CreateCell createCell = (CreateCell) cell;
         Circuit newCircuit = new Circuit(createCell.getCircuitID(), createCell.getEndpoint());
         try {

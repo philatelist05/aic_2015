@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +21,7 @@ public class RSAEncryptDecrypt {
     public RSAEncryptDecrypt(){
     }
 
-    public static byte[] encrypt(byte[] clearText, PublicKey publicKey){
+    public static byte[] encrypt(byte[] clearText, PublicKey publicKey) throws EncryptException{
 
         byte[] encryptedText = null;
 
@@ -31,27 +33,33 @@ public class RSAEncryptDecrypt {
         } catch (NoSuchAlgorithmException e) {
             logger.warn("Cannot find RSA Algorithm.");
             logger.catching(Level.DEBUG, e);
+            throw new EncryptException(e.getMessage());
         } catch (NoSuchProviderException e) {
             logger.warn("There is no such provider");
             logger.catching(Level.DEBUG, e);
+            throw new EncryptException(e.getMessage());
         } catch (NoSuchPaddingException e) {
             logger.warn("Cannot find OAEPWithSHA1AndMGF1Padding padding.");
             logger.catching(Level.DEBUG, e);
+            throw new EncryptException(e.getMessage());
         } catch (IllegalBlockSizeException e) {
             logger.warn("Illegal block size.");
             logger.catching(Level.DEBUG, e);
+            throw new EncryptException(e.getMessage());
         } catch (BadPaddingException e) {
             logger.warn("Padding is bad.");
             logger.catching(Level.DEBUG, e);
+            throw new EncryptException(e.getMessage());
         } catch (InvalidKeyException e) {
             logger.warn("Key is invalid.");
             logger.catching(Level.DEBUG, e);
+            throw new EncryptException(e.getMessage());
         }
 
         return encryptedText;
     }
 
-    public static byte[] decrypt(byte[] encryptedData, PrivateKey privateKey) {
+    public static byte[] decrypt(byte[] encryptedData, PrivateKey privateKey) throws DecryptException{
 
         byte[] decrypted = null;
 
@@ -68,19 +76,24 @@ public class RSAEncryptDecrypt {
             } catch (IllegalBlockSizeException e) {
                 logger.warn("Illegal block size.");
                 logger.catching(Level.DEBUG, e);
+                throw new DecryptException(e.getMessage());
             } catch (BadPaddingException e) {
                 logger.warn("Padding is bad.");
                 logger.catching(Level.DEBUG, e);
+                throw new DecryptException(e.getMessage());
             }
         } catch (NoSuchAlgorithmException e) {
             logger.warn("Cannot find RSA Algorithm.");
             logger.catching(Level.DEBUG, e);
+            throw new DecryptException(e.getMessage());
         } catch (NoSuchProviderException e) {
             logger.warn("There is no such provider");
             logger.catching(Level.DEBUG, e);
+            throw new DecryptException(e.getMessage());
         } catch (NoSuchPaddingException e) {
             logger.warn("Cannot find OAEPWithSHA1AndMGF1Padding padding.");
             logger.catching(Level.DEBUG, e);
+            throw new DecryptException(e.getMessage());
         }
 
         return decrypted;

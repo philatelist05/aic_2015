@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +26,7 @@ public class RSAEncryptDecryptTest {
     }
 
     @Test
-    public void testEncrypt(){
+    public void testEncrypt() throws EncryptException, DecryptException {
         RSAKeyGenerator keyGenerator = null;
         try {
             keyGenerator = new RSAKeyGenerator();

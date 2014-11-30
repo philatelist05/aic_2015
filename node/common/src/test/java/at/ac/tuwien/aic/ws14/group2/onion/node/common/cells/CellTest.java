@@ -3,6 +3,8 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
@@ -154,7 +156,7 @@ public class CellTest {
     }
 
     @Test
-    public void createCell() throws IOException, DecodeException {
+    public void createCell() throws IOException, DecodeException, EncryptException, DecryptException {
         short circuitID = 123;
         Endpoint endpoint = new Endpoint("8.8.8.8", 80);
         DHHalf dh = createDHHalf();
