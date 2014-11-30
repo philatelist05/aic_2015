@@ -1,7 +1,5 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.chain;
 
-import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
-import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat.HeartBeatWorker;
@@ -9,6 +7,8 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainCellWorkerFactory
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainNodeCore;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,7 +60,7 @@ public class ChainNodeStarter {
         logger.info("Starting node core");
         ServerSocket listeningSocket = null;
         try {
-            listeningSocket = new ServerSocket(0, 100, InetAddress.getLoopbackAddress());
+            listeningSocket = new ServerSocket(0, 100, InetAddress.getLocalHost());
         } catch (IOException e) {
             logger.fatal("Failed to create listening Socket!");
             System.exit(-1);
@@ -68,8 +68,7 @@ public class ChainNodeStarter {
         Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
         nodeCoreThread.start();
 
-        //FIXME get actual hostname instead of localhost!
-        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), "127.0.0.1", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
+        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), listeningSocket.getLocalSocketAddress().toString(), Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         logger.info("ChainNodeInformation: {}", nodeInformation);
 
 
