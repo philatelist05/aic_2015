@@ -3,10 +3,10 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.AddressTypeNotSupportedException;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.net.InetAddress;
-import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -77,12 +77,12 @@ public class SocksAddressTest {
 		assertEquals(address.getPort(), 8080);
 	}
 
-	@Test(expected = BufferUnderflowException.class)
+	@Test(expected = EOFException.class)
 	public void testFromByteArrayShouldThrowBufferUnderflowException() throws Exception {
 		SocksAddress.fromByteArray(SAMPLE_IPV6_WRONG_LENGTH);
 	}
 
-	@Test(expected = BufferUnderflowException.class)
+	@Test(expected = EOFException.class)
 	public void testFromByteArrayShouldThrowBufferUnderflowException2() throws Exception {
 		SocksAddress.fromByteArray(SAMPLE_WRONG_LENGTH);
 	}
@@ -94,10 +94,7 @@ public class SocksAddressTest {
 
 	@Test
 	public void testFromByteArrayWithByteBuffer() throws Exception {
-		ByteBuffer bb = ByteBuffer.wrap(SAMPLE_IPV6);
-		bb.order(ByteOrder.LITTLE_ENDIAN);
-
-		SocksAddress address = SocksAddress.fromByteArray(bb);
+		SocksAddress address = SocksAddress.fromByteArray(new DataInputStream(new ByteArrayInputStream(SAMPLE_IPV6)));
 
 		assertEquals(address.getAddressType(), AddressType.IP_V6_ADDRESS);
 		assertEquals(address.getAddress().getHostAddress(), "11:2233:4455:6677:8899:aabb:ccdd:eeff");

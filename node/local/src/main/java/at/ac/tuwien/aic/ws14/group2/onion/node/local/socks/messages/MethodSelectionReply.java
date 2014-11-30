@@ -4,8 +4,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessagePar
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
+import java.io.*;
 import java.util.Objects;
 
 /**
@@ -23,23 +22,39 @@ public class MethodSelectionReply extends SocksMessage {
 	/**
 	 * Parses a byte array to a new instance of this class.
 	 *
-	 * @throws MessageParsingException  if the data cannot be parsed because it doesn't match the RFC 1928 specification
-	 * @throws BufferUnderflowException if the byte array provided is shorter than the expected length
+	 * @return a new instance of this class
+	 * @throws java.io.EOFException if the input provided is shorter than the expected length
 	 */
-	public static MethodSelectionReply fromByteArray(byte[] data) throws MessageParsingException, BufferUnderflowException {
+	public static MethodSelectionReply fromByteArray(byte[] data) throws EOFException, MessageParsingException {
 		Objects.requireNonNull(data);
 
-		ByteBuffer bb = ByteBuffer.wrap(data);
-		bb.order(SocksMessage.NETWORK_BYTE_ORDER);
+		try {
+			return fromByteArray(new DataInputStream(new ByteArrayInputStream(data)));
+		} catch (IOException e) {
+			if (e instanceof EOFException)
+				throw (EOFException) e;
+			// Should never be the case since we are reading from an byte array
+			throw new RuntimeException();
+		}
+	}
 
-		byte version = bb.get();
+	/**
+	 * Parses a byte array to a new instance of this class.
+	 *
+	 * @throws MessageParsingException if the data cannot be parsed because it doesn't match the RFC 1928 specification
+	 * @throws EOFException            if the input provided is shorter than the expected length
+	 */
+	public static MethodSelectionReply fromByteArray(DataInput input) throws MessageParsingException, IOException {
+		Objects.requireNonNull(input);
+
+		byte version = input.readByte();
 		if (version != SocksMessage.VERSION)
 			throw new MessageParsingException(String.format("wrong version byte: expected: 0x%02X; found: 0x%02X", SocksMessage.VERSION, version));
 
 		// Convert the byte to the Method enumeration
-		Method method = null;
+		Method method;
 		try {
-			method = Method.fromByte(bb.get());
+			method = Method.fromByte(input.readByte());
 		} catch (IllegalArgumentException e) {
 			method = Method.UNKNOWN_METHOD;
 			logger.debug(e.getMessage());

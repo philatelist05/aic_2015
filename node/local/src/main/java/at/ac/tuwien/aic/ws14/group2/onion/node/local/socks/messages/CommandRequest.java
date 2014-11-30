@@ -4,6 +4,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.AddressTyp
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.CommandNotSupportedException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
 
+import java.io.*;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
@@ -23,33 +24,50 @@ public class CommandRequest extends SocksMessage {
 	/**
 	 * Parses a byte array to a new instance of this class.
 	 *
-	 * @throws MessageParsingException  if the data cannot be parsed because it doesn't match the RFC 1928 specification
-	 * @throws BufferUnderflowException if the byte array provided is shorter than the expected length
+	 * @return a new instance of this class
+	 * @throws java.io.EOFException             if the input provided is shorter than the expected length
+	 * @throws AddressTypeNotSupportedException if an invalid address type byte was provided
 	 */
-	public static CommandRequest fromByteArray(byte[] data) throws MessageParsingException, BufferUnderflowException, AddressTypeNotSupportedException, CommandNotSupportedException {
+	public static CommandRequest fromByteArray(byte[] data) throws EOFException, AddressTypeNotSupportedException, CommandNotSupportedException, MessageParsingException {
 		Objects.requireNonNull(data);
 
-		ByteBuffer bb = ByteBuffer.wrap(data);
-		bb.order(SocksMessage.NETWORK_BYTE_ORDER);
+		try {
+			return fromByteArray(new DataInputStream(new ByteArrayInputStream(data)));
+		} catch (IOException e) {
+			if (e instanceof EOFException)
+				throw (EOFException) e;
+			// Should never be the case since we are reading from an byte array
+			throw new RuntimeException();
+		}
+	}
 
-		byte version = bb.get();
+	/**
+	 * Parses a byte array to a new instance of this class.
+	 *
+	 * @throws MessageParsingException if the data cannot be parsed because it doesn't match the RFC 1928 specification
+	 * @throws EOFException            if the input provided is shorter than the expected length
+	 */
+	public static CommandRequest fromByteArray(DataInput input) throws MessageParsingException, BufferUnderflowException, AddressTypeNotSupportedException, CommandNotSupportedException, IOException {
+		Objects.requireNonNull(input);
+
+		byte version = input.readByte();
 		if (version != SocksMessage.VERSION)
 			throw new MessageParsingException(String.format("wrong version byte: expected: 0x%02X; found: 0x%02X", SocksMessage.VERSION, version));
 
 		// Convert the byte to the Command enumeration
 		Command command;
-		byte commandByte = bb.get();
+		byte commandByte = input.readByte();
 		try {
 			command = Command.fromByte(commandByte);
 		} catch (IllegalArgumentException e) {
 			throw new CommandNotSupportedException(commandByte, e);
 		}
 
-		byte reserved = bb.get();
+		byte reserved = input.readByte();
 		if (reserved != SocksMessage.RESERVED_BYTE)
 			throw new MessageParsingException(String.format("wrong 'reserved' byte: expected: 0x%02X; found: 0x%02X", SocksMessage.RESERVED_BYTE, reserved));
 
-		SocksAddress destination = SocksAddress.fromByteArray(bb);
+		SocksAddress destination = SocksAddress.fromByteArray(input);
 
 		return new CommandRequest(command, destination);
 	}
