@@ -38,6 +38,8 @@ public class ExtendResponseCommand extends Command {
         return signature;
     }
 
+    public CreateStatus getStatus() { return status; }
+
     @Override
     protected void encodePayload(ByteBuffer buffer) {
         EncodingUtil.writeByteArray(dhPublicKey, buffer);
