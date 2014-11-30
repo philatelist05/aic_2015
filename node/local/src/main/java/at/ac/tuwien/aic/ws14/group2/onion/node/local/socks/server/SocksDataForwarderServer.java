@@ -11,7 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +35,7 @@ public class SocksDataForwarderServer extends Thread implements Closeable {
 		this.localNodeCore = localNodeCore;
 		// Create socket for the actual data from the originator
 		this.socket = new ServerSocket(0);
-		this.socksDataForwarderCollection = new ConcurrentSkipListSet<>();
+		this.socksDataForwarderCollection = new CopyOnWriteArrayList<>();
 	}
 
 	public int getLocalPort() {

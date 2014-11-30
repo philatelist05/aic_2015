@@ -11,7 +11,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +37,7 @@ public class SocksServer extends Thread implements Closeable {
 		this.localNodeCore = Objects.requireNonNull(localNodeCore);
 		this.directoryClient = Objects.requireNonNull(directoryClient);
 		this.socket = new ServerSocket(port);
-		this.socksWorkerCollection = new ConcurrentSkipListSet<>();
+		this.socksWorkerCollection = new CopyOnWriteArrayList<>();
 	}
 
 	@Override
