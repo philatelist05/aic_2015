@@ -30,7 +30,7 @@ public class CommandReply extends SocksMessage {
 		Objects.requireNonNull(data);
 
 		try {
-			return fromByteArray(new DataInputStream(new ByteArrayInputStream(data)));
+			return fromInputStream(new DataInputStream(new ByteArrayInputStream(data)));
 		} catch (IOException e) {
 			if (e instanceof EOFException)
 				throw (EOFException) e;
@@ -45,7 +45,7 @@ public class CommandReply extends SocksMessage {
 	 * @throws MessageParsingException if the data cannot be parsed because it doesn't match the RFC 1928 specification
 	 * @throws EOFException            if the input provided is shorter than the expected length
 	 */
-	public static CommandReply fromByteArray(DataInput input) throws MessageParsingException, AddressTypeNotSupportedException, IOException {
+	public static CommandReply fromInputStream(DataInput input) throws MessageParsingException, AddressTypeNotSupportedException, IOException {
 		Objects.requireNonNull(input);
 
 		byte version = input.readByte();
@@ -64,7 +64,7 @@ public class CommandReply extends SocksMessage {
 		if (reserved != SocksMessage.RESERVED_BYTE)
 			throw new MessageParsingException(String.format("wrong 'reserved' byte: expected: 0x%02X; found: 0x%02X", SocksMessage.RESERVED_BYTE, reserved));
 
-		SocksAddress boundAddress = SocksAddress.fromByteArray(input);
+		SocksAddress boundAddress = SocksAddress.fromInputStream(input);
 
 		return new CommandReply(replyType, boundAddress);
 	}

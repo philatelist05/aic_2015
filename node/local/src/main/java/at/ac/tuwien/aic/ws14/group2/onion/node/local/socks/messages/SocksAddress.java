@@ -3,10 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.AddressTypeNotSupportedException;
 
 import java.io.*;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -14,14 +11,17 @@ import java.util.Objects;
  * Created by klaus on 11/12/14.
  */
 public class SocksAddress {
+	public static final int MAX_PORT = 0xFFFF;
+	public static final int MAX_HOSTNAME_LENGTH = 0xFF;
+	public static final int MIN_PORT = 1;
 	private final AddressType addressType;
 	private final InetAddress address;
 	private final String hostName;
 	private final int port;
 
 	public SocksAddress(InetAddress address, int port) {
-		if (port > 0xFFFF || port < 0)
-			throw new IllegalArgumentException("port must not be greater than " + 0xFFFF + " or less than 0");
+		if (port > MAX_PORT || port < MIN_PORT)
+			throw new IllegalArgumentException("port must not be greater than " + MAX_PORT + " or less than 0");
 
 		this.address = Objects.requireNonNull(address);
 		this.port = port;
@@ -36,17 +36,23 @@ public class SocksAddress {
 	}
 
 	public SocksAddress(String hostName, int port) {
-		if (port > 0xFFFF || port <= 0)
-			throw new IllegalArgumentException("port must not be greater than " + 0xFFFF + " or less or equal 0");
+		if (port > MAX_PORT || port < MIN_PORT)
+			throw new IllegalArgumentException("port must not be greater than " + MAX_PORT + " or less or equal 0");
 
 		this.addressType = AddressType.DOMAINNAME;
 		this.address = null;
 		this.port = port;
 		this.hostName = Objects.requireNonNull(hostName);
 
-		if (getHostNameBytes().length > 0xFF)
-			throw new IllegalArgumentException("host name must not be longer than " + 0xFF + " bytes");
+		if (getHostNameBytes().length > MAX_HOSTNAME_LENGTH)
+			throw new IllegalArgumentException("host name must not be longer than " + MAX_HOSTNAME_LENGTH + " bytes");
 	}
+
+	public SocksAddress(InetSocketAddress inetSocketAddress) {
+		this(inetSocketAddress.getAddress(), inetSocketAddress.getPort());
+	}
+
+
 
 	/**
 	 * Parses a byte array to a new instance of this class.
@@ -59,7 +65,7 @@ public class SocksAddress {
 		Objects.requireNonNull(data);
 
 		try {
-			return fromByteArray(new DataInputStream(new ByteArrayInputStream(data)));
+			return fromInputStream(new DataInputStream(new ByteArrayInputStream(data)));
 		} catch (IOException e) {
 			if (e instanceof EOFException)
 				throw (EOFException) e;
@@ -76,7 +82,7 @@ public class SocksAddress {
 	 * @throws EOFException                     if the input provided is shorter than the expected length
 	 * @throws AddressTypeNotSupportedException if an invalid address type byte was provided
 	 */
-	public static SocksAddress fromByteArray(DataInput input) throws IOException, AddressTypeNotSupportedException {
+	public static SocksAddress fromInputStream(DataInput input) throws IOException, AddressTypeNotSupportedException {
 		Objects.requireNonNull(input);
 
 		AddressType addressType;
@@ -202,8 +208,8 @@ public class SocksAddress {
 
 	@Override
 	public int hashCode() {
-		int result = addressType != null ? addressType.hashCode() : 0;
-		result = 31 * result + (address != null ? address.hashCode() : 0);
+		int result = addressType != null ? addressType.hashCode() : MIN_PORT;
+		result = 31 * result + (address != null ? address.hashCode() : MIN_PORT);
 		result = 31 * result + port;
 		return result;
 	}

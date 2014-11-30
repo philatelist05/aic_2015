@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages.ReplyType;
+
 /**
  * Created by klaus on 11/18/14.
  */
@@ -18,5 +20,10 @@ public class AddressTypeNotSupportedException extends SocksException {
 
 	public byte getAddressTypeByte() {
 		return addressTypeByte;
+	}
+
+	@Override
+	public ReplyType getReplyType() {
+		return ReplyType.ADDRESS_TYPE_NOT_SUPPORTED;
 	}
 }

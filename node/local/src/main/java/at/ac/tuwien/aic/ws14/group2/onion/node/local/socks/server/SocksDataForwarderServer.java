@@ -1,12 +1,12 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.server;
 
-import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalNodeCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
@@ -18,26 +18,36 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
- * Created by klaus on 11/25/14.
+ * Created by klaus on 11/30/14.
  */
-public class SocksServer extends Thread implements Closeable {
-	private static final Logger logger = LoggerFactory.getLogger(SocksServer.class.getName());
+public class SocksDataForwarderServer extends Thread implements Closeable {
+	private static final Logger logger = LoggerFactory.getLogger(SocksDataForwarderServer.class.getName());
 
-	private final ServerSocket socket;
-	private final Collection<SocksWorker> socksWorkerCollection;
+	private final Short circuitId;
 	private final LocalNodeCore localNodeCore;
-	private final DirectoryService.Client directoryClient;
-	private volatile boolean stop;
+	private final ServerSocket socket;
+	private final Collection<SocksDataForwarder> socksDataForwarderCollection;
 	private ExecutorService pool;
+	private volatile boolean stop;
 
-	public SocksServer(int port, LocalNodeCore localNodeCore, DirectoryService.Client directoryClient) throws IOException {
-		if (port > 0xFFFF || port <= 0)
-			throw new IllegalArgumentException("port must not be greater than " + 0xFFFF + " or less or equal 0");
+	public SocksDataForwarderServer(Short circuitId, LocalNodeCore localNodeCore) throws IOException {
+		this.circuitId = circuitId;
+		this.localNodeCore = localNodeCore;
+		// Create socket for the actual data from the originator
+		this.socket = new ServerSocket(0);
+		this.socksDataForwarderCollection = new ConcurrentSkipListSet<>();
+	}
 
-		this.localNodeCore = Objects.requireNonNull(localNodeCore);
-		this.directoryClient = Objects.requireNonNull(directoryClient);
-		this.socket = new ServerSocket(port);
-		this.socksWorkerCollection = new ConcurrentSkipListSet<>();
+	public int getLocalPort() {
+		return this.socket.getLocalPort();
+	}
+
+	public InetAddress getInetAddress() {
+		return this.socket.getInetAddress();
+	}
+
+	public void sendDataBack(byte[] data) {
+		// TODO (KK) Send data back
 	}
 
 	@Override
@@ -46,24 +56,23 @@ public class SocksServer extends Thread implements Closeable {
 			throw new IllegalStateException(
 					"TCP listener socket not initialized");
 
-		pool = Executors.newCachedThreadPool(new SocksWorkerThreadFactory(
-				getUncaughtExceptionHandler()));
+		pool = Executors.newCachedThreadPool(new SocksDataForwarderThreadFactory(Thread.currentThread().getUncaughtExceptionHandler()));
 
 		try {
 			try {
 				stop = false;
 				while (!stop) {
 					Socket clientSocket = socket.accept();
-					SocksWorker socksWorker = new SocksWorker(clientSocket, localNodeCore, directoryClient, this.new SocksWorkerCloseCallback());
-					socksWorkerCollection.add(socksWorker);
-					pool.execute(socksWorker);
+					SocksDataForwarder socksDataForwarder = new SocksDataForwarder(clientSocket, circuitId, localNodeCore, this.new SocksDataForwarderCloseCallback());
+					socksDataForwarderCollection.add(socksDataForwarder);
+					pool.execute(socksDataForwarder);
 				}
 			} finally {
 				if (pool != null)
 					shutdownAndAwaitTermination(pool);
 				socket.close();
 			}
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// The if-clause down here is because of what is described in
 			// http://docs.oracle.com/javase/6/docs/technotes/guides/concurrency/threadPrimitiveDeprecation.html
 			// under "What if a thread doesn't respond to Thread.interrupt?"
@@ -72,10 +81,10 @@ public class SocksServer extends Thread implements Closeable {
 			// closed and in that special case no error should be
 			// propagated.
 			if (!stop) {
-				UncaughtExceptionHandler eh = this
+				Thread.UncaughtExceptionHandler eh = Thread.currentThread()
 						.getUncaughtExceptionHandler();
 				if (eh != null)
-					eh.uncaughtException(this, e);
+					eh.uncaughtException(Thread.currentThread(), e);
 				else
 					logger.error("Uncaught exception in thread: " + Thread.currentThread().getName(), e);
 			}
@@ -101,8 +110,8 @@ public class SocksServer extends Thread implements Closeable {
 				pool.shutdownNow();
 
 				// Close the clients connections so they can really terminate
-				for (SocksWorker socksWorker : socksWorkerCollection) {
-					socksWorker.close();
+				for (SocksDataForwarder socksDataForwarder : socksDataForwarderCollection) {
+					socksDataForwarder.close();
 				}
 			}
 		} catch (InterruptedException ie) {
@@ -113,10 +122,10 @@ public class SocksServer extends Thread implements Closeable {
 		}
 	}
 
-	private class SocksWorkerCloseCallback implements Consumer<SocksWorker> {
+	private class SocksDataForwarderCloseCallback implements Consumer<SocksDataForwarder> {
 		@Override
-		public void accept(SocksWorker socksWorker) {
-			SocksServer.this.socksWorkerCollection.remove(Objects.requireNonNull(socksWorker));
+		public void accept(SocksDataForwarder socksDataForwarder) {
+			SocksDataForwarderServer.this.socksDataForwarderCollection.remove(Objects.requireNonNull(socksDataForwarder));
 		}
 	}
 }

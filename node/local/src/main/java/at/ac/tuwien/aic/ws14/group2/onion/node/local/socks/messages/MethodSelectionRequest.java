@@ -34,7 +34,7 @@ public class MethodSelectionRequest extends SocksMessage {
 		Objects.requireNonNull(data);
 
 		try {
-			return fromByteArray(new DataInputStream(new ByteArrayInputStream(data)));
+			return fromInputStream(new DataInputStream(new ByteArrayInputStream(data)));
 		} catch (IOException e) {
 			if (e instanceof EOFException)
 				throw (EOFException) e;
@@ -49,7 +49,7 @@ public class MethodSelectionRequest extends SocksMessage {
 	 * @throws MessageParsingException if the data cannot be parsed because it doesn't match the RFC 1928 specification
 	 * @throws EOFException            if the input provided is shorter than the expected length
 	 */
-	public static MethodSelectionRequest fromByteArray(DataInput input) throws MessageParsingException, IOException {
+	public static MethodSelectionRequest fromInputStream(DataInput input) throws MessageParsingException, IOException {
 		Objects.requireNonNull(input);
 
 		byte version = input.readByte();

@@ -94,7 +94,7 @@ public class SocksAddressTest {
 
 	@Test
 	public void testFromByteArrayWithByteBuffer() throws Exception {
-		SocksAddress address = SocksAddress.fromByteArray(new DataInputStream(new ByteArrayInputStream(SAMPLE_IPV6)));
+		SocksAddress address = SocksAddress.fromInputStream(new DataInputStream(new ByteArrayInputStream(SAMPLE_IPV6)));
 
 		assertEquals(address.getAddressType(), AddressType.IP_V6_ADDRESS);
 		assertEquals(address.getAddress().getHostAddress(), "11:2233:4455:6677:8899:aabb:ccdd:eeff");

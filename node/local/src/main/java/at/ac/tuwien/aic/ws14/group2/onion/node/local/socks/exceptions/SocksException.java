@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages.ReplyType;
+
 /**
  * Created by klaus on 11/18/14.
  */
@@ -19,4 +21,6 @@ public abstract class SocksException extends Exception {
 	public SocksException(Throwable throwable) {
 		super(throwable);
 	}
+
+	public abstract ReplyType getReplyType();
 }

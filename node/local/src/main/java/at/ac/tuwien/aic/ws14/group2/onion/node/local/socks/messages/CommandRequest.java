@@ -5,7 +5,6 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.CommandNot
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
 
 import java.io.*;
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
 
@@ -32,7 +31,7 @@ public class CommandRequest extends SocksMessage {
 		Objects.requireNonNull(data);
 
 		try {
-			return fromByteArray(new DataInputStream(new ByteArrayInputStream(data)));
+			return fromInputStream(new DataInputStream(new ByteArrayInputStream(data)));
 		} catch (IOException e) {
 			if (e instanceof EOFException)
 				throw (EOFException) e;
@@ -47,7 +46,7 @@ public class CommandRequest extends SocksMessage {
 	 * @throws MessageParsingException if the data cannot be parsed because it doesn't match the RFC 1928 specification
 	 * @throws EOFException            if the input provided is shorter than the expected length
 	 */
-	public static CommandRequest fromByteArray(DataInput input) throws MessageParsingException, BufferUnderflowException, AddressTypeNotSupportedException, CommandNotSupportedException, IOException {
+	public static CommandRequest fromInputStream(DataInput input) throws MessageParsingException, AddressTypeNotSupportedException, CommandNotSupportedException, IOException {
 		Objects.requireNonNull(input);
 
 		byte version = input.readByte();
@@ -67,7 +66,7 @@ public class CommandRequest extends SocksMessage {
 		if (reserved != SocksMessage.RESERVED_BYTE)
 			throw new MessageParsingException(String.format("wrong 'reserved' byte: expected: 0x%02X; found: 0x%02X", SocksMessage.RESERVED_BYTE, reserved));
 
-		SocksAddress destination = SocksAddress.fromByteArray(input);
+		SocksAddress destination = SocksAddress.fromInputStream(input);
 
 		return new CommandRequest(command, destination);
 	}
