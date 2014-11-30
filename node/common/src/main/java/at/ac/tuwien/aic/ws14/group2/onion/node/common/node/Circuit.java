@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -9,7 +11,9 @@ public class Circuit {
     private final short circuitID;
     private final Endpoint endpoint;
     private byte[] sessionKey;
+    private DHKeyExchange DHKeyExchange;
     private Circuit associatedCircuit;
+
 
     /**
      * Creates a new circuit using the specified endpoint and a random circuit ID.
@@ -46,5 +50,13 @@ public class Circuit {
 
     public void setAssociatedCircuit(Circuit associatedCircuit) {
         this.associatedCircuit = associatedCircuit;
+    }
+
+    public DHKeyExchange getDHKeyExchange() {
+        return DHKeyExchange;
+    }
+
+    public void setDHKeyExchange(DHKeyExchange DHKeyExchange) {
+        this.DHKeyExchange = DHKeyExchange;
     }
 }

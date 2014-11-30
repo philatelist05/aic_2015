@@ -14,6 +14,11 @@ public interface SocksCallBack {
     void chainEstablished(ChainMetaData chainMetaData);
 
     /**
+     * Callback method that will be called when the chain was destroyed (either by sending or receiving a DestroyCell on the first Circuit).
+     */
+    void chainDestroyed();
+
+    /**
      * Callback method that will be called when a Data Cell was received.
      * @param data the raw data contained in the Data cell
      */
