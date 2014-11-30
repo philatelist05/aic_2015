@@ -1,5 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.EncryptedDHHalf;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,6 +14,7 @@ public class Circuit {
     private byte[] sessionKey;
     private DHKeyExchange DHKeyExchange;
     private Circuit associatedCircuit;
+    private EncryptedDHHalf dhHalf;     // Used when retrying a Create command.
 
 
     /**
@@ -58,5 +60,13 @@ public class Circuit {
 
     public void setDHKeyExchange(DHKeyExchange DHKeyExchange) {
         this.DHKeyExchange = DHKeyExchange;
+    }
+
+    public EncryptedDHHalf getDHHalf() {
+        return dhHalf;
+    }
+
+    public void setDHHalf(EncryptedDHHalf dhHalf) {
+        this.dhHalf = dhHalf;
     }
 }

@@ -244,7 +244,7 @@ public class CellTest {
         byte[] signature = createSignature();
         byte[] key = createSessionKey();
 
-        ExtendResponseCommand extendResponseCommand = new ExtendResponseCommand(dhPublicKey, signature, CreateStatus.Success);
+        ExtendResponseCommand extendResponseCommand = new ExtendResponseCommand(dhPublicKey, signature);
         RelayCellPayload relayPayload = new RelayCellPayload(extendResponseCommand).encrypt(key);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 

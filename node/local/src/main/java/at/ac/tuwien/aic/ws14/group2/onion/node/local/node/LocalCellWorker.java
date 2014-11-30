@@ -118,10 +118,10 @@ public class LocalCellWorker implements CellWorker {
         SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
         ChainMetaData metaData = nodeCore.getChainMetaData(this.circuit.getCircuitID());
 
-        if (extendResponseCommand.getStatus() != CreateStatus.Success) {
-            retryExtendCommand(metaData, callback);
-            return;
-        }
+//        if (extendResponseCommand.getStatus() != CreateStatus.Success) {
+//            retryExtendCommand(metaData, callback);
+//            return;
+//        }
 
         byte[] dhPublicKey = extendResponseCommand.getDHPublicKey();
         PublicKey publicKey = metaData.getNodes().get(metaData.getNextNode()).getPublicKey();
