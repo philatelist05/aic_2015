@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<onion:config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:onion="http://onion.ws14group2.aic.tuwien.ac.at"
+              xsi:schemaLocation="http://onion.ws14group2.aic.tuwien.ac.at config.xsd">
+	<node>
+		<common>
+			<host>localhost</host>
+			<port>9090</port>
+		</common>
+		<local>
+			<server-port>1080</server-port>
+			<listening-host>localhost</listening-host>
+			<cellworkers-per-connectionworker>5</cellworkers-per-connectionworker>
+		</local>
+		<chain>
+			<heartbeat-interval>2000</heartbeat-interval>
+			<cellworkers-per-connectionworker>20</cellworkers-per-connectionworker>
+		</chain>
+		<directory>
+			<heartbeat-timeout>7000</heartbeat-timeout>
+			<thriftworker>
+				<min>3</min>
+				<max>16</max>
+			</thriftworker>
+		</directory>
+	</node>
+	<target-service>
+		<host>localhost</host>
+		<port>8080</port>
+	</target-service>
+
+</onion:config>
