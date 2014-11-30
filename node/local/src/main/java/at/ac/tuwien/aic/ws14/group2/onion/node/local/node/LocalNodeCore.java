@@ -107,6 +107,8 @@ public class LocalNodeCore {
             return;
         }
 
+        circuit.setDHKeyExchange(keyExchange);
+
         EncryptedDHHalf encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(firstNode.getPublicKey());
         CreateCell cell = new CreateCell(circuit.getCircuitID(), firstNode.getEndPoint(), encryptedDHHalf);
         sendCell(cell, circuit, callBack);
