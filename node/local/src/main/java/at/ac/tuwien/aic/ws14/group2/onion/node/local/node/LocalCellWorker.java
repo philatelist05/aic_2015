@@ -2,6 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSASignAndVerify;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
@@ -17,10 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -112,7 +110,7 @@ public class LocalCellWorker implements CellWorker {
     }
 
     private void handleConnectResponse(ConnectResponseCommand connectResponseCommand) {
-        //TODO
+        //TODO what to do here? :P
     }
 
     private void handleExtendResponse(ExtendResponseCommand extendResponseCommand) {
@@ -126,9 +124,15 @@ public class LocalCellWorker implements CellWorker {
             return;
         }
 
-        //TODO verify signature
-        //TODO maybe move the non-Create DHKeyExchange to the ChainMetaData or ChainNodeMetaData?
+        byte[] dhPublicKey = extendResponseCommand.getDHPublicKey();
+        PublicKey publicKey = metaData.getNodes().get(metaData.getNextNode()).getPublicKey();
+        if(!RSASignAndVerify.verifySig(dhPublicKey, publicKey, extendResponseCommand.getSignature())) {
+            logger.warn("Signature check failed, aborting extend.");
+            //TODO abort extend and call error callback
+            return;
+        }
 
+        //TODO maybe move the non-Create DHKeyExchange to the ChainMetaData or ChainNodeMetaData?
         DHKeyExchange keyExchange = circuit.getDHKeyExchange();
         if (keyExchange == null) {
             logger.warn("No keyexchagne available, ignoring extendResponseCommand");
@@ -137,7 +141,7 @@ public class LocalCellWorker implements CellWorker {
 
         byte[] sessionKey = null;
         try {
-            sessionKey = keyExchange.completeExchange(extendResponseCommand.getDHPublicKey());
+            sessionKey = keyExchange.completeExchange(dhPublicKey);
         } catch (NoSuchProviderException e) {
             logger.warn("Could not find BouncyCastle provider.");
             logger.catching(Level.DEBUG, e);
@@ -178,7 +182,18 @@ public class LocalCellWorker implements CellWorker {
             return;
         }
 
-        //TODO verify signature
+        byte[] dhPublicKey = createResponseCell.getDhPublicKey();
+        PublicKey publicKey = metaData.getNodes().get(metaData.getNextNode()).getPublicKey();
+        if(!RSASignAndVerify.verifySig(dhPublicKey, publicKey, createResponseCell.getSignature())) {
+
+            if (circuit.getSessionKey() == null) {
+                logger.warn("Signature check failed, retrying create.");
+                retryCreateCell(metaData, callback);
+            } else {
+                logger.warn("Received CreateResponseCell with wrong Signature even though first Circuit has already been established, ignoring cell.");
+            }
+            return;
+        }
 
         DHKeyExchange keyExchange = circuit.getDHKeyExchange();
         if (keyExchange == null || circuit.getSessionKey() != null) {
