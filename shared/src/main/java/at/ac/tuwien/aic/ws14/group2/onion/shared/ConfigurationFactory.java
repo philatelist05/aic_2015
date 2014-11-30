@@ -1,4 +1,4 @@
-package at.ac.tuwien.aic.ws14.group2.onion.common;
+package at.ac.tuwien.aic.ws14.group2.onion.shared;
 
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.logging.log4j.Level;

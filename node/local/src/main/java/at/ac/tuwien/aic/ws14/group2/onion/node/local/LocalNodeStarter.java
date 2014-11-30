@@ -1,7 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local;
 
-import at.ac.tuwien.aic.ws14.group2.onion.common.Configuration;
-import at.ac.tuwien.aic.ws14.group2.onion.common.ConfigurationFactory;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;

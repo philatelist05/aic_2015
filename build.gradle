@@ -34,7 +34,7 @@ allprojects {
 
 project(':node:common') {
     dependencies {
-		compile project(':common')
+		compile project(':shared')
         compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.51'
     }
 }
@@ -76,7 +76,7 @@ project(':directory-api') {
     apply plugin: 'org.jruyi.thrift'
 
     dependencies {
-		compile project(':common')
+		compile project(':shared')
         compile group: 'org.apache.thrift', name: 'libthrift', version: '0.9.1'
     }
 

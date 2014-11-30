@@ -1,4 +1,4 @@
-package at.ac.tuwien.aic.ws14.group2.onion.common;
+package at.ac.tuwien.aic.ws14.group2.onion.shared;
 
 /**
  * Created by stefan on 30.11.14.

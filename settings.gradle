@@ -1,1 +1,1 @@
-include 'common', 'directory-api', 'directory', 'node:common', 'node:chain', 'node:local', 'target'
+include 'shared', 'directory-api', 'directory', 'node:common', 'node:chain', 'node:local', 'target'
