@@ -2,6 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
@@ -94,11 +95,16 @@ public class LocalNodeCore {
             callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
             return;
         }
+
         CreateCell cell = new CreateCell(circuit.getCircuitID(), firstNode.getEndPoint(), encryptedDHHalf);
         try {
+            addCircuitToConnectionWorker(circuit);
             sendCell(cell, circuit.getEndpoint());
         } catch (IOException e) {
-            logger.warn("Encountered IOException while trying to send cell to Circuit {}: {}", circuit, e.getMessage());
+            logger.warn("Encountered IOException while trying to get ConnectionWorker for Circuit @ : {}", circuit.getEndpoint(), e.getMessage());
+            callBack.error(ErrorCode.CW_FAILURE);
+        } catch (CircuitIDExistsAlreadyException e) {
+            logger.warn("Duplicate circuit ID, this should never ever happen!");
             callBack.error(ErrorCode.CW_FAILURE);
         }
     }
@@ -180,5 +186,10 @@ public class LocalNodeCore {
     protected void sendCell(Cell cell, Endpoint endpoint) throws IOException {
         ConnectionWorker connectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(endpoint);
         connectionWorker.sendCell(cell);
+    }
+
+    protected void addCircuitToConnectionWorker(Circuit circuit) throws IOException, CircuitIDExistsAlreadyException {
+        ConnectionWorker connectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(circuit.getEndpoint());
+        connectionWorker.addCircuit(circuit);
     }
 }
