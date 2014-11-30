@@ -30,6 +30,7 @@ public class ChainNodeCore implements Runnable {
     @Override
     public void run() {
         while (true) {
+            logger.info("Listening on port {}", serverSocket.getLocalPort());
             if (Thread.interrupted()) {
                 logger.info("Got interrupted, exiting accept()-loop");
                 break;
