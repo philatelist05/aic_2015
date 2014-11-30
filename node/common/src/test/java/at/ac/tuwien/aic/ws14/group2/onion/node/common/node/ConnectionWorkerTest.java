@@ -6,6 +6,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DHHalf;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.EncryptedDHHalf;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,7 +37,7 @@ public class ConnectionWorkerTest {
     private static KeyPair keyPair;
 
 
-    private EncryptedDHHalf createEncryptedDHHalf() {
+    private EncryptedDHHalf createEncryptedDHHalf() throws EncryptException {
         DHHalf dhHalf = new DHHalf(g, p, new byte[]{1, 2, 3});
         return dhHalf.encrypt(keyPair.getPublic());
     }

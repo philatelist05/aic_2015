@@ -1,6 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAEncryptDecrypt;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -36,7 +37,7 @@ public class EncryptedDHHalf {
     /**
      * Decrypts this encrypted DH half using an RSA private key.
      */
-    public DHHalf decrypt(PrivateKey privateKey) {
+    public DHHalf decrypt(PrivateKey privateKey) throws DecryptException {
         byte[] data = RSAEncryptDecrypt.decrypt(encryptedHalf, privateKey);
         return new DHHalf(ByteBuffer.wrap(data));
     }
