@@ -31,6 +31,8 @@ public class SocksServer extends Thread implements Closeable {
 	private ExecutorService pool;
 
 	public SocksServer(int port, LocalNodeCore localNodeCore, DirectoryService.Client directoryClient) throws IOException {
+		super("SocksServer");
+
 		if (port > 0xFFFF || port <= 0)
 			throw new IllegalArgumentException("port must not be greater than " + 0xFFFF + " or less or equal 0");
 
