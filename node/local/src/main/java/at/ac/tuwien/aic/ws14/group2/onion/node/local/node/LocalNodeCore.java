@@ -81,10 +81,10 @@ public class LocalNodeCore {
             return;
         }
         BigInteger p = DHKeyExchange.generateRelativePrime();
-        BigInteger q = DHKeyExchange.generateRelativePrime();
+        BigInteger g = DHKeyExchange.generateRelativePrime();
         byte[] publicKey;
         try {
-            publicKey = keyExchange.initExchange(p, q);
+            publicKey = keyExchange.initExchange(p, g);
         } catch (InvalidAlgorithmParameterException e) {
             logger.warn("Could not initialize key exchange, aborting Chain creation.");
             logger.catching(Level.DEBUG, e);
@@ -107,8 +107,8 @@ public class LocalNodeCore {
             return;
         }
 
-        EncryptedDHHalf encryptedDHHalf = new DHHalf(publicKey).encrypt(p, q, firstNode.getPublicKey());
-        CreateCell cell = new CreateCell(circuit.getCircuitID(), firstNode.getEndPoint(), p, q, encryptedDHHalf);
+        EncryptedDHHalf encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(firstNode.getPublicKey());
+        CreateCell cell = new CreateCell(circuit.getCircuitID(), firstNode.getEndPoint(), encryptedDHHalf);
         sendCell(cell, circuit, callBack);
     }
 

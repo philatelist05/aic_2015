@@ -62,7 +62,7 @@ public class ChainCellWorker implements CellWorker {
         byte[] dhPublicKey;
         try {
             DHKeyExchange keyExchange = new DHKeyExchange();
-            dhPublicKey = keyExchange.initExchange(createCell.getPrime1(), createCell.getPrime2());
+            dhPublicKey = keyExchange.initExchange(dhHalf.getP(), dhHalf.getG());
             sharedSecret = keyExchange.completeExchange(dhHalf.getPublicKey());
         } catch (NoSuchProviderException e) {
             logger.warn("Could not find BouncyCastle provider: {}", e.getMessage());
@@ -87,6 +87,6 @@ public class ChainCellWorker implements CellWorker {
         }
 
         newCircuit.setSessionKey(sharedSecret);
-        return new CreateResponseCell(newCircuit.getCircuitID(), new DHHalf(dhPublicKey), RSASignAndVerify.signData(dhPublicKey, this.privateKey));
+        return new CreateResponseCell(newCircuit.getCircuitID(), dhPublicKey, RSASignAndVerify.signData(dhPublicKey, this.privateKey));
     }
 }

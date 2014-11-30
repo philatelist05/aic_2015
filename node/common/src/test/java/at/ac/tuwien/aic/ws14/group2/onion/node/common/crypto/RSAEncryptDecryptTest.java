@@ -55,4 +55,19 @@ public class RSAEncryptDecryptTest {
 
         assertArrayEquals(clearText, decText);
     }
+
+    @Test
+    public void testEncryptLong() throws Exception {
+        RSAKeyGenerator keyGenerator = new RSAKeyGenerator();
+
+        KeyPair keyPair = keyGenerator.generateKeys(0);
+
+        final byte[] clearText = new byte[214];   // maximum length
+
+        byte[] encText = RSAEncryptDecrypt.encrypt(clearText, keyPair.getPublic());
+
+        final byte[] decText = RSAEncryptDecrypt.decrypt(encText, keyPair.getPrivate());
+
+        assertArrayEquals(clearText, decText);
+    }
 }

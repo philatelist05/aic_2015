@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
  * Created by Thomas on 09.11.2014.
  */
 public class CreateResponseCell extends Cell {
-    private DHHalf dhHalf;
+    private byte[] dhPublicKey;
     private byte[] signature;
 
     /**
@@ -15,19 +15,19 @@ public class CreateResponseCell extends Cell {
      * Cell type and circuit ID will not be set.
      */
     CreateResponseCell(ByteBuffer source) throws IOException {
-        dhHalf = new DHHalf(source);
+        dhPublicKey = EncodingUtil.readByteArray(source);
         signature = EncodingUtil.readByteArray(source);
     }
 
-    public CreateResponseCell(short circuitID, DHHalf dhHalf, byte[] signature) {
+    public CreateResponseCell(short circuitID, byte[] dhPublicKey, byte[] signature) {
         super(CELL_TYPE_CREATE_RESPONSE, circuitID);
 
-        this.dhHalf = dhHalf;
+        this.dhPublicKey = dhPublicKey;
         this.signature = signature;
     }
 
-    public DHHalf getDHHalf() {
-        return dhHalf;
+    public byte[] getDhPublicKey() {
+        return dhPublicKey;
     }
 
     public byte[] getSignature() {
@@ -36,7 +36,7 @@ public class CreateResponseCell extends Cell {
 
     @Override
     protected void encodePayload(ByteBuffer buffer) {
-        dhHalf.encode(buffer);
+        EncodingUtil.writeByteArray(dhPublicKey, buffer);
         EncodingUtil.writeByteArray(signature, buffer);
     }
 }

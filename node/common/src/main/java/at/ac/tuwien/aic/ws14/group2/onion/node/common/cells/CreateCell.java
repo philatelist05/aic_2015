@@ -19,8 +19,6 @@ import java.security.PublicKey;
  */
 public class CreateCell extends Cell {
     private Endpoint endpoint;
-    private BigInteger prime1;
-    private BigInteger prime2;
     private EncryptedDHHalf encryptedDHHalf;
 
     /**
@@ -29,30 +27,18 @@ public class CreateCell extends Cell {
      */
     CreateCell(ByteBuffer source) throws DecodeException {
         endpoint = new Endpoint(source);
-        prime1 = new BigInteger(EncodingUtil.readByteArray(source));
-        prime2 = new BigInteger(EncodingUtil.readByteArray(source));
         encryptedDHHalf = new EncryptedDHHalf(source);
     }
 
-    public CreateCell(short circuitID, Endpoint endpoint, BigInteger prime1, BigInteger prime2, EncryptedDHHalf encryptedDHHalf) {
+    public CreateCell(short circuitID, Endpoint endpoint, EncryptedDHHalf encryptedDHHalf) {
         super(CELL_TYPE_CREATE, circuitID);
 
         this.endpoint = endpoint;
-        this.prime1 = prime1;
-        this.prime2 = prime2;
         this.encryptedDHHalf = encryptedDHHalf;
     }
 
     public Endpoint getEndpoint() {
         return endpoint;
-    }
-
-    public BigInteger getPrime1() {
-        return prime1;
-    }
-
-    public BigInteger getPrime2() {
-        return prime2;
     }
 
     public EncryptedDHHalf getDHHalf() {
@@ -62,8 +48,6 @@ public class CreateCell extends Cell {
     @Override
     protected void encodePayload(ByteBuffer buffer) {
         endpoint.encode(buffer);
-        EncodingUtil.writeByteArray(prime1.toByteArray(), buffer);
-        EncodingUtil.writeByteArray(prime2.toByteArray(), buffer);
         encryptedDHHalf.encode(buffer);
     }
 }

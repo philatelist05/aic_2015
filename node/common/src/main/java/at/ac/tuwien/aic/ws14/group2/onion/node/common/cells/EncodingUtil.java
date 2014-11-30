@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
  */
 public class EncodingUtil {
 
+    public static final int LENGTH_FIELD_SIZE = 2;
+
     /**
      * Reads a byte array with length field.
      */

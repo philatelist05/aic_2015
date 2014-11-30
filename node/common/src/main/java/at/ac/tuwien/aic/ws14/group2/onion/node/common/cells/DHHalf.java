@@ -1,6 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAEncryptDecrypt;
+import com.sun.media.jfxmedia.track.Track;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -12,17 +13,31 @@ import java.security.PublicKey;
  * Represents an unencrypted half of a Diffie Hellman Exchange.
  */
 public class DHHalf {
+    private BigInteger g;
+    private BigInteger p;
     private byte[] dhPublicKey;
 
     /**
      * Decodes this object from the specified buffer at the current position and advances the position.
      */
     DHHalf(ByteBuffer input) {
+        g = new BigInteger(EncodingUtil.readByteArray(input));
+        p = new BigInteger(EncodingUtil.readByteArray(input));
         dhPublicKey = EncodingUtil.readByteArray(input);
     }
 
-    public DHHalf(byte[] publicKey) {
+    public DHHalf(BigInteger g, BigInteger p, byte[] publicKey) {
+        this.g = g;
+        this.p = p;
         this.dhPublicKey = publicKey;
+    }
+
+    public BigInteger getG() {
+        return g;
+    }
+
+    public BigInteger getP() {
+        return p;
     }
 
     public byte[] getPublicKey() {
@@ -30,17 +45,19 @@ public class DHHalf {
     }
 
     /**
-     * Encodes this object to the specified buffer at the current position and advances the position.
-     */
-    public void encode(ByteBuffer output) {
-        EncodingUtil.writeByteArray(dhPublicKey, output);
-    }
-
-    /**
      * Encrypts this DH half using an RSA public key.
      */
-    public EncryptedDHHalf encrypt(BigInteger prime1, BigInteger prime2, PublicKey publicKey) {
-        byte[] block = RSAEncryptDecrypt.encrypt(this.dhPublicKey, publicKey);
+    public EncryptedDHHalf encrypt(PublicKey publicKey) {
+        byte[] gBytes = g.toByteArray();
+        byte[] pBytes = p.toByteArray();
+
+        byte[] data = new byte[gBytes.length + pBytes.length + dhPublicKey.length + 3 * EncodingUtil.LENGTH_FIELD_SIZE];
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        EncodingUtil.writeByteArray(gBytes, buffer);
+        EncodingUtil.writeByteArray(pBytes, buffer);
+        EncodingUtil.writeByteArray(dhPublicKey, buffer);
+
+        byte[] block = RSAEncryptDecrypt.encrypt(data, publicKey);
         return new EncryptedDHHalf(block);
     }
 }

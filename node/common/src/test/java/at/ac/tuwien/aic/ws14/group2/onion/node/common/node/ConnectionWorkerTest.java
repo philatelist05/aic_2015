@@ -11,17 +11,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 
-import javax.crypto.EncryptedPrivateKeyInfo;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.ByteBuffer;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
-import java.util.Arrays;
 import java.util.Vector;
 
 import static org.junit.Assert.*;
@@ -34,14 +31,14 @@ public class ConnectionWorkerTest {
 
     private static final int SERVER_PORT_1 = 10100;
 
-    private static final BigInteger prime1 = DHKeyExchange.generateRelativePrime();
-    private static final BigInteger prime2 = DHKeyExchange.generateRelativePrime();
+    private static final BigInteger g = DHKeyExchange.generateRelativePrime();
+    private static final BigInteger p = DHKeyExchange.generateRelativePrime();
     private static KeyPair keyPair;
 
 
     private EncryptedDHHalf createEncryptedDHHalf() {
-        DHHalf dhHalf = new DHHalf(new byte[]{1, 2, 3});
-        return dhHalf.encrypt(prime1, prime2, keyPair.getPublic());
+        DHHalf dhHalf = new DHHalf(g, p, new byte[]{1, 2, 3});
+        return dhHalf.encrypt(keyPair.getPublic());
     }
 
     @BeforeClass
@@ -83,9 +80,9 @@ public class ConnectionWorkerTest {
 
             assertEquals(0, receivedCells.size());
 
-            c2.handleCell(new CreateCell((short)10, endpoint, prime1, prime2, createEncryptedDHHalf()));
-            c1.sendCell(new CreateCell((short)10, endpoint, prime1, prime2, createEncryptedDHHalf()));
-            c1.sendCell(new CreateCell((short)10, endpoint, prime1, prime2, createEncryptedDHHalf()));
+            c2.handleCell(new CreateCell((short)10, endpoint, createEncryptedDHHalf()));
+            c1.sendCell(new CreateCell((short)10, endpoint, createEncryptedDHHalf()));
+            c1.sendCell(new CreateCell((short)10, endpoint, createEncryptedDHHalf()));
             Thread.sleep(100);
 
             assertEquals(3, receivedCells.size());
@@ -94,9 +91,9 @@ public class ConnectionWorkerTest {
             receivedCells.clear();
             assertEquals(0, receivedCells.size());
 
-            c2.handleCell(new CreateCell((short)20, endpoint, prime1, prime2, createEncryptedDHHalf()));
-            c1.sendCell(new CreateCell((short)20, endpoint, prime1, prime2, createEncryptedDHHalf()));
-            c1.sendCell(new CreateCell((short)20, endpoint, prime1, prime2, createEncryptedDHHalf()));
+            c2.handleCell(new CreateCell((short)20, endpoint, createEncryptedDHHalf()));
+            c1.sendCell(new CreateCell((short)20, endpoint, createEncryptedDHHalf()));
+            c1.sendCell(new CreateCell((short)20, endpoint, createEncryptedDHHalf()));
             Thread.sleep(100);
 
             assertEquals(3, receivedCells.size());

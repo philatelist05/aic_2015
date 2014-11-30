@@ -4,19 +4,16 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
-import org.bouncycastle.jcajce.provider.symmetric.AES;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.crypto.KeyGenerator;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
-import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -37,8 +34,8 @@ public class CellTest {
     // A text with 591 characters. 2 Data Cells are needed.
     private static final String longText = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.";
 
-    private static final BigInteger prime1 = DHKeyExchange.generateRelativePrime();
-    private static final BigInteger prime2 = DHKeyExchange.generateRelativePrime();
+    private static final BigInteger g = DHKeyExchange.generateRelativePrime();
+    private static final BigInteger p = DHKeyExchange.generateRelativePrime();
     private static KeyPair keyPair;
 
     private InputStream getDataInput(String text) {
@@ -91,7 +88,11 @@ public class CellTest {
     }
 
     private DHHalf createDHHalf() {
-        return new DHHalf(new byte[] {1, 2, 3});
+        return new DHHalf(g, p, new byte[] {1, 2, 3});
+    }
+
+    private byte[] createDHPublicKey() {
+        return new byte[] {1, 2, 3};
     }
 
     private byte[] createSignature() {
@@ -157,9 +158,9 @@ public class CellTest {
         short circuitID = 123;
         Endpoint endpoint = new Endpoint("8.8.8.8", 80);
         DHHalf dh = createDHHalf();
-        EncryptedDHHalf encDH = dh.encrypt(prime1, prime2, keyPair.getPublic());
+        EncryptedDHHalf encDH = dh.encrypt(keyPair.getPublic());
 
-        CreateCell createCell = new CreateCell(circuitID, endpoint, prime1, prime2, encDH);
+        CreateCell createCell = new CreateCell(circuitID, endpoint, encDH);
         Cell receivedCell = simulateCellTransfer(createCell);
 
         assertTrue(receivedCell instanceof CreateCell);
@@ -167,25 +168,27 @@ public class CellTest {
         CreateCell receivedCreateCell = (CreateCell)receivedCell;
 
         assertEquals(endpoint, receivedCreateCell.getEndpoint());
-        assertEquals(prime1, receivedCreateCell.getPrime1());
-        assertEquals(prime2, receivedCreateCell.getPrime2());
-        assertArrayEquals(dh.getPublicKey(), receivedCreateCell.getDHHalf().decrypt(keyPair.getPrivate()).getPublicKey());
+
+        DHHalf dhHalf = receivedCreateCell.getDHHalf().decrypt(keyPair.getPrivate());
+        assertEquals(dh.getG(), dhHalf.getG());
+        assertEquals(dh.getP(), dhHalf.getP());
+        assertArrayEquals(dh.getPublicKey(), dhHalf.getPublicKey());
     }
 
     @Test
     public void createResponseCell() throws IOException, DecodeException {
         short circuitID = 123;
-        DHHalf dh = createDHHalf();
+        byte[] dhPublicKey = createDHPublicKey();
         byte[] signature = createSignature();
 
-        CreateResponseCell createResultCell = new CreateResponseCell(circuitID, dh, signature);
+        CreateResponseCell createResultCell = new CreateResponseCell(circuitID, dhPublicKey, signature);
         Cell receivedCell = simulateCellTransfer(createResultCell);
 
         assertTrue(receivedCell instanceof CreateResponseCell);
         assertEquals(receivedCell.getCircuitID(), circuitID);
         CreateResponseCell receivedCreateResponseCell = (CreateResponseCell)receivedCell;
 
-        assertArrayEquals(dh.getPublicKey(), receivedCreateResponseCell.getDHHalf().getPublicKey());
+        assertArrayEquals(dhPublicKey, receivedCreateResponseCell.getDhPublicKey());
         assertArrayEquals(signature, receivedCreateResponseCell.getSignature());
     }
 
@@ -205,10 +208,10 @@ public class CellTest {
         short circuitID = 123;
         Endpoint endpoint = new Endpoint("8.8.8.8", 80);
         DHHalf dh = createDHHalf();
-        EncryptedDHHalf encDH = dh.encrypt(prime1, prime2, keyPair.getPublic());
+        EncryptedDHHalf encDH = dh.encrypt(keyPair.getPublic());
         byte[] key = createSessionKey();
 
-        ExtendCommand extendCommand = new ExtendCommand(endpoint, prime1, prime2, encDH);
+        ExtendCommand extendCommand = new ExtendCommand(endpoint, g, p, encDH);
         RelayCellPayload relayPayload = new RelayCellPayload(extendCommand).encrypt(key);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
@@ -224,17 +227,21 @@ public class CellTest {
         ExtendCommand receivedExtendCmd = (ExtendCommand)receivedCmd;
 
         assertEquals(endpoint, receivedExtendCmd.getEndpoint());
-        assertArrayEquals(dh.getPublicKey(), receivedExtendCmd.getDHHalf().decrypt(keyPair.getPrivate()).getPublicKey());
+
+        DHHalf dhHalf = receivedExtendCmd.getDHHalf().decrypt(keyPair.getPrivate());
+        assertEquals(dh.getG(), dhHalf.getG());
+        assertEquals(dh.getP(), dhHalf.getP());
+        assertArrayEquals(dh.getPublicKey(), dhHalf.getPublicKey());
     }
 
     @Test
     public void extendResponseCommand() throws Exception {
         short circuitID = 123;
-        DHHalf dh = createDHHalf();
+        byte[] dhPublicKey = createDHPublicKey();
         byte[] signature = createSignature();
         byte[] key = createSessionKey();
 
-        ExtendResponseCommand extendResponseCommand = new ExtendResponseCommand(dh, signature);
+        ExtendResponseCommand extendResponseCommand = new ExtendResponseCommand(dhPublicKey, signature);
         RelayCellPayload relayPayload = new RelayCellPayload(extendResponseCommand).encrypt(key);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
@@ -249,7 +256,7 @@ public class CellTest {
         assertTrue(receivedCmd instanceof ExtendResponseCommand);
         ExtendResponseCommand receivedExtendResponseCmd = (ExtendResponseCommand)receivedCmd;
 
-        assertArrayEquals(dh.getPublicKey(), receivedExtendResponseCmd.getDHHalf().getPublicKey());
+        assertArrayEquals(dhPublicKey, receivedExtendResponseCmd.getDHPublicKey());
         assertArrayEquals(signature, receivedExtendResponseCmd.getSignature());
     }
 
