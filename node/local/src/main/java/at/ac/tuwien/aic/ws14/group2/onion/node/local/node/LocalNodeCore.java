@@ -1,13 +1,12 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DHHalf;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.EncryptedDHHalf;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.SocksCallBack;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ErrorCode;
 import org.apache.logging.log4j.Level;
@@ -111,18 +110,39 @@ public class LocalNodeCore {
 
         EncryptedDHHalf encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(firstNode.getPublicKey());
         CreateCell cell = new CreateCell(circuit.getCircuitID(), firstNode.getEndPoint(), encryptedDHHalf);
-        sendCell(cell, circuit, callBack);
-    }
-
-    public void sendCell(Cell cell, Circuit circuit, SocksCallBack callBack) {
-        // TODO use a ThreadPool for this for performance?
         try {
-            ConnectionWorker connectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(circuit.getEndpoint());
-            connectionWorker.sendCell(cell);
+            sendCell(cell, circuit.getEndpoint());
         } catch (IOException e) {
             logger.warn("Encountered IOException while trying to send cell to Circuit {}: {}", circuit, e.getMessage());
             callBack.error(ErrorCode.CW_FAILURE);
         }
+    }
+
+    public boolean connectTo(Short circuitID, Endpoint endpoint) {
+        ConnectCommand connectCommand = new ConnectCommand(endpoint);
+        Cell cell = encryptCommandForChain(circuitID, connectCommand);
+        if (cell == null) {
+            return false;
+        } else {
+            try {
+                sendCell(cell, endpoint);
+            } catch (IOException e) {
+                logger.warn("Encountered IOException while trying to send cell.");
+                logger.catching(Level.DEBUG, e);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean sendData(Short circuitID, byte[] data) {
+        ChainMetaData chainMetaData = getChainMetaData(circuitID);
+        synchronized (chainMetaData) {
+            int sequenceNumber = chainMetaData.incrementAndGetSequenceNumber();
+            //TODO create and send DataCommand in RelayCell
+
+        }
+        return true;
     }
 
     public short getAndReserveFreeCircuitID() {
@@ -145,5 +165,35 @@ public class LocalNodeCore {
             success = false;
         }
         return success;
+    }
+
+    protected Cell encryptCommandForChain(Short circuitID, Command command) {
+        ChainMetaData metaData = getChainMetaData(circuitID);
+        SocksCallBack callBack = getCallBack(circuitID);
+
+        ConcurrentHashMap<Integer, ChainNodeMetaData> nodes = metaData.getNodes();
+        int nextNodeIndex = metaData.getNextNode();
+        if (nodes != null) {
+            ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
+            RelayCellPayload payload = new RelayCellPayload(command);
+            for (int i = 0; i < nextNodeIndex; i++) {
+                ChainNodeMetaData currentNode = nodes.get(i);
+                try {
+                    payload = payload.encrypt(currentNode.getSessionKey());
+                } catch (EncryptException e) {
+                    logger.warn("Failed to encrypt ExtendCommand, aborting Chain creation");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                    return null;
+                }
+            }
+            return new RelayCell(circuitID, payload);
+        }
+        return null;
+    }
+
+    protected void sendCell(Cell cell, Endpoint endpoint) throws IOException {
+        ConnectionWorker connectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(endpoint);
+        connectionWorker.sendCell(cell);
     }
 }
