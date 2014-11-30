@@ -160,8 +160,7 @@ public class ChainCellWorker implements CellWorker {
     }
 
     private void handleDataCommand(DataCommand cmd) {
-        // TODO: pass sequence number
-        connectionWorker.getTargetWorker(circuit).sendData(cmd.getData());
+        connectionWorker.getTargetWorker(circuit).sendData(cmd.getData(), cmd.getSequenceNumber());
     }
 
     /**

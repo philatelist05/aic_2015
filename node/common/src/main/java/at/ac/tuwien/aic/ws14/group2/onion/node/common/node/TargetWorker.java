@@ -21,7 +21,7 @@ public class TargetWorker implements AutoCloseable, Runnable {
         this.endpoint = endpoint;
     }
 
-    public void sendData(byte[] data) {
+    public void sendData(byte[] data, short sequenceNumber) {
 
     }
 
