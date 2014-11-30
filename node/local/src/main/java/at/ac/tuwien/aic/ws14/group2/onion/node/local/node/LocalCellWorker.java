@@ -85,7 +85,7 @@ public class LocalCellWorker implements CellWorker {
             }
         }
 
-        logger.info("Decrypted payload: {}", payload);
+        logger.debug("Decrypted payload: {}", payload);
 
         try {
             Command relayedCommand = payload.decode();

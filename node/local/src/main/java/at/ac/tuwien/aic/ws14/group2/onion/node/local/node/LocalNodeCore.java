@@ -65,6 +65,7 @@ public class LocalNodeCore {
     }
 
     public void createChain(ChainMetaData chainMetaData, SocksCallBack callBack) {
+        logger.info("Creating new chain");
         // TODO spawn Thread instead to start Chainbuilding
         // TODO add check that chain is long enough according to configuration
         if (chainMetaData == null || callBack == null) {
