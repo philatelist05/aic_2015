@@ -17,6 +17,8 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -24,6 +26,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class LocalNodeCore {
     static final Logger logger = LogManager.getLogger(LocalNodeCore.class.getName());
 
+    private Endpoint fakedEndpoint;
     private Random random;
     private ConcurrentSkipListSet<Short> circuitIDs;
     private ConcurrentHashMap<Short, ChainMetaData> chains;
@@ -34,6 +37,11 @@ public class LocalNodeCore {
         this.circuitIDs = circuitIDs;
         this.chains = chains;
         this.callbacks = callbacks;
+        try {
+            this.fakedEndpoint = new Endpoint(InetAddress.getLocalHost(), 1);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     public LocalNodeCore() {
@@ -41,6 +49,11 @@ public class LocalNodeCore {
         this.circuitIDs = new ConcurrentSkipListSet<>();
         this.chains = new ConcurrentHashMap<>();
         this.callbacks = new ConcurrentHashMap<>();
+        try {
+            this.fakedEndpoint = new Endpoint(InetAddress.getLocalHost(), 1);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
     }
 
     public ChainMetaData getChainMetaData(Short circuitID) {
@@ -96,7 +109,7 @@ public class LocalNodeCore {
             return;
         }
 
-        CreateCell cell = new CreateCell(circuit.getCircuitID(), firstNode.getEndPoint(), encryptedDHHalf);
+        CreateCell cell = new CreateCell(circuit.getCircuitID(), fakedEndpoint, encryptedDHHalf);
         try {
             addCircuitToConnectionWorker(circuit);
             sendCell(cell, circuit.getEndpoint());
