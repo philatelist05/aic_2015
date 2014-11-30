@@ -14,6 +14,7 @@ public class DataCommand extends Command {
 
     private byte[] data;
     private short length;
+    private Short sequenceNumber;
 
     /**
      * Reads a Command assuming that the Command Type field has already been read.
@@ -42,6 +43,18 @@ public class DataCommand extends Command {
 
     public void sendData(OutputStream destination) throws IOException {
         destination.write(data, 0, length);
+    }
+
+    public byte[] getData() {
+        return data;
+    }
+
+    public Short getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    public void setSequenceNumber(Short sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
     }
 
     @Override

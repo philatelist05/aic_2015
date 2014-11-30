@@ -1,14 +1,32 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.CellWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.SocksCallBack;
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ErrorCode;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LocalCellWorker implements CellWorker {
+    static final Logger logger = LogManager.getLogger(LocalCellWorker.class.getName());
+
     private final ConnectionWorker connectionWorker;
     private final Cell cell;
     private final Circuit circuit;
@@ -23,6 +41,258 @@ public class LocalCellWorker implements CellWorker {
 
     @Override
     public void run() {
-        //TODO implement
+        if (circuit == null || cell instanceof CreateCell) {
+            logger.warn("Received CreateCell or Cell for non-existing Circuit - this should not happen in LocalNode!");
+            return;
+        }
+        if (cell instanceof CreateResponseCell) {
+            handleCreateResponseCell((CreateResponseCell) cell);
+        } else if (cell instanceof RelayCell) {
+            handleRelayCell((RelayCell) cell);
+        } else if (cell instanceof DestroyCell) {
+            handleDestroyCell((DestroyCell) cell);
+        } else {
+            logger.warn("Unsupported Cell received: {}", cell);
+            return;
+        }
+    }
+
+    private void handleDestroyCell(DestroyCell destroyCell) {
+        logger.debug("Handling DestroyCell");
+
+        SocksCallBack callBack = nodeCore.getCallBack(circuit.getCircuitID());
+
+        nodeCore.removeChain(circuit.getCircuitID());
+        callBack.chainDestroyed();
+    }
+
+    private void handleRelayCell(RelayCell relayCell) {
+        logger.debug("Handling RelayCell");
+
+        SocksCallBack callBack = nodeCore.getCallBack(circuit.getCircuitID());
+        ChainMetaData metaData = this.nodeCore.getChainMetaData(this.circuit.getCircuitID());
+
+        int lastNode = metaData.getLastNode();
+        RelayCellPayload payload = relayCell.getPayload();
+        for (int i = lastNode; i >= 0; i--) {
+            ChainNodeMetaData currentNode = metaData.getNodes().get(i);
+            try {
+                payload = payload.decrypt(currentNode.getSessionKey());
+            } catch (DecryptException e) {
+                logger.warn("Failed to decrypt RelayCellPayload");
+                logger.catching(Level.DEBUG, e);
+                callBack.error(ErrorCode.DECRYPTION_FAILURE);
+                return;
+            }
+        }
+        try {
+            Command relayedCommand = payload.decode();
+            if (relayedCommand instanceof ExtendResponseCommand) {
+                handleExtendResponse((ExtendResponseCommand) relayedCommand);
+            } else if (relayedCommand instanceof ConnectResponseCommand) {
+                handleConnectResponse((ConnectResponseCommand) relayedCommand);
+            } else if (relayedCommand instanceof DataCommand) {
+                handleDataCommand((DataCommand) relayedCommand);
+            }
+        } catch (DecodeException e) {
+            logger.warn("Failed to decode RelayCellPayload");
+            logger.catching(Level.DEBUG, e);
+            callBack.error(ErrorCode.DECODING_FAILURE);
+            return;
+        }
+    }
+
+    private void handleDataCommand(DataCommand dataCommand) {
+        logger.debug("Handling DataCommand");
+
+        SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
+
+        callback.responseData(dataCommand.getSequenceNumber(), dataCommand.getData());
+        return;
+    }
+
+    private void handleConnectResponse(ConnectResponseCommand connectResponseCommand) {
+        //TODO
+    }
+
+    private void handleExtendResponse(ExtendResponseCommand extendResponseCommand) {
+        logger.debug("Handling ExtendResponseCommand");
+
+        SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
+        ChainMetaData metaData = nodeCore.getChainMetaData(this.circuit.getCircuitID());
+
+        if (extendResponseCommand.getStatus() != CreateStatus.Success) {
+            retryExtendCommand(metaData, callback);
+            return;
+        }
+
+        //TODO verify signature
+
+        DHKeyExchange keyExchange = circuit.getDHKeyExchange();
+        if (keyExchange == null || circuit.getSessionKey() != null) {
+            logger.warn("This circuit is already established, ignoring CreateResponseCell");
+            return;
+        }
+
+        byte[] sessionKey = null;
+        try {
+            sessionKey = keyExchange.completeExchange(extendResponseCommand.getDHPublicKey());
+        } catch (NoSuchProviderException e) {
+            logger.warn("Could not find BouncyCastle provider.");
+            logger.catching(Level.DEBUG, e);
+        } catch (NoSuchAlgorithmException e) {
+            logger.warn("Could not find DH algorithm.");
+            logger.catching(Level.DEBUG, e);
+        } catch (InvalidKeySpecException e) {
+            logger.warn("Invalid KeySpec in CreateResponseCell");
+            logger.catching(Level.DEBUG, e);
+        } catch (InvalidKeyException e) {
+            logger.warn("Invalid Key in CreateResponseCell");
+            logger.catching(Level.DEBUG, e);
+        }
+
+        if(sessionKey == null) {
+            if (callback != null) {
+                callback.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                return;
+            }
+        }
+    }
+
+    private void retryExtendCommand(ChainMetaData metaData, SocksCallBack callback) {
+        //TODO check if this is really needed
+    }
+
+    private void handleCreateResponseCell(CreateResponseCell createResponseCell) {
+        logger.debug("Handling CreateResponseCell");
+
+        SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
+        ChainMetaData metaData = nodeCore.getChainMetaData(circuit.getCircuitID());
+
+        if (createResponseCell.getStatus() != CreateStatus.Success) {
+            retryCreateCell(metaData, callback);
+            return;
+        }
+
+        //TODO verify signature
+        //TODO maybe move the non-Create DHKeyExchange to the ChainMetaData or ChainNodeMetaData?
+
+        DHKeyExchange keyExchange = circuit.getDHKeyExchange();
+        if (keyExchange == null) {
+            logger.warn("No KeyExchange available, ignoring ExtendResponseCommand");
+            return;
+        }
+
+        byte[] sessionKey = null;
+        try {
+            sessionKey = keyExchange.completeExchange(createResponseCell.getDhPublicKey());
+        } catch (NoSuchProviderException e) {
+            logger.warn("Could not find BouncyCastle provider.");
+            logger.catching(Level.DEBUG, e);
+        } catch (NoSuchAlgorithmException e) {
+            logger.warn("Could not find DH algorithm.");
+            logger.catching(Level.DEBUG, e);
+        } catch (InvalidKeySpecException e) {
+            logger.warn("Invalid KeySpec in CreateResponseCell");
+            logger.catching(Level.DEBUG, e);
+        } catch (InvalidKeyException e) {
+            logger.warn("Invalid Key in CreateResponseCell");
+            logger.catching(Level.DEBUG, e);
+        }
+
+        if(sessionKey == null) {
+            if (callback != null) {
+                callback.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                return;
+            }
+        }
+
+        circuit.setDHKeyExchange(null);
+
+        metaData.growChain(sessionKey);
+        nextChainBuildingStep(metaData, callback);
+    }
+
+    private void retryCreateCell(ChainMetaData metaData, SocksCallBack callback) {
+        nodeCore.removeChain(circuit.getCircuitID());
+        nodeCore.createChain(metaData, callback);
+    }
+
+    private void nextChainBuildingStep(ChainMetaData metaData, SocksCallBack callBack) {
+        ConcurrentHashMap<Integer, ChainNodeMetaData> nodes = metaData.getNodes();
+        int nextNodeIndex = metaData.getNextNode();
+        if (nodes != null) {
+            ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
+            if (nextNode == null) {
+                callBack.chainEstablished(metaData);
+            } else {
+                DHKeyExchange keyExchange;
+                try {
+                    keyExchange = new DHKeyExchange();
+                } catch (NoSuchProviderException e) {
+                    logger.warn("Could not initialize DHKeyExchange object, aborting Chain creation.");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                    return;
+                } catch (NoSuchAlgorithmException e) {
+                    logger.warn("Could not initalize DHKeyExchange object, aborting Chain creation.");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                    return;
+                }
+                BigInteger p = DHKeyExchange.generateRelativePrime();
+                BigInteger g = DHKeyExchange.generateRelativePrime();
+                byte[] publicKey;
+                try {
+                    publicKey = keyExchange.initExchange(p, g);
+                } catch (InvalidAlgorithmParameterException e) {
+                    logger.warn("Could not initialize key exchange, aborting Chain creation.");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                    return;
+                } catch (NoSuchProviderException e) {
+                    logger.warn("Could not initialize key exchange, aborting Chain creation.");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                    return;
+                } catch (NoSuchAlgorithmException e) {
+                    logger.warn("Could not initialize key exchange, aborting Chain creation.");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                    return;
+                } catch (InvalidKeyException e) {
+                    logger.warn("Could not initialize key exchange, aborting Chain creation.");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                    return;
+                }
+
+                circuit.setDHKeyExchange(keyExchange);
+                EncryptedDHHalf encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(nextNode.getPublicKey());
+                ExtendCommand command = new ExtendCommand(nextNode.getEndPoint(), p, g, encryptedDHHalf);
+                RelayCellPayload payload = new RelayCellPayload(command);
+                for(int i = 0; i < nextNodeIndex; i++) {
+                    ChainNodeMetaData currentNode = nodes.get(i);
+                    try {
+                        payload = payload.encrypt(currentNode.getSessionKey());
+                    } catch (EncryptException e) {
+                        logger.warn("Failed to encrypt ExtendCommand, aborting Chain creation");
+                        logger.catching(Level.DEBUG, e);
+                        callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                        return;
+                    }
+                }
+
+                RelayCell relayCell = new RelayCell(circuit.getCircuitID(), payload);
+                try {
+                    connectionWorker.sendCell(relayCell);
+                } catch (IOException e) {
+                    logger.warn("Could not send RelayCell, aborting Chain creation");
+                    logger.catching(Level.DEBUG, e);
+                    callBack.error(ErrorCode.CW_FAILURE);
+                    return;
+                }
+            }
+        }
     }
 }

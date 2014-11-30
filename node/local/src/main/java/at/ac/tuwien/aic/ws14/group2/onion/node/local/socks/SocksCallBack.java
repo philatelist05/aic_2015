@@ -20,9 +20,10 @@ public interface SocksCallBack {
 
     /**
      * Callback method that will be called when a Data Cell was received.
+     * @param sequenceNumber the sequenceNumber associated with the DataCommand that contained the data
      * @param data the raw data contained in the Data cell
      */
-    void responseData(byte[] data);
+    void responseData(Short sequenceNumber, byte[] data);
 
     /**
      * Callback method that will be called when an unrecoverable error has occured.
