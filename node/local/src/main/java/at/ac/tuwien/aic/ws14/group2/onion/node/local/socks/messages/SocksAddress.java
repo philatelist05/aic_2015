@@ -2,13 +2,12 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.AddressTypeNotSupportedException;
 
+import java.io.*;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Objects;
 
 /**
@@ -37,8 +36,8 @@ public class SocksAddress {
 	}
 
 	public SocksAddress(String hostName, int port) {
-		if (port > 0xFFFF || port < 0)
-			throw new IllegalArgumentException("port must not be greater than " + 0xFFFF + " or less than 0");
+		if (port > 0xFFFF || port <= 0)
+			throw new IllegalArgumentException("port must not be greater than " + 0xFFFF + " or less or equal 0");
 
 		this.addressType = AddressType.DOMAINNAME;
 		this.address = null;
@@ -52,13 +51,21 @@ public class SocksAddress {
 	/**
 	 * Parses a byte array to a new instance of this class.
 	 *
-	 * @throws BufferUnderflowException if the byte array provided is shorter than the expected length
+	 * @return a new instance of this class
+	 * @throws EOFException                     if the input provided is shorter than the expected length
+	 * @throws AddressTypeNotSupportedException if an invalid address type byte was provided
 	 */
-	public static SocksAddress fromByteArray(byte[] data) throws BufferUnderflowException, AddressTypeNotSupportedException {
+	public static SocksAddress fromByteArray(byte[] data) throws EOFException, AddressTypeNotSupportedException {
 		Objects.requireNonNull(data);
 
-		ByteBuffer bb = ByteBuffer.wrap(data);
-		return fromByteArray(bb);
+		try {
+			return fromByteArray(new DataInputStream(new ByteArrayInputStream(data)));
+		} catch (IOException e) {
+			if (e instanceof EOFException)
+				throw (EOFException) e;
+			// Should never be the case since we are reading from an byte array
+			throw new RuntimeException();
+		}
 	}
 
 	/**
@@ -66,62 +73,51 @@ public class SocksAddress {
 	 * bytes read from the buffer.
 	 *
 	 * @return a new instance of this class
-	 * @throws BufferUnderflowException         if the byte array provided is shorter than the expected length
+	 * @throws EOFException                     if the input provided is shorter than the expected length
 	 * @throws AddressTypeNotSupportedException if an invalid address type byte was provided
 	 */
-	public static SocksAddress fromByteArray(ByteBuffer bb) throws BufferUnderflowException, AddressTypeNotSupportedException {
-		Objects.requireNonNull(bb);
+	public static SocksAddress fromByteArray(DataInput input) throws IOException, AddressTypeNotSupportedException {
+		Objects.requireNonNull(input);
 
-		// Set the right byte order and save the previous one
-		ByteOrder prevByteOrder = bb.order();
-		if (prevByteOrder != SocksMessage.NETWORK_BYTE_ORDER)
-			bb.order(SocksMessage.NETWORK_BYTE_ORDER);
-
+		AddressType addressType;
+		byte addressTypeByte = input.readByte();
 		try {
-			AddressType addressType;
-			byte addressTypeByte = bb.get();
-			try {
-				addressType = AddressType.fromByte(addressTypeByte);
-			} catch (IllegalArgumentException e) {
-				throw new AddressTypeNotSupportedException(addressTypeByte, e);
-			}
+			addressType = AddressType.fromByte(addressTypeByte);
+		} catch (IllegalArgumentException e) {
+			throw new AddressTypeNotSupportedException(addressTypeByte, e);
+		}
 
-			int port;
-			int length;
-			switch (addressType) {
-				case DOMAINNAME:
-					length = Byte.toUnsignedInt(bb.get());
+		int port;
+		int length;
+		switch (addressType) {
+			case DOMAINNAME:
+				length = input.readUnsignedByte();
 
-					byte[] hostNameBytes = new byte[length];
-					bb.get(hostNameBytes);
-					String hostName = new String(hostNameBytes, SocksMessage.CHARSET);
+				byte[] hostNameBytes = new byte[length];
+				input.readFully(hostNameBytes);
+				String hostName = new String(hostNameBytes, SocksMessage.CHARSET);
 
-					port = Short.toUnsignedInt(bb.getShort());
+				port = input.readUnsignedShort();
 
-					return new SocksAddress(hostName, port);
-				case IP_V4_ADDRESS:
-				case IP_V6_ADDRESS:
-					length = AddressType.IP_V4_ADDRESS.equals(addressType) ? SocksMessage.IPV4_OCTETS : SocksMessage.IPV6_OCTETS;
-					byte[] addressBytes = new byte[length];
-					bb.get(addressBytes);
+				return new SocksAddress(hostName, port);
+			case IP_V4_ADDRESS:
+			case IP_V6_ADDRESS:
+				length = AddressType.IP_V4_ADDRESS.equals(addressType) ? SocksMessage.IPV4_OCTETS : SocksMessage.IPV6_OCTETS;
+				byte[] addressBytes = new byte[length];
+				input.readFully(addressBytes);
 
-					InetAddress address = null;
-					try {
-						address = InetAddress.getByAddress(addressBytes);
-					} catch (UnknownHostException ignored) {
-						// since we specify the length, this exception can not occur
-					}
+				InetAddress address = null;
+				try {
+					address = InetAddress.getByAddress(addressBytes);
+				} catch (UnknownHostException ignored) {
+					// since we specify the length, this exception can not occur
+				}
 
-					port = Short.toUnsignedInt(bb.getShort());
+				port = input.readUnsignedShort();
 
-					return new SocksAddress(address, port);
-				default:
-					throw new IllegalStateException("address type is in an illegal state");
-			}
-		} finally {
-			// Reset the byte order of the buffer
-			if (prevByteOrder != SocksMessage.NETWORK_BYTE_ORDER)
-				bb.order(prevByteOrder);
+				return new SocksAddress(address, port);
+			default:
+				throw new IllegalStateException("address type is in an illegal state");
 		}
 	}
 

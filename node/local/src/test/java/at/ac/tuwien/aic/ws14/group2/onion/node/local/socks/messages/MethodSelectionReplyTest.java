@@ -3,7 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessageParsingException;
 import org.junit.Test;
 
-import java.nio.BufferUnderflowException;
+import java.io.EOFException;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +45,7 @@ public class MethodSelectionReplyTest {
 		MethodSelectionReply.fromByteArray(SAMPLE_WRONG_VER);
 	}
 
-	@Test(expected = BufferUnderflowException.class)
+	@Test(expected = EOFException.class)
 	public void testFromByteArrayShouldFail2() throws Exception {
 		MethodSelectionReply.fromByteArray(SAMPLE_WRONG_LENGTH);
 	}
