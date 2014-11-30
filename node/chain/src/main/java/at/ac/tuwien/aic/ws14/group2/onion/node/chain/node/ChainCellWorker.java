@@ -5,6 +5,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSASignAndVerify;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -95,6 +96,13 @@ public class ChainCellWorker implements CellWorker {
         } else {
             ExtendResponseCommand cmd = new ExtendResponseCommand(createResponseCell.getDhPublicKey(), createResponseCell.getSignature());
             RelayCellPayload payload = new RelayCellPayload(cmd);
+            try {
+                payload = payload.encrypt(assocCircuit.getSessionKey());
+            } catch (EncryptException e) {
+                logger.warn("encryption failed");
+                connectionWorker.removeCircuit(circuit);
+                extendChain(connectionWorker, assocCircuit, circuit.getEndpoint(), circuit.getDHHalf());
+            }
             RelayCell cell = new RelayCell(assocCircuit.getCircuitID(), payload);
 
             ConnectionWorker incomingConnectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(assocCircuit.getEndpoint());
@@ -107,6 +115,7 @@ public class ChainCellWorker implements CellWorker {
 
         if (circuit.getAssociatedCircuit() == null) {   // unencrypted payload coming from local node
             RelayCellPayload decryptedPayload = relayCell.getPayload().decrypt(circuit.getSessionKey());
+            logger.info("Decrypted payload: {}", decryptedPayload);
             Command cmd = decryptedPayload.decode();
             if (cmd instanceof ExtendCommand) {
                 handleExtendCommand((ExtendCommand)cmd);

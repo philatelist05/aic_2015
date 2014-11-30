@@ -7,6 +7,8 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptExceptio
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 
+import java.util.Arrays;
+
 /**
  * Created by Thomas on 09.11.2014.
  */
@@ -56,5 +58,12 @@ public class RelayCellPayload {
      */
     public byte[] encode() {
         return payload;
+    }
+
+    @Override
+    public String toString() {
+        return "RelayCellPayload{" +
+                "payload=" + Arrays.toString(payload) +
+                '}';
     }
 }

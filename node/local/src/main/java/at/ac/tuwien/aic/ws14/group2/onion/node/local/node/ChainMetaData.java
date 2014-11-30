@@ -54,6 +54,7 @@ public class ChainMetaData {
 
     public boolean growChain(byte[] sessionKey) {
         synchronized (lastNode) {
+            logger.debug("Growing chain from {} to {}", lastNode, lastNode + 1);
             if (lastNode < nodes.size()) {
                 lastNode++;
                 ChainNodeMetaData nodeMetaData = nodes.get(lastNode);

@@ -71,6 +71,7 @@ public class LocalCellWorker implements CellWorker {
         ChainMetaData metaData = this.nodeCore.getChainMetaData(this.circuit.getCircuitID());
 
         int lastNode = metaData.getLastNode();
+        logger.debug("Current last node in chain is at position {}", lastNode);
         RelayCellPayload payload = relayCell.getPayload();
         for (int i = lastNode; i >= 0; i--) {
             ChainNodeMetaData currentNode = metaData.getNodes().get(i);
@@ -83,6 +84,9 @@ public class LocalCellWorker implements CellWorker {
                 return;
             }
         }
+
+        logger.info("Decrypted payload: {}", payload);
+
         try {
             Command relayedCommand = payload.decode();
             if (relayedCommand instanceof ExtendResponseCommand) {
@@ -135,7 +139,7 @@ public class LocalCellWorker implements CellWorker {
         //TODO maybe move the non-Create DHKeyExchange to the ChainMetaData or ChainNodeMetaData?
         DHKeyExchange keyExchange = circuit.getDHKeyExchange();
         if (keyExchange == null) {
-            logger.warn("No keyexchagne available, ignoring extendResponseCommand");
+            logger.warn("No key exchange available, ignoring extendResponseCommand");
             return;
         }
 
@@ -223,6 +227,7 @@ public class LocalCellWorker implements CellWorker {
         if (nodes != null) {
             ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
             if (nextNode == null) {
+                logger.info("Chain established, calling callback!");
                 callBack.chainEstablished(metaData);
             } else {
                 DHKeyExchange keyExchange;
@@ -257,6 +262,7 @@ public class LocalCellWorker implements CellWorker {
                 ExtendCommand command = new ExtendCommand(nextNode.getEndPoint(), p, g, encryptedDHHalf);
                 RelayCellPayload payload = new RelayCellPayload(command);
                 for(int i = 0; i < nextNodeIndex; i++) {
+                    logger.debug("Encrypting payload with Node #{}'s session key", i);
                     ChainNodeMetaData currentNode = nodes.get(i);
                     try {
                         payload = payload.encrypt(currentNode.getSessionKey());
