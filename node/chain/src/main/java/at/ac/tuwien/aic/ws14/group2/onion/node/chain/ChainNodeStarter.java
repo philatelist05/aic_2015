@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.chain;
 
+import at.ac.tuwien.aic.ws14.group2.onion.common.Configuration;
+import at.ac.tuwien.aic.ws14.group2.onion.common.ConfigurationFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat.HeartBeatWorker;
@@ -29,9 +31,9 @@ import java.security.Security;
 public class ChainNodeStarter {
     static final Logger logger = LogManager.getLogger(ChainNodeStarter.class.getName());
 
-    private static final int THRIFT_PORT = 9091;    // TODO read from config
-
     public static void main(String[] args) {
+        logger.info("Reading configuration parameters");
+        Configuration configuration = ConfigurationFactory.getConfiguration();
 
         logger.info("Adding BouncyCastle provider");
         Security.addProvider(new BouncyCastleProvider());
@@ -63,7 +65,7 @@ public class ChainNodeStarter {
             logger.fatal("Failed to create listening Socket!");
             System.exit(-1);
         }
-        Thread nodeCoreThread =  new Thread(new ChainNodeCore(listeningSocket));
+        Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
         nodeCoreThread.start();
 
         ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), listeningSocket.getLocalSocketAddress().toString(), Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
@@ -71,7 +73,7 @@ public class ChainNodeStarter {
 
 
         logger.info("Establishing Thrift client connection");
-        long sleepInterval = 2000; //TODO read from config
+        long sleepInterval = configuration.getChainNodeHeartbeatInterval();
 
         logger.info("Creating temp file for keystore");
         ClassLoader cl = ChainNodeStarter.class.getClassLoader();
@@ -99,7 +101,7 @@ public class ChainNodeStarter {
         logger.debug("Creating SSL Transport using Thrift");
         TTransport transport = null;
         try {
-            transport = TSSLTransportFactory.getClientSocket("localhost", THRIFT_PORT, 0, clientParams);
+            transport = TSSLTransportFactory.getClientSocket("localhost", configuration.getNodeCommonPort(), 0, clientParams);
         } catch (TTransportException e) {
             logger.fatal("Could not establish SSL connection to directory, exiting..");
             logger.catching(Level.DEBUG, e);

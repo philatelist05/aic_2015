@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.directory;
 
+import at.ac.tuwien.aic.ws14.group2.onion.common.Configuration;
+import at.ac.tuwien.aic.ws14.group2.onion.common.ConfigurationFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.handler.ServiceImplementation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.worker.ChainNodeMonitor;
@@ -14,7 +16,6 @@ import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
 import java.io.*;
-import java.net.URL;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +24,10 @@ public class DirectoryStarter {
 
     static final Logger logger = LogManager.getLogger(DirectoryStarter.class.getName());
 
-    private static final int THRIFT_PORT = 9091;    // TODO read from config
-
     public static void main(String[] args) {
+        logger.info("Reading configuration");
+        Configuration configuration = ConfigurationFactory.getConfiguration();
+
         logger.info("Starting Directory server..");
 
         ChainNodeRegistry chainNodeRegistry = new ChainNodeRegistry();
@@ -57,15 +59,15 @@ public class DirectoryStarter {
 
         TServerTransport serverTransport = null;
         try {
-            serverTransport = TSSLTransportFactory.getServerSocket(THRIFT_PORT, 0, null, serverParams);
+            serverTransport = TSSLTransportFactory.getServerSocket(configuration.getNodeCommonPort(), 0, null, serverParams);
         } catch (TTransportException e) {
             logger.fatal("Could not establish Thrift Service, shutting down..");
             logger.catching(Level.DEBUG, e);
             System.exit(-1);
         }
         TThreadPoolServer.Args serverArgs = new TThreadPoolServer.Args(serverTransport).processor(processor);
-        serverArgs.minWorkerThreads(5);
-        serverArgs.minWorkerThreads(15);
+        serverArgs.minWorkerThreads(configuration.getDirectoryNodeMinThriftWorker());
+        serverArgs.minWorkerThreads(configuration.getDirectoryNodeMaxThriftWorker());
         final TServer server = new TThreadPoolServer(serverArgs);
 
         Runnable serverMethod = () -> {
@@ -78,7 +80,9 @@ public class DirectoryStarter {
         serverThread.start();
 
         ScheduledExecutorService scheduledThreadPoolExecutor = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("chainNodeMonitor"));
-        scheduledThreadPoolExecutor.scheduleAtFixedRate(new ChainNodeMonitor(chainNodeRegistry, 2000), 0, 5000, TimeUnit.MILLISECONDS);
+        scheduledThreadPoolExecutor.scheduleAtFixedRate(
+                new ChainNodeMonitor(chainNodeRegistry, configuration.getChainNodeHeartbeatInterval()),
+                0, configuration.getDirectoryNodeHeartbeatTimeout(), TimeUnit.MILLISECONDS);
 
         try {
             Thread.sleep(Long.MAX_VALUE);

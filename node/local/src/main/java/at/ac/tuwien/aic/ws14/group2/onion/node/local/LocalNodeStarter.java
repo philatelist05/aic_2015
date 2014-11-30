@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local;
 
+import at.ac.tuwien.aic.ws14.group2.onion.common.Configuration;
+import at.ac.tuwien.aic.ws14.group2.onion.common.ConfigurationFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
@@ -23,13 +25,15 @@ import java.security.Security;
 
 public class LocalNodeStarter {
     private static final Logger logger = LogManager.getLogger(LocalNodeStarter.class.getName());
-    private static final int THRIFT_PORT = 9091; // TODO read from config
 
     /**
      * Main method
      * @param args CLI arguments
      */
     public static void main(String [] args) {
+        logger.info("Reading configuration");
+        Configuration configuration = ConfigurationFactory.getConfiguration();
+
         logger.info("Adding BouncyCastle provider");
         Security.addProvider(new BouncyCastleProvider());
 
@@ -82,7 +86,7 @@ public class LocalNodeStarter {
         logger.debug("Creating SSL Transport using Thrift");
         TTransport transport = null;
         try {
-            transport = TSSLTransportFactory.getClientSocket("localhost", THRIFT_PORT, 0, clientParams);
+            transport = TSSLTransportFactory.getClientSocket("localhost", configuration.getNodeCommonPort(), 0, clientParams);
         } catch (TTransportException e) {
             logger.fatal("Could not establish SSL connection to directory, exiting..");
             logger.catching(Level.DEBUG, e);

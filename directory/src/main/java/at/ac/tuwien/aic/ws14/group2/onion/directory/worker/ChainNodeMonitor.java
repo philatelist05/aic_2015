@@ -25,7 +25,7 @@ public class ChainNodeMonitor implements Runnable {
     private ChainNodeRegistry chainNodeRegistry;
     private int timeout;
 
-    public ChainNodeMonitor(ChainNodeRegistry chainNodeRegistry, int timeout) {
+    public ChainNodeMonitor(ChainNodeRegistry chainNodeRegistry, long timeout) {
         this.chainNodeRegistry = chainNodeRegistry;
         this.timeout = timeout;
     }

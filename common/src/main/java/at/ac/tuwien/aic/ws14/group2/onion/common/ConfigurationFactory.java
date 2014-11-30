@@ -1,25 +1,40 @@
 package at.ac.tuwien.aic.ws14.group2.onion.common;
 
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Created by stefan on 30.11.14.
  */
 public class ConfigurationFactory {
-	public static final String CONFIG_FILE = "config.xml";
 
-	public static Configuration createConfig() throws ConfigurationException {
+	public static final String CONFIG_FILE = "config.xml";
+	private static Configuration configuration;
+	static final Logger logger = LogManager.getLogger(ConfigurationFactory.class.getName());
+
+	public static Configuration getConfiguration() {
+		if (configuration == null) {
+			configuration = createConfiguration();
+		}
+		return configuration;
+	}
+
+	private static Configuration createConfiguration() {
+		XMLConfiguration config;
 		try {
-			XMLConfiguration config = new XMLConfiguration();
+			config = new XMLConfiguration();
 			config.setFileName(CONFIG_FILE);
 			config.setSchemaValidation(true);
 
 			config.load();
-
-			return mapConfig(config);
 		} catch (org.apache.commons.configuration.ConfigurationException e) {
-			throw new ConfigurationException(e);
+			logger.fatal("Could not read Configuration from file");
+			logger.catching(Level.DEBUG, e);
+			config = new XMLConfiguration();
 		}
+		return mapConfig(config);
 	}
 
 	private static Configuration mapConfig(XMLConfiguration xmlConfiguration) {
