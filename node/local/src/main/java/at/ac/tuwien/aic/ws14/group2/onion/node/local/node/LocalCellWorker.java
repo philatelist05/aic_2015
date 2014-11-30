@@ -6,10 +6,10 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSASignAndVerify;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.CellWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.SocksCallBack;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ErrorCode;
 import org.apache.logging.log4j.Level;
@@ -18,8 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.*;
-import java.security.spec.InvalidKeySpecException;
+import java.security.PublicKey;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LocalCellWorker implements CellWorker {
@@ -142,18 +141,8 @@ public class LocalCellWorker implements CellWorker {
         byte[] sessionKey = null;
         try {
             sessionKey = keyExchange.completeExchange(dhPublicKey);
-        } catch (NoSuchProviderException e) {
-            logger.warn("Could not find BouncyCastle provider.");
-            logger.catching(Level.DEBUG, e);
-        } catch (NoSuchAlgorithmException e) {
-            logger.warn("Could not find DH algorithm.");
-            logger.catching(Level.DEBUG, e);
-        } catch (InvalidKeySpecException e) {
-            logger.warn("Invalid KeySpec in CreateResponseCell");
-            logger.catching(Level.DEBUG, e);
-        } catch (InvalidKeyException e) {
-            logger.warn("Invalid Key in CreateResponseCell");
-            logger.catching(Level.DEBUG, e);
+        } catch (KeyExchangeException e) {
+            logger.warn("Key exchange failed.");
         }
 
         if(sessionKey == null) {
@@ -204,18 +193,8 @@ public class LocalCellWorker implements CellWorker {
         byte[] sessionKey = null;
         try {
             sessionKey = keyExchange.completeExchange(createResponseCell.getDhPublicKey());
-        } catch (NoSuchProviderException e) {
-            logger.warn("Could not find BouncyCastle provider.");
-            logger.catching(Level.DEBUG, e);
-        } catch (NoSuchAlgorithmException e) {
-            logger.warn("Could not find DH algorithm.");
-            logger.catching(Level.DEBUG, e);
-        } catch (InvalidKeySpecException e) {
-            logger.warn("Invalid KeySpec in CreateResponseCell");
-            logger.catching(Level.DEBUG, e);
-        } catch (InvalidKeyException e) {
-            logger.warn("Invalid Key in CreateResponseCell");
-            logger.catching(Level.DEBUG, e);
+        } catch (KeyExchangeException e) {
+            logger.warn("Key exchange failed.");
         }
 
         if(sessionKey == null) {
@@ -248,14 +227,8 @@ public class LocalCellWorker implements CellWorker {
                 DHKeyExchange keyExchange;
                 try {
                     keyExchange = new DHKeyExchange();
-                } catch (NoSuchProviderException e) {
-                    logger.warn("Could not initialize DHKeyExchange object, aborting Chain creation.");
-                    logger.catching(Level.DEBUG, e);
-                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-                    return;
-                } catch (NoSuchAlgorithmException e) {
-                    logger.warn("Could not initalize DHKeyExchange object, aborting Chain creation.");
-                    logger.catching(Level.DEBUG, e);
+                } catch (KeyExchangeException e) {
+                    logger.warn("Key exchange failed.");
                     callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
                     return;
                 }
@@ -264,24 +237,8 @@ public class LocalCellWorker implements CellWorker {
                 byte[] publicKey;
                 try {
                     publicKey = keyExchange.initExchange(p, g);
-                } catch (InvalidAlgorithmParameterException e) {
-                    logger.warn("Could not initialize key exchange, aborting Chain creation.");
-                    logger.catching(Level.DEBUG, e);
-                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-                    return;
-                } catch (NoSuchProviderException e) {
-                    logger.warn("Could not initialize key exchange, aborting Chain creation.");
-                    logger.catching(Level.DEBUG, e);
-                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-                    return;
-                } catch (NoSuchAlgorithmException e) {
-                    logger.warn("Could not initialize key exchange, aborting Chain creation.");
-                    logger.catching(Level.DEBUG, e);
-                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-                    return;
-                } catch (InvalidKeyException e) {
-                    logger.warn("Could not initialize key exchange, aborting Chain creation.");
-                    logger.catching(Level.DEBUG, e);
+                } catch (KeyExchangeException e) {
+                    logger.warn("Key exchange failed.");
                     callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
                     return;
                 }

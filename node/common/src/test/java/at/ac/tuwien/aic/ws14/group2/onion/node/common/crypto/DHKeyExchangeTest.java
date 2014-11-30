@@ -1,5 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
@@ -56,7 +57,7 @@ public class DHKeyExchangeTest {
     }
 
     @Test
-    public void testCrypting() throws NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException, NoSuchProviderException, InvalidKeySpecException, InvalidCipherTextException {
+    public void testCrypting() throws Exception {
         DHKeyExchange keyExchange = new DHKeyExchange();
         keyExchange.initExchange(DHKeyExchange.generateRelativePrime(), DHKeyExchange.generateRelativePrime());
 

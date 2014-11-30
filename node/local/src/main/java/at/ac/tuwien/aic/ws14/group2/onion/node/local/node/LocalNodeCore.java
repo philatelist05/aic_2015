@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
@@ -15,10 +16,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -68,13 +65,8 @@ public class LocalNodeCore {
         DHKeyExchange keyExchange;
         try {
             keyExchange = new DHKeyExchange();
-        } catch (NoSuchProviderException e) {
+        } catch (KeyExchangeException e) {
             logger.warn("Could not initialize DHKeyExchange object, aborting Chain creation.");
-            logger.catching(Level.DEBUG, e);
-            callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-            return;
-        } catch (NoSuchAlgorithmException e) {
-            logger.warn("Could not initalize DHKeyExchange object, aborting Chain creation.");
             logger.catching(Level.DEBUG, e);
             callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
             return;
@@ -84,22 +76,7 @@ public class LocalNodeCore {
         byte[] publicKey;
         try {
             publicKey = keyExchange.initExchange(p, g);
-        } catch (InvalidAlgorithmParameterException e) {
-            logger.warn("Could not initialize key exchange, aborting Chain creation.");
-            logger.catching(Level.DEBUG, e);
-            callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-            return;
-        } catch (NoSuchProviderException e) {
-            logger.warn("Could not initialize key exchange, aborting Chain creation.");
-            logger.catching(Level.DEBUG, e);
-            callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-            return;
-        } catch (NoSuchAlgorithmException e) {
-            logger.warn("Could not initialize key exchange, aborting Chain creation.");
-            logger.catching(Level.DEBUG, e);
-            callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-            return;
-        } catch (InvalidKeyException e) {
+        } catch (KeyExchangeException e) {
             logger.warn("Could not initialize key exchange, aborting Chain creation.");
             logger.catching(Level.DEBUG, e);
             callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
