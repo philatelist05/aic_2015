@@ -23,7 +23,7 @@ public class ChainNodeMonitor implements Runnable {
     static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
 
     private ChainNodeRegistry chainNodeRegistry;
-    private int timeout;
+    private long timeout;
 
     public ChainNodeMonitor(ChainNodeRegistry chainNodeRegistry, long timeout) {
         this.chainNodeRegistry = chainNodeRegistry;
