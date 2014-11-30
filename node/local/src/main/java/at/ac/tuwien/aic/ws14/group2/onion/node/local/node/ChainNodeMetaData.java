@@ -14,6 +14,7 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
 public class ChainNodeMetaData {
     static final Logger logger = LogManager.getLogger(ChainNodeMetaData.class.getName());
@@ -76,5 +77,14 @@ public class ChainNodeMetaData {
 
     public void setSessionKey(byte[] sessionKey) {
         this.sessionKey = sessionKey;
+    }
+
+    @Override
+    public String toString() {
+        return "ChainNodeMetaData{" +
+                "publicKey=" + publicKey +
+                ", endPoint=" + endPoint +
+                ", sessionKey=" + Arrays.toString(sessionKey) +
+                '}';
     }
 }
