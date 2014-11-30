@@ -66,12 +66,12 @@ public class HeartBeatWorker implements Runnable {
             }
 
             if (ret) {
-                logger.info("Heartbeat successful!");
+                logger.debug("Heartbeat successful!");
                 lastSuccessfulHeartBeat = currentEndTime;
                 UsageCollector.currentRelayMsgCount.addAndGet(UsageCollector.currentRelayMsgCount.getAndSet(0) - relayMsgCountSnapshot);
                 UsageCollector.currentCreateMsgCount.addAndGet(UsageCollector.currentCreateMsgCount.getAndSet(0) - createMsgCountSnapshot);
             } else {
-                logger.info("Heartbeat unsuccessful, need to register first");
+                logger.warn("Heartbeat unsuccessful, need to register first");
                 try {
                     ret = client.registerNode(nodeInformation);
                 } catch (TException e) {

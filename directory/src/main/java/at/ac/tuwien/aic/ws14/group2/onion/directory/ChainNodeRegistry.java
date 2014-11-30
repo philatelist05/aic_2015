@@ -28,8 +28,7 @@ public class ChainNodeRegistry {
 
     //TODO check signature?
     public boolean addNodeUsage(ChainNodeInformation chainNodeInformation, NodeUsage usage) {
-        logger.info("Recording NodeUsage for ChainNode '{}'", chainNodeInformation);
-        logger.debug("Content of NodeUsage: '{}'", usage);
+        logger.debug("Recording NodeUsage for ChainNode '{}': {}", chainNodeInformation, usage);
 
         ConcurrentLinkedDeque usages = nodeUsages.get(chainNodeInformation);
 

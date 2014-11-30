@@ -29,6 +29,8 @@ public class ChainCellWorker implements CellWorker {
 
     @Override
     public void run() {
+        logger.info("Got cell {} on circuit {}", cell, circuit);
+
         try {
             if (circuit == null && cell instanceof CreateCell) {
                 handleCreateCell();

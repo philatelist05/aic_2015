@@ -75,7 +75,7 @@ public class Circuit {
         return "Circuit{" +
                 "circuitID=" + circuitID +
                 ", endpoint=" + endpoint +
-                ", associatedCircuit=" + (associatedCircuit==null) +
+                ", associatedCircuit=" + (associatedCircuit==null ? "none" : associatedCircuit.getCircuitID()) +
                 '}';
     }
 }

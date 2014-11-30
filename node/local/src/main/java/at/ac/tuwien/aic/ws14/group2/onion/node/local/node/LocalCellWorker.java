@@ -38,7 +38,7 @@ public class LocalCellWorker implements CellWorker {
 
     @Override
     public void run() {
-        logger.info("Got cell {} for circuit {}", cell, circuit);
+        logger.info("Got cell {} on circuit {}", cell, circuit);
         if (circuit == null || cell instanceof CreateCell) {
             logger.warn("Received CreateCell or Cell for non-existing Circuit - this should not happen in LocalNode!");
             return;
