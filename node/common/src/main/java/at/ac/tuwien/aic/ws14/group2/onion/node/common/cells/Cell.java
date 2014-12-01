@@ -89,7 +89,22 @@ public abstract class Cell {
     public String toString() {
         return "Cell{" +
                 "circuitID=" + circuitID +
-                ", cellType=" + cellType +
+                ", cellType=" + cellTypeToString(cellType) +
                 '}';
+    }
+
+    private String cellTypeToString(byte cellType) {
+        switch (cellType) {
+            case CELL_TYPE_CREATE:
+                return "Create";
+            case CELL_TYPE_CREATE_RESPONSE:
+                return "CreateResponse";
+            case CELL_TYPE_DESTROY:
+                return "Destroy";
+            case CELL_TYPE_RELAY:
+                return "Relay";
+            default:
+                return "?";
+        }
     }
 }
