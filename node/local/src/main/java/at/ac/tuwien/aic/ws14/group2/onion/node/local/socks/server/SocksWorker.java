@@ -37,7 +37,7 @@ public class SocksWorker implements Runnable, AutoCloseable {
 	private final LocalNodeCore localNodeCore;
 	private final DirectoryService.Client directoryClient;
 	private Short circuitId;
-	private SocksDataForwarderServer socksDataForwarderServer;
+	private SocksDataForwarder socksDataForwarder;
 
 	public SocksWorker(Socket commandSocket, LocalNodeCore localNodeCore, DirectoryService.Client directoryClient, Consumer<SocksWorker> closeCallback) {
 		this.commandSocket = Objects.requireNonNull(commandSocket);
@@ -106,15 +106,15 @@ public class SocksWorker implements Runnable, AutoCloseable {
 				localNodeCore.connectTo(circuitId, convertEndpointToSocksAddress(destination));
 
 				// Create and start the forwarder of for the client data
-				socksDataForwarderServer = new SocksDataForwarderServer(circuitId, localNodeCore);
-				socksDataForwarderServer.start();
+				socksDataForwarder = new SocksDataForwarder(circuitId, localNodeCore);
+				socksDataForwarder.start();
 
 				// Send succeeded command reply
-				CommandReply commandReply = new CommandReply(ReplyType.SUCCEEDED, new SocksAddress(socksDataForwarderServer.getInetAddress(), socksDataForwarderServer.getLocalPort()));
+				CommandReply commandReply = new CommandReply(ReplyType.SUCCEEDED, new SocksAddress(socksDataForwarder.getInetAddress(), socksDataForwarder.getLocalPort()));
 				outputStream.write(commandReply.toByteArray());
 
-				// Wait on SocksDataForwarderServer
-				socksDataForwarderServer.join();
+				// Wait on SocksDataForwarder
+				socksDataForwarder.join();
 
 			} finally {
 				close();
@@ -161,8 +161,8 @@ public class SocksWorker implements Runnable, AutoCloseable {
 	public void close() throws IOException {
 		commandSocket.close();
 
-		if (socksDataForwarderServer != null)
-			socksDataForwarderServer.close();
+		if (socksDataForwarder != null)
+			socksDataForwarder.close();
 
 		this.closeCallback.accept(this);
 	}
@@ -185,13 +185,13 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 		@Override
 		public void responseData(Short sequenceNumber, byte[] data) {
-			if (SocksWorker.this.socksDataForwarderServer == null) {
-				logger.error("Got response data when socksDataForwarderServer was still null. Ignoring data!");
+			if (SocksWorker.this.socksDataForwarder == null) {
+				logger.error("Got response data when socksDataForwarder was still null. Ignoring data!");
 				return;
 			}
 
 			// Send response data
-			SocksWorker.this.socksDataForwarderServer.sendDataBack(sequenceNumber, data);
+			SocksWorker.this.socksDataForwarder.sendDataBack(sequenceNumber, data);
 		}
 
 		@Override

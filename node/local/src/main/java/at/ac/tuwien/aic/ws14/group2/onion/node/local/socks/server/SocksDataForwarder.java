@@ -7,41 +7,63 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Objects;
-import java.util.function.Consumer;
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Created by klaus on 11/30/14.
  */
-public class SocksDataForwarder implements Runnable, AutoCloseable {
+public class SocksDataForwarder extends Thread implements AutoCloseable {
 	private static final Logger logger = LoggerFactory.getLogger(SocksDataForwarder.class.getName());
 
 	private final Short circuitId;
 	private final LocalNodeCore localNodeCore;
-	private final Consumer<SocksDataForwarder> closeCallback;
-	private final Socket socket;
+	private final ServerSocket serverSocket;
+	private final SortedMap<Short, byte[]> responseBuffer;
 	private volatile boolean stop;
+	private Socket clientSocket;
 
-	public SocksDataForwarder(Socket socket, Short circuitId, LocalNodeCore localNodeCore, Consumer<SocksDataForwarder> closeCallback) {
+	public SocksDataForwarder(Short circuitId, LocalNodeCore localNodeCore) throws IOException {
+		this.circuitId = circuitId;
+		this.localNodeCore = localNodeCore;
+		// Create socket for the actual data from the originator
+		this.serverSocket = new ServerSocket(0);
+		this.responseBuffer = new ConcurrentSkipListMap<>();
+	}
 
-		this.closeCallback = Objects.requireNonNull(closeCallback);
-		this.circuitId = Objects.requireNonNull(circuitId);
-		this.localNodeCore = Objects.requireNonNull(localNodeCore);
-		this.socket = Objects.requireNonNull(socket);
+	public int getLocalPort() {
+		return this.serverSocket.getLocalPort();
+	}
+
+	public InetAddress getInetAddress() {
+		return this.serverSocket.getInetAddress();
+	}
+
+	/**
+	 * Send data back to the originator.
+	 *
+	 * @param sequenceNumber the sequence number associated with the DataCommand that contained the data
+	 * @param data           the raw data contained in the data cell
+	 */
+	public void sendDataBack(Short sequenceNumber, byte[] data) {
+		// TODO (KK) Send data back
 	}
 
 	@Override
 	public void run() {
-		if (!socket.isConnected())
-			throw new IllegalStateException("TCP socket not connected");
-
-		byte[] buffer = new byte[DataCommand.MAX_DATA_LENGTH];
+		if (!serverSocket.isBound())
+			throw new IllegalStateException(
+					"TCP listener socket not initialized");
 
 		try {
 			try {
+				clientSocket = serverSocket.accept();
 
-				InputStream inputStream = socket.getInputStream();
+				byte[] buffer = new byte[DataCommand.MAX_DATA_LENGTH];
+				InputStream inputStream = clientSocket.getInputStream();
 
 				stop = false;
 				while (!stop) {
@@ -55,7 +77,8 @@ public class SocksDataForwarder implements Runnable, AutoCloseable {
 					// TODO (KK) Forward data to the circuit
 				}
 			} finally {
-				close();
+				serverSocket.close();
+				clientSocket.close();
 			}
 		} catch (Exception e) {
 			// The if-clause down here is because of what is described in
@@ -79,8 +102,9 @@ public class SocksDataForwarder implements Runnable, AutoCloseable {
 	@Override
 	public void close() throws IOException {
 		stop = true;
-		socket.close();
-
-		this.closeCallback.accept(this);
+		this.interrupt();
+		serverSocket.close();
+		clientSocket.close();
 	}
+
 }
