@@ -5,18 +5,19 @@ package at.ac.tuwien.aic.ws14.group2.onion.shared;
  */
 public class Configuration {
 
-	private String nodeCommonHost;
-	private int nodeCommonPort;
-	private int localNodeServerPort;
-	private String localNodeListeningHost;
-	private int localNodeNumCellWorkers;
-	private long chainNodeHeartbeatInterval;
-	private int chainNodeNumCellWorkers;
-	private long directoryNodeHeartbeatTimeout;
-	private int directoryNodeMinThriftWorker;
-	private int directoryNodeMaxThriftWorker;
-	private String targetServiceHost;
-	private int targetServicePort;
+	private final String nodeCommonHost;
+	private final int nodeCommonPort;
+	private final int localNodeServerPort;
+	private final String localNodeListeningHost;
+	private final int localNodeNumCellWorkers;
+	private final long chainNodeHeartbeatInterval;
+	private final int chainNodeNumCellWorkers;
+	private final long directoryNodeHeartbeatTimeout;
+	private final int directoryNodeMinThriftWorker;
+	private final int directoryNodeMaxThriftWorker;
+	private final String targetServiceHost;
+	private final int targetServicePort;
+	private final long targetWorkerTimeout;
 
 
 	public Configuration(String nodeCommonHost,
@@ -30,7 +31,8 @@ public class Configuration {
 	                     int directoryNodeMinThriftWorker,
 	                     int directoryNodeMaxThriftWorker,
 	                     String targetServiceHost,
-	                     int targetServicePort) {
+	                     int targetServicePort,
+						 long targetWorkerTimeout) {
 
 		this.nodeCommonHost = nodeCommonHost;
 		this.nodeCommonPort = nodeCommonPort;
@@ -44,6 +46,7 @@ public class Configuration {
 		this.directoryNodeMaxThriftWorker = directoryNodeMaxThriftWorker;
 		this.targetServiceHost = targetServiceHost;
 		this.targetServicePort = targetServicePort;
+		this.targetWorkerTimeout = targetWorkerTimeout;
 	}
 
 	public String getNodeCommonHost() {
@@ -92,5 +95,9 @@ public class Configuration {
 
 	public int getTargetServicePort() {
 		return targetServicePort;
+	}
+
+	public long getTargetWorkerTimeout() {
+		return targetWorkerTimeout;
 	}
 }

@@ -50,10 +50,11 @@ public class ConfigurationFactory {
 		int directoryNodeMaxThriftWorker = xmlConfiguration.getInt("node.directory.thriftworker.max", 16);
 		String targetServiceHost = xmlConfiguration.getString("node.target-service.host", "localhost");
 		int targetServicePort = xmlConfiguration.getInt("node.target-service.port", 8080);
+		long targetWorkerTimeout = xmlConfiguration.getLong("node.chain.targetworker-timeout", 2000);
 
 		return new Configuration(nodeCommonHost, nodeCommonPort, localNodeServerPort, localNodeListeningHost,
 				localNodeNumCellWorkers, chainNodeHeartbeatInterval, chainNodeNumCellWorkers,
 				directoryNodeHeartbeatTimeout, directoryNodeMinThriftWorker, directoryNodeMaxThriftWorker,
-				targetServiceHost, targetServicePort);
+				targetServiceHost, targetServicePort, targetWorkerTimeout);
 	}
 }
