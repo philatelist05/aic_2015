@@ -29,7 +29,7 @@ import java.security.NoSuchProviderException;
 import java.security.Security;
 
 public class ChainNodeStarter {
-    static final Logger logger = LogManager.getLogger(ChainNodeStarter.class.getName());
+    private static final Logger logger = LogManager.getLogger(ChainNodeStarter.class.getName());
 
     public static void main(String[] args) {
         logger.info("Reading configuration parameters");

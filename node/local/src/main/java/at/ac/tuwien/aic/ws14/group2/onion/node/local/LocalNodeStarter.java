@@ -101,9 +101,7 @@ public class LocalNodeStarter {
 
 		// Create and start SOCKS server
 		logger.debug("Creating and starting SOCKS server");
-		// TODO (KK) get SOCKS port from config
-		int port = 1080;
-		SocksServer socksServer = new SocksServer(port, nodeCore, client);
+		SocksServer socksServer = new SocksServer(configuration.getLocalNodeServerPort(), nodeCore, client);
 		socksServer.setUncaughtExceptionHandler((thread, throwable) -> logger.error("Uncaught exception in thread: " + thread.getName(), throwable));
 		socksServer.start();
 
