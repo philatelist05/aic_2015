@@ -3,30 +3,40 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.nio.BufferOverflowException;
+import java.util.*;
 
 /**
  * Created by Thomas on 22.11.2014.
  */
-public class TargetWorker implements AutoCloseable, Runnable {
+public class TargetWorker implements AutoCloseable {
     static final Logger logger = LogManager.getLogger(TargetWorker.class.getName());
 
     private final ConnectionWorker worker;
-    private final Endpoint endpoint;
+    private final TargetForwarder forwarder;
     private final NoGapBuffer<Bucket> buffer;
+    private final Timer bufferChecker;
+    private final ClearBufferTask clearBufferTask;
 
-    public TargetWorker(ConnectionWorker worker, Endpoint endpoint) {
+    public TargetWorker(ConnectionWorker worker, TargetForwarder forwarder) {
         this.worker = worker;
-        this.endpoint = endpoint;
-        this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.nr, b2.nr), this::allItemsInRange);
+        this.forwarder = forwarder;
+        this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.nr, b2.nr), this::allItemsInRange, Short.MAX_VALUE);
+        bufferChecker = new Timer("PeriodicBufferChecker");
+        clearBufferTask = new ClearBufferTask();
+        bufferChecker.schedule(clearBufferTask, 2000);
     }
 
     public void sendData(byte[] data, short sequenceNumber) {
         Bucket bucket = new Bucket(Arrays.copyOf(data, data.length), sequenceNumber);
-        buffer.add(bucket);
+        try {
+            buffer.add(bucket);
+        } catch (BufferOverflowException e) {
+            clearBufferTask.run();
+            buffer.add(bucket);
+        }
     }
 
     private Set<Bucket> allItemsInRange(Bucket b1, Bucket b2) {
@@ -44,13 +54,8 @@ public class TargetWorker implements AutoCloseable, Runnable {
     }
 
     @Override
-    public void run() {
-//        worker.sendCell(new RelayCell(0, new RelayCellPayload(new byte[]{})));
-    }
-
-    @Override
     public void close() throws IOException {
-        // TODO
+        bufferChecker.cancel();
     }
 
     private class Bucket {
@@ -68,6 +73,32 @@ public class TargetWorker implements AutoCloseable, Runnable {
                     "data=" + Arrays.toString(data) +
                     ", nr=" + nr +
                     ']';
+        }
+    }
+
+    private class ClearBufferTask extends TimerTask {
+        @Override
+        public void run() {
+            Set<Bucket> missingElements = buffer.getMissingElements();
+            if (missingElements.size() > 0) {
+                logger.fatal("There are some gaps in the input: ");
+                logger.fatal("Missing Sequences: " + missingElements.toString());
+                //TODO: What should we do here?
+            }
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            buffer.getContents().stream()
+                    .map(bucket -> {
+                        try {
+                            bos.write(bucket.data);
+                        } catch (IOException ignored) {
+                            //That Exception can safely be ignored
+                            //because it will never get thrown
+                        }
+                        return bucket;
+                    });
+            buffer.clear();
+            forwarder.forward(bos.toByteArray());
         }
     }
 }
