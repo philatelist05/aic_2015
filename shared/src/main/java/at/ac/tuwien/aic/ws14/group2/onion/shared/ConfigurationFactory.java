@@ -11,8 +11,8 @@ import org.apache.logging.log4j.Logger;
 public class ConfigurationFactory {
 
 	public static final String CONFIG_FILE = "config.xml";
-	private static Configuration configuration;
 	static final Logger logger = LogManager.getLogger(ConfigurationFactory.class.getName());
+	private static Configuration configuration;
 
 	public static Configuration getConfiguration() {
 		if (configuration == null) {
@@ -38,6 +38,7 @@ public class ConfigurationFactory {
 	}
 
 	private static Configuration mapConfig(XMLConfiguration xmlConfiguration) {
+		boolean nodeCommonLocalMode = xmlConfiguration.getBoolean("node.common.local-mode", true);
 		String nodeCommonHost = xmlConfiguration.getString("node.common.host", "localhost");
 		int nodeCommonPort = xmlConfiguration.getInt("node.common.port", 9090);
 		int localNodeServerPort = xmlConfiguration.getInt("node.local.server-port", 1080);
@@ -51,7 +52,7 @@ public class ConfigurationFactory {
 		String targetServiceHost = xmlConfiguration.getString("node.target-service.host", "localhost");
 		int targetServicePort = xmlConfiguration.getInt("node.target-service.port", 8080);
 
-		return new Configuration(nodeCommonHost, nodeCommonPort, localNodeServerPort, localNodeListeningHost,
+		return new Configuration(nodeCommonLocalMode, nodeCommonHost, nodeCommonPort, localNodeServerPort, localNodeListeningHost,
 				localNodeNumCellWorkers, chainNodeHeartbeatInterval, chainNodeNumCellWorkers,
 				directoryNodeHeartbeatTimeout, directoryNodeMinThriftWorker, directoryNodeMaxThriftWorker,
 				targetServiceHost, targetServicePort);
