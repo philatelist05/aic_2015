@@ -1,6 +1,5 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.server;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalNodeCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,11 +48,10 @@ public class SocksDataForwarderServer extends Thread implements AutoCloseable {
 	/**
 	 * Send data back to the originator.
 	 *
-	 * @param endpoint       the endpoint from which the request came
 	 * @param sequenceNumber the sequence number associated with the DataCommand that contained the data
 	 * @param data           the raw data contained in the data cell
 	 */
-	public void sendDataBack(Endpoint endpoint, Short sequenceNumber, byte[] data) {
+	public void sendDataBack(Short sequenceNumber, byte[] data) {
 		// TODO (KK) Send data back
 	}
 

@@ -1,6 +1,5 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.ChainMetaData;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ErrorCode;
 
@@ -23,11 +22,10 @@ public interface SocksCallBack {
 	/**
 	 * Callback method that will be called when a Data Cell was received.
 	 *
-	 * @param endpoint       the endpoint from which the request came
 	 * @param sequenceNumber the sequence number associated with the DataCommand that contained the data
 	 * @param data           the raw data contained in the data cell
 	 */
-	void responseData(Endpoint endpoint, Short sequenceNumber, byte[] data);
+	void responseData(Short sequenceNumber, byte[] data);
 
 	/**
 	 * Callback method that will be called when an unrecoverable error has occured.

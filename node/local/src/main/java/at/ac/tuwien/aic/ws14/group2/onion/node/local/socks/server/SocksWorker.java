@@ -184,14 +184,14 @@ public class SocksWorker implements Runnable, AutoCloseable {
 		}
 
 		@Override
-		public void responseData(Endpoint endpoint, Short sequenceNumber, byte[] data) {
+		public void responseData(Short sequenceNumber, byte[] data) {
 			if (SocksWorker.this.socksDataForwarderServer == null) {
 				logger.error("Got response data when socksDataForwarderServer was still null. Ignoring data!");
 				return;
 			}
 
 			// Send response data
-			SocksWorker.this.socksDataForwarderServer.sendDataBack(endpoint, sequenceNumber, data);
+			SocksWorker.this.socksDataForwarderServer.sendDataBack(sequenceNumber, data);
 		}
 
 		@Override

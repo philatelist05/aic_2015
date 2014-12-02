@@ -108,8 +108,7 @@ public class LocalCellWorker implements CellWorker {
 
         SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
 
-        // TODO (KK) Look if circuit.getEndpoint() is really what is requested here
-        callback.responseData(circuit.getEndpoint(), dataCommand.getSequenceNumber(), dataCommand.getData());
+        callback.responseData(dataCommand.getSequenceNumber(), dataCommand.getData());
     }
 
     private void handleConnectResponse(ConnectResponseCommand connectResponseCommand) {
