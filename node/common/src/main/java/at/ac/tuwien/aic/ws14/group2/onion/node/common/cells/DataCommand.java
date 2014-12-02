@@ -2,7 +2,9 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 /**
@@ -10,7 +12,7 @@ import java.nio.ByteBuffer;
  */
 public class DataCommand extends Command {
 
-    static final int MAX_DATA_LENGTH = COMMAND_PAYLOAD_BYTES - 2;
+    public static final int MAX_DATA_LENGTH = COMMAND_PAYLOAD_BYTES - 2;
 
     private byte[] data;
     private short length;

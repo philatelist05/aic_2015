@@ -1,11 +1,12 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.server;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DataCommand;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalNodeCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -13,7 +14,7 @@ import java.util.function.Consumer;
 /**
  * Created by klaus on 11/30/14.
  */
-public class SocksDataForwarder implements Runnable, Closeable {
+public class SocksDataForwarder implements Runnable, AutoCloseable {
 	private static final Logger logger = LoggerFactory.getLogger(SocksDataForwarder.class.getName());
 
 	private final Short circuitId;
@@ -32,15 +33,27 @@ public class SocksDataForwarder implements Runnable, Closeable {
 
 	@Override
 	public void run() {
+		if (!socket.isConnected())
+			throw new IllegalStateException("TCP socket not connected");
+
+		byte[] buffer = new byte[DataCommand.MAX_DATA_LENGTH];
+
 		try {
 			try {
-				// TODO (KK) Forward data to the circuit
-				Thread.currentThread().wait();
 
-//				stop = false;
-//				while (!stop) {
-//
-//				}
+				InputStream inputStream = socket.getInputStream();
+
+				stop = false;
+				while (!stop) {
+					int actualBytesRead = inputStream.read(buffer);
+
+					if (actualBytesRead < 1) {
+						stop = true;
+						continue;
+					}
+
+					// TODO (KK) Forward data to the circuit
+				}
 			} finally {
 				close();
 			}

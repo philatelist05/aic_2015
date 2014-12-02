@@ -125,31 +125,26 @@ public class LocalNodeCore {
         }
     }
 
-    public boolean connectTo(Short circuitID, Endpoint endpoint) {
+    public void connectTo(Short circuitID, Endpoint endpoint) throws EncryptException, IOException {
         ConnectCommand connectCommand = new ConnectCommand(endpoint);
         Cell cell = encryptCommandForChain(circuitID, connectCommand);
-        if (cell == null) {
-            return false;
-        } else {
-            try {
-                sendCell(cell, endpoint);
-            } catch (IOException e) {
-                logger.warn("Encountered IOException while trying to send cell.");
-                logger.catching(Level.DEBUG, e);
-                return false;
-            }
+
+        try {
+            sendCell(cell, endpoint);
+        } catch (IOException e) {
+            logger.warn("Encountered IOException while trying to send cell.");
+            logger.catching(Level.DEBUG, e);
+            throw e;
         }
-        return true;
     }
 
-    public boolean sendData(Short circuitID, byte[] data) {
+    public void sendData(Short circuitID, byte[] data) {
         ChainMetaData chainMetaData = getChainMetaData(circuitID);
         synchronized (chainMetaData) {
             int sequenceNumber = chainMetaData.incrementAndGetSequenceNumber();
             //TODO create and send DataCommand in RelayCell
 
         }
-        return true;
     }
 
     public short getAndReserveFreeCircuitID() {
@@ -174,29 +169,29 @@ public class LocalNodeCore {
         return success;
     }
 
-    protected Cell encryptCommandForChain(Short circuitID, Command command) {
+    protected Cell encryptCommandForChain(Short circuitID, Command command) throws EncryptException {
         ChainMetaData metaData = getChainMetaData(circuitID);
         SocksCallBack callBack = getCallBack(circuitID);
 
         ConcurrentHashMap<Integer, ChainNodeMetaData> nodes = metaData.getNodes();
         int nextNodeIndex = metaData.getNextNode();
-        if (nodes != null) {
-            ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
-            RelayCellPayload payload = new RelayCellPayload(command);
-            for (int i = 0; i < nextNodeIndex; i++) {
-                ChainNodeMetaData currentNode = nodes.get(i);
-                try {
-                    payload = payload.encrypt(currentNode.getSessionKey());
-                } catch (EncryptException e) {
-                    logger.warn("Failed to encrypt ExtendCommand, aborting Chain creation");
-                    logger.catching(Level.DEBUG, e);
-                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-                    return null;
-                }
+        if (nodes == null)
+            throw new EncryptException("No nodes in the chain");
+
+        ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
+        RelayCellPayload payload = new RelayCellPayload(command);
+        for (int i = 0; i < nextNodeIndex; i++) {
+            ChainNodeMetaData currentNode = nodes.get(i);
+            try {
+                payload = payload.encrypt(currentNode.getSessionKey());
+            } catch (EncryptException e) {
+                logger.warn("Failed to encrypt ExtendCommand, aborting Chain creation");
+                logger.catching(Level.DEBUG, e);
+                callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                throw e;
             }
-            return new RelayCell(circuitID, payload);
         }
-        return null;
+        return new RelayCell(circuitID, payload);
     }
 
     protected void sendCell(Cell cell, Endpoint endpoint) throws IOException {

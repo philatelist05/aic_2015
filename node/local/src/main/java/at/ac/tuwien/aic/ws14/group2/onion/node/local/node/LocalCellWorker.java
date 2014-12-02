@@ -100,7 +100,6 @@ public class LocalCellWorker implements CellWorker {
             logger.warn("Failed to decode RelayCellPayload");
             logger.catching(Level.DEBUG, e);
             callBack.error(ErrorCode.DECODING_FAILURE);
-            return;
         }
     }
 
@@ -109,8 +108,8 @@ public class LocalCellWorker implements CellWorker {
 
         SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
 
-        callback.responseData(dataCommand.getSequenceNumber(), dataCommand.getData());
-        return;
+        // TODO (KK) Look if circuit.getEndpoint() is really what is requested here
+        callback.responseData(circuit.getEndpoint(), dataCommand.getSequenceNumber(), dataCommand.getData());
     }
 
     private void handleConnectResponse(ConnectResponseCommand connectResponseCommand) {
@@ -224,67 +223,66 @@ public class LocalCellWorker implements CellWorker {
     private void nextChainBuildingStep(ChainMetaData metaData, SocksCallBack callBack) {
         ConcurrentHashMap<Integer, ChainNodeMetaData> nodes = metaData.getNodes();
         int nextNodeIndex = metaData.getNextNode();
-        if (nodes != null) {
-            ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
-            if (nextNode == null) {
-                logger.info("Chain established, calling callback!");
-                callBack.chainEstablished(metaData);
-            } else {
-                DHKeyExchange keyExchange;
-                try {
-                    keyExchange = new DHKeyExchange();
-                } catch (KeyExchangeException e) {
-                    logger.warn("Key exchange failed.");
-                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-                    return;
-                }
-                BigInteger p = DHKeyExchange.generateRelativePrime();
-                BigInteger g = DHKeyExchange.generateRelativePrime();
-                byte[] publicKey;
-                try {
-                    publicKey = keyExchange.initExchange(p, g);
-                } catch (KeyExchangeException e) {
-                    logger.warn("Key exchange failed.");
-                    callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-                    return;
-                }
+        if (nodes == null) return;
 
-                circuit.setDHKeyExchange(keyExchange);
-                EncryptedDHHalf encryptedDHHalf = null;
+        ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
+        if (nextNode == null) {
+            logger.info("Chain established, calling callback!");
+            callBack.chainEstablished(metaData);
+        } else {
+            DHKeyExchange keyExchange;
+            try {
+                keyExchange = new DHKeyExchange();
+            } catch (KeyExchangeException e) {
+                logger.warn("Key exchange failed.");
+                callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                return;
+            }
+            BigInteger p = DHKeyExchange.generateRelativePrime();
+            BigInteger g = DHKeyExchange.generateRelativePrime();
+            byte[] publicKey;
+            try {
+                publicKey = keyExchange.initExchange(p, g);
+            } catch (KeyExchangeException e) {
+                logger.warn("Key exchange failed.");
+                callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                return;
+            }
+
+            circuit.setDHKeyExchange(keyExchange);
+            EncryptedDHHalf encryptedDHHalf = null;
+            try {
+                encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(nextNode.getPublicKey());
+            } catch (EncryptException e) {
+                logger.warn("Could not encrypt DH half, aborting Chain creation.");
+                logger.catching(Level.DEBUG, e);
+                callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
+                return;
+            }
+            ExtendCommand command = new ExtendCommand(nextNode.getEndPoint(), p, g, encryptedDHHalf);
+            RelayCellPayload payload = new RelayCellPayload(command);
+            logger.debug("Decrypted payload: {}", payload);
+            for (int i = nextNodeIndex - 1; i >= 0; i--) {
+                ChainNodeMetaData currentNode = nodes.get(i);
+                logger.debug("Encrypting payload with session key for node {}", currentNode);
                 try {
-                    encryptedDHHalf = new DHHalf(g, p, publicKey).encrypt(nextNode.getPublicKey());
+                    payload = payload.encrypt(currentNode.getSessionKey());
+                    logger.debug("Payload after encryption: {}", payload);
                 } catch (EncryptException e) {
-                    logger.warn("Could not encrypt DH half, aborting Chain creation.");
+                    logger.warn("Failed to encrypt ExtendCommand, aborting Chain creation");
                     logger.catching(Level.DEBUG, e);
                     callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
                     return;
                 }
-                ExtendCommand command = new ExtendCommand(nextNode.getEndPoint(), p, g, encryptedDHHalf);
-                RelayCellPayload payload = new RelayCellPayload(command);
-                logger.debug("Decrypted payload: {}", payload);
-                for(int i = nextNodeIndex - 1; i >= 0; i--) {
-                    ChainNodeMetaData currentNode = nodes.get(i);
-                    logger.debug("Encrypting payload with session key for node {}", currentNode);
-                    try {
-                        payload = payload.encrypt(currentNode.getSessionKey());
-                        logger.debug("Payload after encryption: {}", payload);
-                    } catch (EncryptException e) {
-                        logger.warn("Failed to encrypt ExtendCommand, aborting Chain creation");
-                        logger.catching(Level.DEBUG, e);
-                        callBack.error(ErrorCode.KEY_EXCHANGE_FAILED);
-                        return;
-                    }
-                }
+            }
 
-                RelayCell relayCell = new RelayCell(circuit.getCircuitID(), payload);
-                try {
-                    connectionWorker.sendCell(relayCell);
-                } catch (IOException e) {
-                    logger.warn("Could not send RelayCell, aborting Chain creation");
-                    logger.catching(Level.DEBUG, e);
-                    callBack.error(ErrorCode.CW_FAILURE);
-                    return;
-                }
+            RelayCell relayCell = new RelayCell(circuit.getCircuitID(), payload);
+            try {
+                connectionWorker.sendCell(relayCell);
+            } catch (IOException e) {
+                logger.warn("Could not send RelayCell, aborting Chain creation");
+                logger.catching(Level.DEBUG, e);
+                callBack.error(ErrorCode.CW_FAILURE);
             }
         }
     }
