@@ -59,12 +59,20 @@ public class ChainNodeStarter {
 
         logger.info("Starting node core");
         ServerSocket listeningSocket = null;
-        try {
-            listeningSocket = new ServerSocket(0, 100);
-        } catch (IOException e) {
+        int listeningPort = 30000;
+        while (listeningSocket == null && listeningPort < 39999) {
+            listeningPort++;
+            try {
+                listeningSocket = new ServerSocket(listeningPort, 100);
+            } catch (IOException e) {
+            }
+        }
+
+        if (listeningSocket == null) {
             logger.fatal("Failed to create listening Socket!");
             System.exit(-1);
         }
+
         Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
         nodeCoreThread.start();
 
@@ -84,7 +92,7 @@ public class ChainNodeStarter {
                 System.exit(-1);
             }
         }
-        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), chainNodeHostname, Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
+        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, chainNodeHostname, Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         logger.info("ChainNodeInformation: {}", nodeInformation);
 
 
