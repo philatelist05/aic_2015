@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -59,6 +60,14 @@ public class TargetWorker implements AutoCloseable, Runnable {
         private Bucket(byte[] data, short sequenceNumber) {
             this.data = data;
             this.nr = sequenceNumber;
+        }
+
+        @Override
+        public String toString() {
+            return "Bucket[" +
+                    "data=" + Arrays.toString(data) +
+                    ", nr=" + nr +
+                    ']';
         }
     }
 }
