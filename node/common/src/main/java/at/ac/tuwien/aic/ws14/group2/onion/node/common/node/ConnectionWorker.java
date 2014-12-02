@@ -2,7 +2,6 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.WrongCircuitIDException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -10,8 +9,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.annotation.Target;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.*;
@@ -91,8 +88,9 @@ public class ConnectionWorker implements AutoCloseable {
      * @throws CircuitIDExistsAlreadyException Thrown if there is already a TargetWorker for the specified circuit.
      */
     public void createTargetWorker(Circuit incomingCircuit, Endpoint target) throws CircuitIDExistsAlreadyException, IOException {
-        TargetWorker worker = new TargetWorker(this, new SocketForwarder(target));
-        if (targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), worker) != null) {
+        short circuitID = incomingCircuit.getCircuitID();
+        TargetWorker worker = new TargetWorker(this, circuitID, new SocketForwarder(target));
+        if (targetWorkers.putIfAbsent(circuitID, worker) != null) {
             worker.close();
 
             throw new CircuitIDExistsAlreadyException("Only one target worker allowed for a single chain.");
