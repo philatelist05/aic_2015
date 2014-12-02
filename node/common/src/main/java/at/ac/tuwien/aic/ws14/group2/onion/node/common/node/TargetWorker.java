@@ -29,7 +29,7 @@ public class TargetWorker implements AutoCloseable {
         this.worker = worker;
         this.circuitID = circuitID;
         this.forwarder = forwarder;
-        this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.nr, b2.nr), this::allItemsInRange, Short.MAX_VALUE);
+        this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.getNr(), b2.getNr()), this::allItemsInRange, Short.MAX_VALUE);
         bufferChecker = new Timer("PeriodicBufferChecker");
         clearBufferTask = new ClearBufferTask();
         long targetWorkerTimeout = configuration.getTargetWorkerTimeout();
@@ -48,12 +48,12 @@ public class TargetWorker implements AutoCloseable {
 
     private Set<Bucket> allItemsInRange(Bucket b1, Bucket b2) {
         Set<Bucket> buckets = new HashSet<>();
-        if (b1.nr <= b2.nr) {
-            for (int i = b1.nr + 1; i < b2.nr; i++) {
+        if (b1.getNr() <= b2.getNr()) {
+            for (int i = b1.getNr() + 1; i < b2.getNr(); i++) {
                 buckets.add(new Bucket(new byte[]{}, (short)i));
             }
         } else {
-            for (int i = b1.nr - 1; i > b2.nr ; i--) {
+            for (int i = b1.getNr() - 1; i > b2.getNr(); i--) {
                 buckets.add(new Bucket(new byte[]{}, (short)i));
             }
         }
@@ -63,24 +63,6 @@ public class TargetWorker implements AutoCloseable {
     @Override
     public void close() throws IOException {
         bufferChecker.cancel();
-    }
-
-    private class Bucket {
-        private byte[] data;
-        private short nr;
-
-        private Bucket(byte[] data, short sequenceNumber) {
-            this.data = data;
-            this.nr = sequenceNumber;
-        }
-
-        @Override
-        public String toString() {
-            return "Bucket[" +
-                    "data=" + Arrays.toString(data) +
-                    ", nr=" + nr +
-                    ']';
-        }
     }
 
     private class ClearBufferTask extends TimerTask {
@@ -98,7 +80,7 @@ public class TargetWorker implements AutoCloseable {
             buffer.getContents().stream()
                     .forEach(bucket -> {
                         try {
-                            bos.write(bucket.data);
+                            bos.write(bucket.getData());
                         } catch (IOException e) {
                             logger.catching(Level.DEBUG, e);
                         }
