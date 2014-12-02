@@ -2,6 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.server;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.ChainMetaData;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalNodeCore;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.SocksCallBack;
@@ -13,7 +14,6 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 /**
  * Created by klaus on 11/30/14.
  */
-public class SocksWorker implements Runnable, Closeable {
+public class SocksWorker implements Runnable, AutoCloseable {
 	private static final Logger logger = LoggerFactory.getLogger(SocksWorker.class.getName());
 	private static final int CHAIN_LENGTH = 3;
 
@@ -80,8 +80,9 @@ public class SocksWorker implements Runnable, Closeable {
 				outputStream.write(methodSelectionReply.toByteArray());
 
 				// Read the command request
+				CommandRequest commandRequest;
 				try {
-					CommandRequest commandRequest = CommandRequest.fromInputStream(inputStream);
+					commandRequest = CommandRequest.fromInputStream(inputStream);
 
 					if (!Command.CONNECT.equals(commandRequest.getCommand()))
 						throw new CommandNotSupportedException(commandRequest.getCommand().getValue());
@@ -99,11 +100,16 @@ public class SocksWorker implements Runnable, Closeable {
 				// Create the chain
 				createChain();
 
+				SocksAddress destination = commandRequest.getDestination();
+
+				// Connect to the target
+				localNodeCore.connectTo(circuitId, convertEndpointToSocksAddress(destination));
+
 				// Create and start the forwarder of for the client data
 				socksDataForwarderServer = new SocksDataForwarderServer(circuitId, localNodeCore);
 				socksDataForwarderServer.start();
 
-				// Send command reply
+				// Send succeeded command reply
 				CommandReply commandReply = new CommandReply(ReplyType.SUCCEEDED, new SocksAddress(socksDataForwarderServer.getInetAddress(), socksDataForwarderServer.getLocalPort()));
 				outputStream.write(commandReply.toByteArray());
 
@@ -120,6 +126,21 @@ public class SocksWorker implements Runnable, Closeable {
 				eh.uncaughtException(Thread.currentThread(), e);
 			else
 				logger.error("Uncaught exception in thread: " + Thread.currentThread().getName(), e);
+		}
+	}
+
+	private Endpoint convertEndpointToSocksAddress(SocksAddress socksAddress) {
+		Objects.requireNonNull(socksAddress);
+
+		switch (socksAddress.getAddressType()) {
+			case DOMAINNAME:
+				return new Endpoint(socksAddress.getHostName(), socksAddress.getPort());
+			case IP_V4_ADDRESS:
+			case IP_V6_ADDRESS:
+				return new Endpoint(socksAddress.getAddress(), socksAddress.getPort());
+			default:
+				throw new IllegalStateException("address type is in an illegal state");
+
 		}
 	}
 

@@ -5,7 +5,6 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalNodeCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -20,7 +19,7 @@ import java.util.function.Consumer;
 /**
  * Created by klaus on 11/25/14.
  */
-public class SocksServer extends Thread implements Closeable {
+public class SocksServer extends Thread implements AutoCloseable {
 	private static final Logger logger = LoggerFactory.getLogger(SocksServer.class.getName());
 
 	private final ServerSocket socket;

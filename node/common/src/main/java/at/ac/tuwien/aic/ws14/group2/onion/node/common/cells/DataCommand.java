@@ -2,7 +2,9 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 /**
@@ -60,11 +62,11 @@ public class DataCommand extends Command {
         return data;
     }
 
-    public Short getSequenceNumber() {
+    public short getSequenceNumber() {
         return sequenceNumber;
     }
 
-    public void setSequenceNumber(Short sequenceNumber) {
+    public void setSequenceNumber(short sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
     }
 

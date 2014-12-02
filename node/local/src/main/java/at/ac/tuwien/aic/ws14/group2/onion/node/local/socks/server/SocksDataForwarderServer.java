@@ -4,29 +4,27 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalNodeCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.SortedMap;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 /**
  * Created by klaus on 11/30/14.
  */
-public class SocksDataForwarderServer extends Thread implements Closeable {
+public class SocksDataForwarderServer extends Thread implements AutoCloseable {
 	private static final Logger logger = LoggerFactory.getLogger(SocksDataForwarderServer.class.getName());
 
 	private final Short circuitId;
 	private final LocalNodeCore localNodeCore;
 	private final ServerSocket socket;
 	private final Collection<SocksDataForwarder> socksDataForwarderCollection;
+	private final SortedMap<Short, byte[]> responseBuffer;
 	private ExecutorService pool;
 	private volatile boolean stop;
 
@@ -36,6 +34,7 @@ public class SocksDataForwarderServer extends Thread implements Closeable {
 		// Create socket for the actual data from the originator
 		this.socket = new ServerSocket(0);
 		this.socksDataForwarderCollection = new CopyOnWriteArrayList<>();
+		this.responseBuffer = new ConcurrentSkipListMap<>();
 	}
 
 	public int getLocalPort() {
@@ -46,6 +45,12 @@ public class SocksDataForwarderServer extends Thread implements Closeable {
 		return this.socket.getInetAddress();
 	}
 
+	/**
+	 * Send data back to the originator.
+	 *
+	 * @param sequenceNumber the sequence number associated with the DataCommand that contained the data
+	 * @param data           the raw data contained in the data cell
+	 */
 	public void sendDataBack(Short sequenceNumber, byte[] data) {
 		// TODO (KK) Send data back
 	}
