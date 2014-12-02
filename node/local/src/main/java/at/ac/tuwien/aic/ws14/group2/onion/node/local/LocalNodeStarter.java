@@ -88,7 +88,7 @@ public class LocalNodeStarter {
 		logger.debug("Creating SSL Transport using Thrift");
 		TTransport transport = null;
 		try {
-			transport = TSSLTransportFactory.getClientSocket("localhost", configuration.getNodeCommonPort(), 0, clientParams);
+			transport = TSSLTransportFactory.getClientSocket(configuration.getNodeCommonHost(), configuration.getNodeCommonPort(), 0, clientParams);
 		} catch (TTransportException e) {
 			logger.fatal("Could not establish SSL connection to directory, exiting..");
 			logger.catching(Level.DEBUG, e);
