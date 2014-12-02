@@ -16,16 +16,16 @@ public class TargetWorker implements AutoCloseable, Runnable {
 
     private final ConnectionWorker worker;
     private final Endpoint endpoint;
-    private final NoGapSkipListSet<Bucket> buffer;
+    private final NoGapBuffer<Bucket> buffer;
 
     public TargetWorker(ConnectionWorker worker, Endpoint endpoint) {
         this.worker = worker;
         this.endpoint = endpoint;
-        this.buffer = new NoGapSkipListSet<>((b1, b2) -> Short.compare(b1.nr, b2.nr), this::allItemsInRange);
+        this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.nr, b2.nr), this::allItemsInRange);
     }
 
     public void sendData(byte[] data, short sequenceNumber) {
-        Bucket bucket = new Bucket(data, sequenceNumber);
+        Bucket bucket = new Bucket(Arrays.copyOf(data, data.length), sequenceNumber);
         buffer.add(bucket);
     }
 

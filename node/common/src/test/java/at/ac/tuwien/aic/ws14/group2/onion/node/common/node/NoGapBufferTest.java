@@ -9,13 +9,13 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class NoGapSkipListSetTest {
+public class NoGapBufferTest {
 
-    private NoGapSkipListSet<Integer> set;
+    private NoGapBuffer<Integer> set;
 
     @Before
     public void setUp() throws Exception {
-        set = new NoGapSkipListSet<>(Integer::compareTo, this::allItemsInRange);
+        set = new NoGapBuffer<>(Integer::compareTo, this::allItemsInRange);
     }
 
     private Set<Integer> allItemsInRange(int t1, int t2) {

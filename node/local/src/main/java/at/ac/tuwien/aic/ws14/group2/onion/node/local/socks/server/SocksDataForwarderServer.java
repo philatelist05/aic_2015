@@ -46,7 +46,7 @@ public class SocksDataForwarderServer extends Thread implements Closeable {
 		return this.socket.getInetAddress();
 	}
 
-	public void sendDataBack(byte[] data) {
+	public void sendDataBack(Short sequenceNumber, byte[] data) {
 		// TODO (KK) Send data back
 	}
 

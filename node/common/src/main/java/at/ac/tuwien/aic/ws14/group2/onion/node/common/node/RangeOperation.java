@@ -5,6 +5,6 @@ import java.util.Set;
 /**
  * Created by stefan on 02.12.14.
  */
-public interface GapComparator<T> {
+public interface RangeOperation<T> {
     Set<T> getElementsInBetween(T t1, T t2);
 }
