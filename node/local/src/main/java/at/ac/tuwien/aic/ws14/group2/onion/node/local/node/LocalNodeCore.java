@@ -75,6 +75,7 @@ public class LocalNodeCore {
         }
         ChainNodeMetaData firstNode = chainMetaData.getNodes().get(0);
         Circuit circuit = new Circuit(getAndReserveFreeCircuitID(), firstNode.getEndPoint());
+        chainMetaData.setCircuitID(circuit.getCircuitID());
 
         callbacks.putIfAbsent(circuit.getCircuitID(), callBack);
         chains.putIfAbsent(circuit.getCircuitID(), chainMetaData);
