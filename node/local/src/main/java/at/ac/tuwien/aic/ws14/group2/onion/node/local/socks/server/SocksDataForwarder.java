@@ -16,8 +16,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 /**
  * Created by klaus on 11/30/14.
  */
-public class SocksDataForwarderServer extends Thread implements AutoCloseable {
-	private static final Logger logger = LoggerFactory.getLogger(SocksDataForwarderServer.class.getName());
+public class SocksDataForwarder extends Thread implements AutoCloseable {
+	private static final Logger logger = LoggerFactory.getLogger(SocksDataForwarder.class.getName());
 
 	private final Short circuitId;
 	private final LocalNodeCore localNodeCore;
@@ -26,7 +26,7 @@ public class SocksDataForwarderServer extends Thread implements AutoCloseable {
 	private volatile boolean stop;
 	private Socket clientSocket;
 
-	public SocksDataForwarderServer(Short circuitId, LocalNodeCore localNodeCore) throws IOException {
+	public SocksDataForwarder(Short circuitId, LocalNodeCore localNodeCore) throws IOException {
 		this.circuitId = circuitId;
 		this.localNodeCore = localNodeCore;
 		// Create socket for the actual data from the originator
