@@ -2,6 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,7 +12,7 @@ import java.nio.BufferOverflowException;
 import java.util.*;
 
 /**
- * Created by Thomas on 22.11.2014.
+ * Created by Stefan on 02.12.2014.
  */
 public class TargetWorker implements AutoCloseable {
     static final Logger logger = LogManager.getLogger(TargetWorker.class.getName());
@@ -31,7 +32,8 @@ public class TargetWorker implements AutoCloseable {
         this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.nr, b2.nr), this::allItemsInRange, Short.MAX_VALUE);
         bufferChecker = new Timer("PeriodicBufferChecker");
         clearBufferTask = new ClearBufferTask();
-        bufferChecker.schedule(clearBufferTask, configuration.getTargetWorkerTimeout());
+        long targetWorkerTimeout = configuration.getTargetWorkerTimeout();
+        bufferChecker.schedule(clearBufferTask, targetWorkerTimeout, targetWorkerTimeout);
     }
 
     public void sendData(byte[] data, short sequenceNumber) {
@@ -89,18 +91,17 @@ public class TargetWorker implements AutoCloseable {
                 logger.fatal("There are some gaps in the input: ");
                 logger.fatal("Missing Sequences: " + missingElements.toString());
                 //TODO: What should we do here?
+                return;
             }
 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             buffer.getContents().stream()
-                    .map(bucket -> {
+                    .forEach(bucket -> {
                         try {
                             bos.write(bucket.data);
-                        } catch (IOException ignored) {
-                            //That Exception can safely be ignored
-                            //because it will never get thrown
+                        } catch (IOException e) {
+                            logger.catching(Level.DEBUG, e);
                         }
-                        return bucket;
                     });
             buffer.clear();
             forwarder.forward(bos.toByteArray());
