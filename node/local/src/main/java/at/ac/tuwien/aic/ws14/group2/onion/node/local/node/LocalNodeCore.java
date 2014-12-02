@@ -38,6 +38,7 @@ public class LocalNodeCore {
         this.chains = chains;
         this.callbacks = callbacks;
         try {
+            // TODO (KK) Remove faked endpoint
             this.fakedEndpoint = new Endpoint(InetAddress.getLocalHost(), 1);
         } catch (UnknownHostException e) {
             e.printStackTrace();
@@ -50,6 +51,7 @@ public class LocalNodeCore {
         this.chains = new ConcurrentHashMap<>();
         this.callbacks = new ConcurrentHashMap<>();
         try {
+            // TODO (KK) Remove faked endpoint
             this.fakedEndpoint = new Endpoint(InetAddress.getLocalHost(), 1);
         } catch (UnknownHostException e) {
             e.printStackTrace();
