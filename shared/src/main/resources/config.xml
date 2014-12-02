@@ -14,12 +14,12 @@
 			<cellworkers-per-connectionworker>5</cellworkers-per-connectionworker>
 		</local>
 		<chain>
-			<heartbeat-interval>2000</heartbeat-interval>
+			<heartbeat-interval>1000</heartbeat-interval>
 			<cellworkers-per-connectionworker>20</cellworkers-per-connectionworker>
 			<targetworker-timeout>2000</targetworker-timeout>
 		</chain>
 		<directory>
-			<heartbeat-timeout>7000</heartbeat-timeout>
+			<heartbeat-timeout>10000</heartbeat-timeout>
 			<thriftworker>
 				<min>3</min>
 				<max>16</max>
