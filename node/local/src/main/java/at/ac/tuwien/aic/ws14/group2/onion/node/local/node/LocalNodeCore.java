@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
@@ -141,10 +142,30 @@ public class LocalNodeCore {
 
     public void sendData(Short circuitID, byte[] data) {
         ChainMetaData chainMetaData = getChainMetaData(circuitID);
+        SocksCallBack callBack = getCallBack(circuitID);
         synchronized (chainMetaData) {
             int sequenceNumber = chainMetaData.incrementAndGetSequenceNumber();
-            //TODO create and send DataCommand in RelayCell
-
+            DataCommand payload;
+            try {
+                //FIXME change SN to int or do fancy magic here..
+                payload = new DataCommand(data);
+                payload.setSequenceNumber((short) sequenceNumber);
+            } catch (DecodeException e) {
+                callBack.error(ErrorCode.TOO_MUCH_DATA);
+                return;
+            }
+            Cell cell;
+            try {
+                cell = encryptCommandForChain(circuitID, payload);
+            } catch (EncryptException e) {
+                callBack.error(ErrorCode.ENCRYPTION_FAILURE);
+                return;
+            }
+            try {
+                sendCell(cell, chainMetaData.getNodes().get(chainMetaData.getLastNode()).getEndPoint());
+            } catch (IOException e) {
+                callBack.error(ErrorCode.CW_FAILURE);
+            }
         }
     }
 

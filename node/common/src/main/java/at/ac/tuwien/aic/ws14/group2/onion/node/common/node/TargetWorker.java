@@ -15,13 +15,15 @@ public class TargetWorker implements AutoCloseable {
     static final Logger logger = LogManager.getLogger(TargetWorker.class.getName());
 
     private final ConnectionWorker worker;
+    private final short circuitID;
     private final TargetForwarder forwarder;
     private final NoGapBuffer<Bucket> buffer;
     private final Timer bufferChecker;
     private final ClearBufferTask clearBufferTask;
 
-    public TargetWorker(ConnectionWorker worker, TargetForwarder forwarder) {
+    public TargetWorker(ConnectionWorker worker, short circuitID, TargetForwarder forwarder) {
         this.worker = worker;
+        this.circuitID = circuitID;
         this.forwarder = forwarder;
         this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.nr, b2.nr), this::allItemsInRange, Short.MAX_VALUE);
         bufferChecker = new Timer("PeriodicBufferChecker");
