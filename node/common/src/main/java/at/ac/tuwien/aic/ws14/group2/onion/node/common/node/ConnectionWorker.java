@@ -165,9 +165,9 @@ public class ConnectionWorker implements AutoCloseable {
                     handleCell(Cell.receive(this.inputStream));
                 }
             } catch (SocketException e) {
-                logger.info("Connection closed.");
+                logger.info("Connection closed: {}", e.getMessage());
             } catch (EOFException e) {
-                logger.info("Connection closed.");
+                logger.info("Connection closed: {}", e.getMessage());
             } catch (Exception e) {
                 logger.error("ConnectionWorker thread terminated.", e);
             }

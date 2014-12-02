@@ -125,7 +125,7 @@ public class ChainCellWorker implements CellWorker {
             logger.debug("Encrypted payload: {}", relayCell.getPayload());
             logger.debug("Decrypting with {} as session key", Arrays.toString(circuit.getSessionKey()));
             RelayCellPayload decryptedPayload = relayCell.getPayload().decrypt(circuit.getSessionKey());
-            logger.info("Decrypted payload: {}", decryptedPayload);
+            logger.debug("Decrypted payload: {}", decryptedPayload);
             Command cmd = decryptedPayload.decode();
             if (cmd instanceof ExtendCommand) {
                 handleExtendCommand((ExtendCommand)cmd);
@@ -155,7 +155,7 @@ public class ChainCellWorker implements CellWorker {
             Circuit assocCircuit = circuit.getAssociatedCircuit();
             logger.debug("Decrypting with {} as session key", Arrays.toString(circuit.getSessionKey()));
             RelayCellPayload decryptedPayload = relayCell.getPayload().decrypt(circuit.getSessionKey());
-            logger.info("Decrypted payload: {}", decryptedPayload);
+            logger.debug("Decrypted payload: {}", decryptedPayload);
             RelayCell newRelayCell = new RelayCell(assocCircuit.getCircuitID(), decryptedPayload);
 
             // forward
