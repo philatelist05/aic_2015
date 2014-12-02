@@ -1,18 +1,17 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.server;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DataCommand;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalNodeCore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Collection;
-import java.util.Objects;
 import java.util.SortedMap;
-import java.util.concurrent.*;
-import java.util.function.Consumer;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * Created by klaus on 11/30/14.
@@ -22,27 +21,25 @@ public class SocksDataForwarderServer extends Thread implements AutoCloseable {
 
 	private final Short circuitId;
 	private final LocalNodeCore localNodeCore;
-	private final ServerSocket socket;
-	private final Collection<SocksDataForwarder> socksDataForwarderCollection;
+	private final ServerSocket serverSocket;
 	private final SortedMap<Short, byte[]> responseBuffer;
-	private ExecutorService pool;
 	private volatile boolean stop;
+	private Socket clientSocket;
 
 	public SocksDataForwarderServer(Short circuitId, LocalNodeCore localNodeCore) throws IOException {
 		this.circuitId = circuitId;
 		this.localNodeCore = localNodeCore;
 		// Create socket for the actual data from the originator
-		this.socket = new ServerSocket(0);
-		this.socksDataForwarderCollection = new CopyOnWriteArrayList<>();
+		this.serverSocket = new ServerSocket(0);
 		this.responseBuffer = new ConcurrentSkipListMap<>();
 	}
 
 	public int getLocalPort() {
-		return this.socket.getLocalPort();
+		return this.serverSocket.getLocalPort();
 	}
 
 	public InetAddress getInetAddress() {
-		return this.socket.getInetAddress();
+		return this.serverSocket.getInetAddress();
 	}
 
 	/**
@@ -57,25 +54,31 @@ public class SocksDataForwarderServer extends Thread implements AutoCloseable {
 
 	@Override
 	public void run() {
-		if (!socket.isBound())
+		if (!serverSocket.isBound())
 			throw new IllegalStateException(
 					"TCP listener socket not initialized");
 
-		pool = Executors.newCachedThreadPool(new SocksDataForwarderThreadFactory(Thread.currentThread().getUncaughtExceptionHandler()));
-
 		try {
 			try {
+				clientSocket = serverSocket.accept();
+
+				byte[] buffer = new byte[DataCommand.MAX_DATA_LENGTH];
+				InputStream inputStream = clientSocket.getInputStream();
+
 				stop = false;
 				while (!stop) {
-					Socket clientSocket = socket.accept();
-					SocksDataForwarder socksDataForwarder = new SocksDataForwarder(clientSocket, circuitId, localNodeCore, this.new SocksDataForwarderCloseCallback());
-					socksDataForwarderCollection.add(socksDataForwarder);
-					pool.execute(socksDataForwarder);
+					int actualBytesRead = inputStream.read(buffer);
+
+					if (actualBytesRead < 1) {
+						stop = true;
+						continue;
+					}
+
+					// TODO (KK) Forward data to the circuit
 				}
 			} finally {
-				if (pool != null)
-					shutdownAndAwaitTermination(pool);
-				socket.close();
+				serverSocket.close();
+				clientSocket.close();
 			}
 		} catch (Exception e) {
 			// The if-clause down here is because of what is described in
@@ -99,38 +102,9 @@ public class SocksDataForwarderServer extends Thread implements AutoCloseable {
 	@Override
 	public void close() throws IOException {
 		stop = true;
-		if (pool != null)
-			shutdownAndAwaitTermination(pool);
 		this.interrupt();
-		socket.close();
+		serverSocket.close();
+		clientSocket.close();
 	}
 
-	private void shutdownAndAwaitTermination(ExecutorService pool)
-			throws IOException {
-		pool.shutdown(); // Disable new tasks from being submitted
-		try {
-			// Wait a while for existing tasks to terminate
-			if (!pool.awaitTermination(5, TimeUnit.SECONDS)) {
-				// Cancel currently executing tasks
-				pool.shutdownNow();
-
-				// Close the clients connections so they can really terminate
-				for (SocksDataForwarder socksDataForwarder : socksDataForwarderCollection) {
-					socksDataForwarder.close();
-				}
-			}
-		} catch (InterruptedException ie) {
-			// (Re-)Cancel if current thread also interrupted
-			pool.shutdownNow();
-			// Preserve interrupt status
-			Thread.currentThread().interrupt();
-		}
-	}
-
-	private class SocksDataForwarderCloseCallback implements Consumer<SocksDataForwarder> {
-		@Override
-		public void accept(SocksDataForwarder socksDataForwarder) {
-			SocksDataForwarderServer.this.socksDataForwarderCollection.remove(Objects.requireNonNull(socksDataForwarder));
-		}
-	}
 }
