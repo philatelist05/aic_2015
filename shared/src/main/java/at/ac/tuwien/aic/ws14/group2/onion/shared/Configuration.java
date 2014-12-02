@@ -18,6 +18,7 @@ public class Configuration {
 	private final String targetServiceHost;
 	private final int targetServicePort;
 	private final long targetWorkerTimeout;
+	private final boolean nodeCommonLocalMode;
 
 
 	public Configuration(String nodeCommonHost,
@@ -32,7 +33,8 @@ public class Configuration {
 	                     int directoryNodeMaxThriftWorker,
 	                     String targetServiceHost,
 	                     int targetServicePort,
-						 long targetWorkerTimeout) {
+						 long targetWorkerTimeout,
+						 boolean nodeCommonLocalMode) {
 
 		this.nodeCommonHost = nodeCommonHost;
 		this.nodeCommonPort = nodeCommonPort;
@@ -47,6 +49,7 @@ public class Configuration {
 		this.targetServiceHost = targetServiceHost;
 		this.targetServicePort = targetServicePort;
 		this.targetWorkerTimeout = targetWorkerTimeout;
+		this.nodeCommonLocalMode = nodeCommonLocalMode;
 	}
 
 	public String getNodeCommonHost() {
@@ -99,5 +102,9 @@ public class Configuration {
 
 	public long getTargetWorkerTimeout() {
 		return targetWorkerTimeout;
+	}
+
+	public boolean isLocalMode() {
+		return nodeCommonLocalMode;
 	}
 }

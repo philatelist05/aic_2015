@@ -21,8 +21,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base64;
 
 import java.io.*;
-import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -60,7 +60,7 @@ public class ChainNodeStarter {
         logger.info("Starting node core");
         ServerSocket listeningSocket = null;
         try {
-            listeningSocket = new ServerSocket(0, 100, InetAddress.getLocalHost());
+            listeningSocket = new ServerSocket(0, 100);
         } catch (IOException e) {
             logger.fatal("Failed to create listening Socket!");
             System.exit(-1);
@@ -68,7 +68,23 @@ public class ChainNodeStarter {
         Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
         nodeCoreThread.start();
 
-        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), listeningSocket.getInetAddress().getHostAddress(), Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
+        String directoryHostname = "localhost";
+        String chainNodeHostname = "localhost";
+        if (!configuration.isLocalMode()) {
+            directoryHostname = configuration.getNodeCommonHost();
+            URL awsCheckIp;
+            try {
+                awsCheckIp = new URL("http://checkip.amazonaws.com/");
+                BufferedReader in = new BufferedReader(new InputStreamReader(awsCheckIp.openStream()));
+                chainNodeHostname = in.readLine();
+                in.close();
+            } catch (Exception e) {
+                logger.fatal("Could not determine public IP, aborting.");
+                logger.catching(Level.DEBUG, e);
+                System.exit(-1);
+            }
+        }
+        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningSocket.getLocalPort(), chainNodeHostname, Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         logger.info("ChainNodeInformation: {}", nodeInformation);
 
 
@@ -101,7 +117,7 @@ public class ChainNodeStarter {
         logger.debug("Creating SSL Transport using Thrift");
         TTransport transport = null;
         try {
-            transport = TSSLTransportFactory.getClientSocket(configuration.getNodeCommonHost(), configuration.getNodeCommonPort(), 0, clientParams);
+            transport = TSSLTransportFactory.getClientSocket(directoryHostname, configuration.getNodeCommonPort(), 0, clientParams);
         } catch (TTransportException e) {
             logger.fatal("Could not establish SSL connection to directory, exiting..");
             logger.catching(Level.DEBUG, e);

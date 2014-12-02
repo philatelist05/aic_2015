@@ -11,8 +11,8 @@ import org.apache.logging.log4j.Logger;
 public class ConfigurationFactory {
 
 	public static final String CONFIG_FILE = "config.xml";
-	private static Configuration configuration;
 	static final Logger logger = LogManager.getLogger(ConfigurationFactory.class.getName());
+	private static Configuration configuration;
 
 	public static Configuration getConfiguration() {
 		if (configuration == null) {
@@ -51,10 +51,11 @@ public class ConfigurationFactory {
 		String targetServiceHost = xmlConfiguration.getString("node.target-service.host", "localhost");
 		int targetServicePort = xmlConfiguration.getInt("node.target-service.port", 8080);
 		long targetWorkerTimeout = xmlConfiguration.getLong("node.chain.targetworker-timeout", 2000);
+		boolean nodeCommonLocalMode = xmlConfiguration.getBoolean("node.common.local-mode", true);
 
 		return new Configuration(nodeCommonHost, nodeCommonPort, localNodeServerPort, localNodeListeningHost,
 				localNodeNumCellWorkers, chainNodeHeartbeatInterval, chainNodeNumCellWorkers,
 				directoryNodeHeartbeatTimeout, directoryNodeMinThriftWorker, directoryNodeMaxThriftWorker,
-				targetServiceHost, targetServicePort, targetWorkerTimeout);
+				targetServiceHost, targetServicePort, targetWorkerTimeout, nodeCommonLocalMode);
 	}
 }
