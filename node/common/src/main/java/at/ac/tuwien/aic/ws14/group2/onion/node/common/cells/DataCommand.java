@@ -12,7 +12,7 @@ import java.nio.ByteBuffer;
  */
 public class DataCommand extends Command {
 
-    public static final int MAX_DATA_LENGTH = COMMAND_PAYLOAD_BYTES - 2;
+    public static final int MAX_DATA_LENGTH = COMMAND_PAYLOAD_BYTES - 4;
 
     private byte[] data;
     private short length;
@@ -23,6 +23,7 @@ public class DataCommand extends Command {
      * The Command type will not be set.
      */
     DataCommand(ByteBuffer buffer) {
+        sequenceNumber = buffer.getShort();
         length = buffer.getShort();
 
         data  = new byte[length];
@@ -43,6 +44,16 @@ public class DataCommand extends Command {
             throw new DecodeException();
     }
 
+    public DataCommand(byte[] data) throws DecodeException {
+        super(COMMAND_TYPE_DATA);
+
+        if (data.length > MAX_DATA_LENGTH)
+            throw new DecodeException("Too much data for a single DataCommand.");
+
+        this.data = data;
+        this.length = (short)data.length;
+    }
+
     public void sendData(OutputStream destination) throws IOException {
         destination.write(data, 0, length);
     }
@@ -51,16 +62,17 @@ public class DataCommand extends Command {
         return data;
     }
 
-    public Short getSequenceNumber() {
+    public short getSequenceNumber() {
         return sequenceNumber;
     }
 
-    public void setSequenceNumber(Short sequenceNumber) {
+    public void setSequenceNumber(short sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
     }
 
     @Override
     protected void encodePayload(ByteBuffer buffer) {
+        buffer.putShort(sequenceNumber);
         buffer.putShort(length);
         buffer.put(data, 0, length);
     }
