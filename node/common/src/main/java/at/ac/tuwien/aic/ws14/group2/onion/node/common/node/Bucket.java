@@ -9,7 +9,7 @@ public class Bucket implements Comparable<Bucket> {
 	private final byte[] data;
 	private final short nr;
 
-	Bucket(byte[] data, short sequenceNumber) {
+	public Bucket(byte[] data, short sequenceNumber) {
 		this.data = data;
 		this.nr = sequenceNumber;
 	}
@@ -28,6 +28,23 @@ public class Bucket implements Comparable<Bucket> {
 				"data=" + Arrays.toString(data) +
 				", nr=" + nr +
 				'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Bucket bucket = (Bucket) o;
+
+		if (nr != bucket.nr) return false;
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) nr;
 	}
 
 	@Override
