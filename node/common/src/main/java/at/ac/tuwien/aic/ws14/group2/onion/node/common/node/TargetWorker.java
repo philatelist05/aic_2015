@@ -1,7 +1,5 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.RelayCell;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.RelayCellPayload;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
