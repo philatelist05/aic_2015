@@ -110,6 +110,12 @@
 					</xs:documentation>
 				</xs:annotation>
 			</xs:element>
+			<xs:element name="targetworker-timeout" type="xs:integer">
+				<xs:annotation>
+					<xs:documentation xml:lang="en">
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:all>
 	</xs:complexType>
 

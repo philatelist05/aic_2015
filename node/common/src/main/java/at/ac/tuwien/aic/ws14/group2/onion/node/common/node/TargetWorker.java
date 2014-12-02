@@ -1,5 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
+import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -22,13 +24,14 @@ public class TargetWorker implements AutoCloseable {
     private final ClearBufferTask clearBufferTask;
 
     public TargetWorker(ConnectionWorker worker, short circuitID, TargetForwarder forwarder) {
+        Configuration configuration = ConfigurationFactory.getConfiguration();
         this.worker = worker;
         this.circuitID = circuitID;
         this.forwarder = forwarder;
         this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.nr, b2.nr), this::allItemsInRange, Short.MAX_VALUE);
         bufferChecker = new Timer("PeriodicBufferChecker");
         clearBufferTask = new ClearBufferTask();
-        bufferChecker.schedule(clearBufferTask, 2000);
+        bufferChecker.schedule(clearBufferTask, configuration.getTargetWorkerTimeout());
     }
 
     public void sendData(byte[] data, short sequenceNumber) {

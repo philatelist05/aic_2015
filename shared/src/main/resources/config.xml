@@ -16,6 +16,7 @@
 		<chain>
 			<heartbeat-interval>2000</heartbeat-interval>
 			<cellworkers-per-connectionworker>20</cellworkers-per-connectionworker>
+			<targetworker-timeout>2000</targetworker-timeout>
 		</chain>
 		<directory>
 			<heartbeat-timeout>7000</heartbeat-timeout>
@@ -29,5 +30,4 @@
 		<host>localhost</host>
 		<port>8080</port>
 	</target-service>
-
 </onion:config>

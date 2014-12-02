@@ -38,7 +38,6 @@ public class ConfigurationFactory {
 	}
 
 	private static Configuration mapConfig(XMLConfiguration xmlConfiguration) {
-		boolean nodeCommonLocalMode = xmlConfiguration.getBoolean("node.common.local-mode", true);
 		String nodeCommonHost = xmlConfiguration.getString("node.common.host", "localhost");
 		int nodeCommonPort = xmlConfiguration.getInt("node.common.port", 9090);
 		int localNodeServerPort = xmlConfiguration.getInt("node.local.server-port", 1080);
@@ -51,10 +50,12 @@ public class ConfigurationFactory {
 		int directoryNodeMaxThriftWorker = xmlConfiguration.getInt("node.directory.thriftworker.max", 16);
 		String targetServiceHost = xmlConfiguration.getString("node.target-service.host", "localhost");
 		int targetServicePort = xmlConfiguration.getInt("node.target-service.port", 8080);
+		long targetWorkerTimeout = xmlConfiguration.getLong("node.chain.targetworker-timeout", 2000);
+		boolean nodeCommonLocalMode = xmlConfiguration.getBoolean("node.common.local-mode", true);
 
-		return new Configuration(nodeCommonLocalMode, nodeCommonHost, nodeCommonPort, localNodeServerPort, localNodeListeningHost,
+		return new Configuration(nodeCommonHost, nodeCommonPort, localNodeServerPort, localNodeListeningHost,
 				localNodeNumCellWorkers, chainNodeHeartbeatInterval, chainNodeNumCellWorkers,
 				directoryNodeHeartbeatTimeout, directoryNodeMinThriftWorker, directoryNodeMaxThriftWorker,
-				targetServiceHost, targetServicePort);
+				targetServiceHost, targetServicePort, targetWorkerTimeout, nodeCommonLocalMode);
 	}
 }
