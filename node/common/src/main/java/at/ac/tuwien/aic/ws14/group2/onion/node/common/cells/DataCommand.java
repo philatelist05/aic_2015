@@ -60,11 +60,11 @@ public class DataCommand extends Command {
         return data;
     }
 
-    public Short getSequenceNumber() {
+    public short getSequenceNumber() {
         return sequenceNumber;
     }
 
-    public void setSequenceNumber(Short sequenceNumber) {
+    public void setSequenceNumber(short sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
     }
 

@@ -62,7 +62,7 @@ public class CellTest {
         return new String(sink.toByteArray(), "ASCII");
     }
 
-    private String sendAndReceiveDataCommand(InputStream input) throws Exception {
+    private String sendAndReceiveDataCommand(DataCommand dataCmd) throws Exception {
         short circuitID = 123;
 
         byte[] key1 = createSessionKey();
@@ -71,7 +71,6 @@ public class CellTest {
         assertFalse(Arrays.equals(key1, key2));
 
         // build encrypted Data Relay Cell
-        DataCommand dataCmd = new DataCommand(input);
         RelayCellPayload relayPayload = new RelayCellPayload(dataCmd).encrypt(key1).encrypt(key2);
         RelayCell relayCell = new RelayCell(circuitID, relayPayload);
 
@@ -84,7 +83,9 @@ public class CellTest {
         // decode command
         Command receivedCmd = receivedRelayCell.getPayload().decrypt(key2).decrypt(key1).decode();
         assertTrue(receivedCmd instanceof DataCommand);
+
         DataCommand receivedDataCmd = (DataCommand)receivedCmd;
+        assertEquals(dataCmd.getSequenceNumber(), receivedDataCmd.getSequenceNumber());
 
         return simulateTarget(receivedDataCmd);
     }
@@ -127,7 +128,9 @@ public class CellTest {
     public void singleDataCommand() throws Exception {
         InputStream input = getDataInput(shortText);
 
-        String data = sendAndReceiveDataCommand(input);
+        DataCommand dataCmd = new DataCommand(input);
+        dataCmd.setSequenceNumber((short)10);
+        String data = sendAndReceiveDataCommand(dataCmd);
         assertEquals(shortText, data);
 
         try {
@@ -139,11 +142,26 @@ public class CellTest {
     }
 
     @Test
+    public void singleDataCommand2() throws Exception {
+        byte[] rawData = shortText.getBytes();
+
+        DataCommand dataCmd = new DataCommand(rawData);
+        dataCmd.setSequenceNumber((short)10);
+
+        String data = sendAndReceiveDataCommand(dataCmd);
+        assertEquals(shortText, data);
+    }
+
+    @Test
     public void manyDataCommands() throws Exception {
         InputStream input = getDataInput(longText);
 
-        String part0 = sendAndReceiveDataCommand(input);
-        String part1 = sendAndReceiveDataCommand(input);
+        DataCommand dataCmd = new DataCommand(input);
+        dataCmd.setSequenceNumber((short)10);
+        String part0 = sendAndReceiveDataCommand(dataCmd);
+
+        dataCmd = new DataCommand(input);
+        String part1 = sendAndReceiveDataCommand(dataCmd);
 
         assertEquals(longText, part0 + part1);
 
