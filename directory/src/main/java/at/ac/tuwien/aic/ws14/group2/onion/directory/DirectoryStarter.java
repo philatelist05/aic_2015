@@ -81,7 +81,7 @@ public class DirectoryStarter {
 
         ScheduledExecutorService scheduledThreadPoolExecutor = Executors.newSingleThreadScheduledExecutor(new DaemonThreadFactory("chainNodeMonitor"));
         scheduledThreadPoolExecutor.scheduleAtFixedRate(
-                new ChainNodeMonitor(chainNodeRegistry, configuration.getChainNodeHeartbeatInterval()),
+                new ChainNodeMonitor(chainNodeRegistry, configuration.getDirectoryNodeHeartbeatTimeout()),
                 0, configuration.getDirectoryNodeHeartbeatTimeout(), TimeUnit.MILLISECONDS);
 
         try {
