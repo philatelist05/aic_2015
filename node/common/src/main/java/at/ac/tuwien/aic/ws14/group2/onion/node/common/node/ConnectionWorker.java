@@ -49,6 +49,7 @@ public class ConnectionWorker implements AutoCloseable {
      */
     @Override
     public void close() throws IOException {
+        logger.info("close() called");
         try {
             socket.close();   // forces the receiver thread to quit
 
@@ -163,9 +164,9 @@ public class ConnectionWorker implements AutoCloseable {
                     handleCell(Cell.receive(this.inputStream));
                 }
             } catch (SocketException e) {
-                logger.info("Connection closed: {}", e.getMessage());
+                logger.info("Connection closed (SocketException): {}", e.getMessage());
             } catch (EOFException e) {
-                logger.info("Connection closed: {}", e.getMessage());
+                logger.info("Connection closed (EOF): {}", e.getMessage());
             } catch (Exception e) {
                 logger.error("ConnectionWorker thread terminated.", e);
             }
