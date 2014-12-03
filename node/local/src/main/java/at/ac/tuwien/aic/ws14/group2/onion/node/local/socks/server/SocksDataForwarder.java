@@ -73,6 +73,8 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 				// Start listening for a connection
 				clientSocket = serverSocket.accept();
 
+				logger.info("Got TCP connection from originator for data transfer");
+
 				// Start thread handling the responses
 				this.responseHandlerThread = new ResponseHandlerThread(this.responseBuffer, clientSocket.getOutputStream());
 				this.responseHandlerThread.setName("Response handler thread of " + this.getName());
@@ -83,6 +85,7 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 				byte[] buffer = new byte[DataCommand.MAX_DATA_LENGTH];
 				InputStream inputStream = clientSocket.getInputStream();
 
+				logger.info("Start transferring data from the originator");
 				// Start sending loop
 				stop = false;
 				while (!stop) {
@@ -135,7 +138,9 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 		serverSocket.close();
 	}
 
-	private class ResponseHandlerThread extends Thread implements AutoCloseable {
+	private static class ResponseHandlerThread extends Thread implements AutoCloseable {
+		private static final Logger logger = LoggerFactory.getLogger(ResponseHandlerThread.class.getName());
+
 		private final PriorityBlockingQueue<Bucket> responseBuffer;
 		private final OutputStream outputStream;
 		private volatile boolean stop;
@@ -153,6 +158,8 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 		public void run() {
 			try {
 				try {
+					logger.info("Start transferring data back to the originator");
+
 					stop = false;
 					while (!stop) {
 						Bucket bucket = this.responseBuffer.take();
@@ -162,10 +169,12 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 
 						if (currentSequenceNumber <= lastSentSequenceNumber) {
 							// Something terribly wrong happened, run away!
+							logger.error("Missing packets! Something terribly wrong must have happened. Exiting.");
 							this.stop = true;
 							continue;
 						} else if (currentSequenceNumber > nextSequenceNumber) {
-							// There are missing buckets, so wait and try again
+							// There are missing buckets, so put the current bucket back, wait and try again
+							this.responseBuffer.put(bucket);
 							this.wait();
 							continue;
 						}

@@ -55,6 +55,7 @@ public class SocksServer extends Thread implements AutoCloseable {
 				stop = false;
 				while (!stop) {
 					Socket clientSocket = socket.accept();
+					logger.info("Got new SOCKS connection");
 					SocksWorker socksWorker = new SocksWorker(clientSocket, localNodeCore, directoryClient, this.new SocksWorkerCloseCallback());
 					socksWorkerCollection.add(socksWorker);
 					pool.execute(socksWorker);

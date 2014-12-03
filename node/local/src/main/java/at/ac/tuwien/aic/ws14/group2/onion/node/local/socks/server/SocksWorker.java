@@ -97,10 +97,12 @@ public class SocksWorker implements Runnable, AutoCloseable {
 					return;
 				}
 
+				SocksAddress destination = commandRequest.getDestination();
+
+				logger.info("Creating chain and connecting to " + destination.getAddress());
+
 				// Create the chain
 				createChain();
-
-				SocksAddress destination = commandRequest.getDestination();
 
 				// Connect to the target
 				localNodeCore.connectTo(circuitId, convertEndpointToSocksAddress(destination));
