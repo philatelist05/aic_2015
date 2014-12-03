@@ -125,7 +125,13 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
 
     private Cell createConnectResponseCell() {
         ConnectResponseCommand command = new ConnectResponseCommand();
-        RelayCellPayload relayCellPayload = new RelayCellPayload(command);
+        RelayCellPayload relayCellPayload = null;
+        try {
+            relayCellPayload = (new RelayCellPayload(command)).encrypt(circuit.getSessionKey());
+        } catch (EncryptException e) {
+            logger.warn("Encryption of ConnectResponse failed.");
+            logger.catching(Level.DEBUG, e);
+        }
         return new RelayCell(circuit.getCircuitID(), relayCellPayload);
     }
 
