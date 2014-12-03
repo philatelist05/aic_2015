@@ -118,16 +118,26 @@ public class LocalNodeCore {
         }
     }
 
-    public void connectTo(Short circuitID, Endpoint endpoint) throws EncryptException, IOException {
+    public void connectTo(Short circuitID, Endpoint endpoint) {
+        logger.info("Sending ConnectCommand to target {} over circuit {}", endpoint, circuitID);
+
+        ChainMetaData chainMetaData = getChainMetaData(circuitID);
+        SocksCallBack callBack = getCallBack(circuitID);
+
         ConnectCommand connectCommand = new ConnectCommand(endpoint);
-        Cell cell = encryptCommandForChain(circuitID, connectCommand);
+        Cell cell = null;
+        try {
+            cell = encryptCommandForChain(circuitID, connectCommand);
+        } catch (EncryptException e) {
+            callBack.error(ErrorCode.ENCRYPTION_FAILURE);
+            return;
+        }
 
         try {
-            sendCell(cell, endpoint);
+            sendCell(cell, chainMetaData.getNodes().get(0).getEndPoint());
         } catch (IOException e) {
-            logger.warn("Encountered IOException while trying to send cell.");
-            logger.catching(Level.DEBUG, e);
-            throw e;
+            callBack.error(ErrorCode.CW_FAILURE);
+            return;
         }
     }
 
@@ -153,7 +163,7 @@ public class LocalNodeCore {
                 return;
             }
             try {
-                sendCell(cell, chainMetaData.getNodes().get(chainMetaData.getLastNode()).getEndPoint());
+                sendCell(cell, chainMetaData.getNodes().get(0).getEndPoint());
             } catch (IOException e) {
                 callBack.error(ErrorCode.CW_FAILURE);
             }
@@ -187,13 +197,11 @@ public class LocalNodeCore {
         SocksCallBack callBack = getCallBack(circuitID);
 
         ConcurrentHashMap<Integer, ChainNodeMetaData> nodes = metaData.getNodes();
-        int nextNodeIndex = metaData.getNextNode();
         if (nodes == null)
             throw new EncryptException("No nodes in the chain");
 
-        ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
         RelayCellPayload payload = new RelayCellPayload(command);
-        for (int i = 0; i < nextNodeIndex; i++) {
+        for (int i = metaData.getLastNode(); i >= 0; i--) {
             ChainNodeMetaData currentNode = nodes.get(i);
             try {
                 payload = payload.encrypt(currentNode.getSessionKey());
