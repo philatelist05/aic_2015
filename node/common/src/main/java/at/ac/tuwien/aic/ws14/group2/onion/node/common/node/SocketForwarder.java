@@ -42,6 +42,7 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
         socket = socketFactory.createSocket(address, port);
         inputStream = socket.getInputStream();
         outputStream = socket.getOutputStream();
+        this.start();
     }
 
     @Override
