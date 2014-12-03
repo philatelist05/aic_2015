@@ -43,4 +43,11 @@ public class ExtendCommand extends Command {
         endpoint.encode(buffer);
         encryptedDHHalf.encode(buffer);
     }
+
+    @Override
+    public String toString() {
+        return "ExtendCommand{" +
+                "endpoint=" + endpoint +
+                '}';
+    }
 }

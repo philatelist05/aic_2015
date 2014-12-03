@@ -35,4 +35,11 @@ public class ConnectCommand extends Command {
     protected void encodePayload(ByteBuffer buffer) {
         endpoint.encode(buffer);
     }
+
+    @Override
+    public String toString() {
+        return "ConnectCommand{" +
+                "endpoint=" + endpoint +
+                '}';
+    }
 }

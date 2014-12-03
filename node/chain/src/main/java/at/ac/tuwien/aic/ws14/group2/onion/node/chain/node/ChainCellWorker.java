@@ -183,15 +183,18 @@ public class ChainCellWorker implements CellWorker {
     }
 
     private void handleExtendCommand(ExtendCommand cmd) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
+        logger.info("Handling ExtendCommand: {}", cmd);
         ConnectionWorker outgoingConnectionWorker = connectionWorkerFactory.getConnectionWorker(cmd.getEndpoint());
         extendChain(outgoingConnectionWorker, circuit, cmd.getEndpoint(), cmd.getDHHalf());
     }
 
     private void handleConnectCommand(ConnectCommand cmd) throws CircuitIDExistsAlreadyException, IOException {
+        logger.info("Handling ConnectCommand: {}", cmd);
         connectionWorker.createTargetWorker(circuit, cmd.getEndpoint());
     }
 
     private void handleDataCommand(DataCommand cmd) {
+        logger.info("Handling DataCommand: {}", cmd);
         connectionWorker.getTargetWorker(circuit).sendData(cmd.getData(), cmd.getSequenceNumber());
     }
 

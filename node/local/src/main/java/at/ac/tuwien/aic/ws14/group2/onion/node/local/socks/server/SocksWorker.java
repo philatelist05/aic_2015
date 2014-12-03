@@ -103,9 +103,11 @@ public class SocksWorker implements Runnable, AutoCloseable {
 				SocksAddress destination = commandRequest.getDestination();
 
 				// Connect to the target
+				logger.info("Connecting to destination.");
 				localNodeCore.connectTo(circuitId, convertEndpointToSocksAddress(destination));
 
 				// Create and start the forwarder of for the client data
+				logger.info("Starting SocksDataForwarder");
 				socksDataForwarder = new SocksDataForwarder(circuitId, localNodeCore);
 				socksDataForwarder.start();
 

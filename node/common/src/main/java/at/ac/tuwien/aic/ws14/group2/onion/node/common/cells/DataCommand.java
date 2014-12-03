@@ -76,4 +76,12 @@ public class DataCommand extends Command {
         buffer.putShort(length);
         buffer.put(data, 0, length);
     }
+
+    @Override
+    public String toString() {
+        return "DataCommand{" +
+                "length=" + length +
+                ", sequenceNumber=" + sequenceNumber +
+                '}';
+    }
 }
