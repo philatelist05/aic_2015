@@ -72,12 +72,13 @@ public class ChainCellWorkerTest {
 
     @Test
     public void testCreateCell() throws Exception {
+        Endpoint fakeEndpoint = new Endpoint("localhost", 12345);
         DHKeyExchange dh = new DHKeyExchange();
         DHHalf dhHalf = new DHHalf(g, p, dh.initExchange(p, g));
         EncryptedDHHalf encDHHalf = dhHalf.encrypt(keyPair.getPublic());
 
         CreateCell cell = new CreateCell((short)1, outgoingEndpoint, encDHHalf);
-        ChainCellWorker chainCellWorker = new ChainCellWorker(mockedConnectionWorker, cell, null, keyPair.getPrivate(), mockedConnectionWorkerFactory);
+        ChainCellWorker chainCellWorker = new ChainCellWorker(mockedConnectionWorker, cell, null, fakeEndpoint, keyPair.getPrivate(), mockedConnectionWorkerFactory);
 
         final Vector<Circuit> addedCircuits = new Vector<>();
         final Vector<byte[]> secretKeys = new Vector<>();

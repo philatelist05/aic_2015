@@ -22,12 +22,14 @@ public class ChainCellWorker implements CellWorker {
     private final ConnectionWorker connectionWorker;
     private final PrivateKey privateKey;
     private final ConnectionWorkerFactory connectionWorkerFactory;
+    private final Endpoint endpoint;
 
-    public ChainCellWorker(ConnectionWorker connectionWorker, Cell cell, Circuit circuit, PrivateKey privateKey) {
-        this(connectionWorker, cell, circuit, privateKey, ConnectionWorkerFactory.getInstance());
+    public ChainCellWorker(ConnectionWorker connectionWorker, Cell cell, Circuit circuit, Endpoint endpoint, PrivateKey privateKey) {
+        this(connectionWorker, cell, circuit, endpoint, privateKey, ConnectionWorkerFactory.getInstance());
     }
 
-    ChainCellWorker(ConnectionWorker connectionWorker, Cell cell, Circuit circuit, PrivateKey privateKey, ConnectionWorkerFactory connectionWorkerFactory) {
+    ChainCellWorker(ConnectionWorker connectionWorker, Cell cell, Circuit circuit, Endpoint endpoint, PrivateKey privateKey, ConnectionWorkerFactory connectionWorkerFactory) {
+        this.endpoint = endpoint;
         this.connectionWorker = connectionWorker;
         this.cell = cell;
         this.circuit = circuit;
@@ -202,7 +204,7 @@ public class ChainCellWorker implements CellWorker {
         // remember DH half in case we have to retry the operation
         outgoingCircuit.setDHHalf(dhHalf);
 
-        CreateCell createCell = new CreateCell(outgoingCircuit.getCircuitID(), nextNode, dhHalf);
+        CreateCell createCell = new CreateCell(outgoingCircuit.getCircuitID(), this.endpoint, dhHalf);
 
         connectionWorker.sendCell(createCell);
     }

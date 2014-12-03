@@ -7,6 +7,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainCellWorkerFactory
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainNodeCore;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
 import org.apache.logging.log4j.Level;
@@ -54,9 +55,6 @@ public class ChainNodeStarter {
             System.exit(-1);
         }
 
-        logger.info("Setting up CellWorkerFactory");
-        ConnectionWorkerFactory.setCellWorkerFactory(new ChainCellWorkerFactory(rsaKeyPair.getPrivate()));
-
         logger.info("Starting node core");
         ServerSocket listeningSocket = null;
         int listeningPort = 30000;
@@ -73,12 +71,10 @@ public class ChainNodeStarter {
             System.exit(-1);
         }
 
-        Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
-        nodeCoreThread.start();
-
         String directoryHostname = "localhost";
         String chainNodeHostname = "localhost";
         if (!configuration.isLocalMode()) {
+            logger.info("Getting public IP");
             directoryHostname = configuration.getNodeCommonHost();
             URL awsCheckIp;
             try {
@@ -92,9 +88,16 @@ public class ChainNodeStarter {
                 System.exit(-1);
             }
         }
+
+        logger.info("Setting up CellWorkerFactory");
+        ConnectionWorkerFactory.setCellWorkerFactory(new ChainCellWorkerFactory(rsaKeyPair.getPrivate(), new Endpoint(chainNodeHostname, listeningPort)));
+
+        logger.info("Starting node core");
+        Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
+        nodeCoreThread.start();
+
         ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, chainNodeHostname, Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         logger.info("ChainNodeInformation: {}", nodeInformation);
-
 
         logger.info("Establishing Thrift client connection");
         long sleepInterval = configuration.getChainNodeHeartbeatInterval();
