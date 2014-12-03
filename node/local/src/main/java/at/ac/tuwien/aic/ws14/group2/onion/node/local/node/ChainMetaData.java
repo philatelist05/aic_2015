@@ -79,4 +79,14 @@ public class ChainMetaData {
     public int incrementAndGetSequenceNumber() {
         return lastUsedSequenceNumber.incrementAndGet();
     }
+
+    @Override
+    public String toString() {
+        return "ChainMetaData{" +
+                "nodes=" + nodes +
+                ", lastNode=" + lastNode +
+                ", circuitID=" + circuitID +
+                ", lastUsedSequenceNumber=" + lastUsedSequenceNumber +
+                '}';
+    }
 }
