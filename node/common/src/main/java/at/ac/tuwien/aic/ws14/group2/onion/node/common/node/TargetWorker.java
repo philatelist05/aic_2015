@@ -25,15 +25,12 @@ public class TargetWorker implements AutoCloseable {
     private final ClearBufferTask clearBufferTask;
 
     public TargetWorker(ConnectionWorker worker, TargetForwarder forwarder) {
-        Configuration configuration = ConfigurationFactory.getConfiguration();
         this.worker = worker;
         this.forwarder = forwarder;
         forwarder.setTargetWorkerCallback(this);
         this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.getNr(), b2.getNr()), this::allItemsInRange, Short.MAX_VALUE);
         bufferChecker = new Timer("PeriodicBufferChecker");
         clearBufferTask = new ClearBufferTask();
-        long targetWorkerTimeout = configuration.getTargetWorkerTimeout();
-        bufferChecker.schedule(clearBufferTask, targetWorkerTimeout, targetWorkerTimeout);
     }
 
     public void sendData(byte[] data, short sequenceNumber) {
@@ -78,6 +75,13 @@ public class TargetWorker implements AutoCloseable {
         return forwarder;
     }
 
+    public void forwarderIsConnected() {
+        Configuration configuration = ConfigurationFactory.getConfiguration();
+        long targetWorkerTimeout = configuration.getTargetWorkerTimeout();
+
+        bufferChecker.schedule(clearBufferTask, targetWorkerTimeout, targetWorkerTimeout);
+    }
+
     private class ClearBufferTask extends TimerTask {
         @Override
         public void run() {
@@ -100,8 +104,7 @@ public class TargetWorker implements AutoCloseable {
                     });
             buffer.clear();
             try {
-                if(forwarder.isConnected())
-                    forwarder.forward(bos.toByteArray());
+                forwarder.forward(bos.toByteArray());
             } catch (IOException e) {
                 logger.catching(Level.DEBUG, e);
             }

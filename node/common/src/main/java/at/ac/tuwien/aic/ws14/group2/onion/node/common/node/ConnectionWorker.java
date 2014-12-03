@@ -103,7 +103,7 @@ public class ConnectionWorker implements AutoCloseable {
         }
 
         // If there is none, create one.
-        SocketForwarder forwarder = new SocketForwarder(incomingCircuit, SocketFactory.getDefault());
+        SocketForwarder forwarder = new SocketForwarder(incomingCircuit, SocketFactory.getDefault(), targetWorker);
         targetWorker = new TargetWorker(this, forwarder);
         TargetWorker oldWorker = targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), targetWorker);
         if (oldWorker != null) {

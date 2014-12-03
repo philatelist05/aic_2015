@@ -3,10 +3,8 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DataCommand;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
-import org.mockito.Mockito;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -105,7 +103,7 @@ public class SocketForwarderTest {
         Endpoint endpoint = mock(Endpoint.class);
         when(endpoint.getPort()).thenReturn(0);
         when(endpoint.getAddress()).thenReturn(InetAddress.getLocalHost());
-        SocketForwarder forwarder = new SocketForwarder(circuit, socketFactory);
+        SocketForwarder forwarder = new SocketForwarder(circuit, socketFactory, targetWorker);
         forwarder.connect(endpoint);
         forwarder.setTargetWorkerCallback(worker);
         return forwarder;
