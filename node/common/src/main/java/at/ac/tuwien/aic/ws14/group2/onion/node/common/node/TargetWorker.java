@@ -74,6 +74,10 @@ public class TargetWorker implements AutoCloseable {
         }
     }
 
+    public TargetForwarder getForwarder() {
+        return forwarder;
+    }
+
     private class ClearBufferTask extends TimerTask {
         @Override
         public void run() {
@@ -96,6 +100,7 @@ public class TargetWorker implements AutoCloseable {
                     });
             buffer.clear();
             try {
+                // TODO forward data only if the forwarder is connected
                 forwarder.forward(bos.toByteArray());
             } catch (IOException e) {
                 logger.catching(Level.DEBUG, e);

@@ -94,20 +94,33 @@ public class ConnectionWorker implements AutoCloseable {
     public TargetWorker getOrCreateTargetWorker(Circuit incomingCircuit, Endpoint target) throws IOException {
         // In most cases there is already a target worker.
         TargetWorker targetWorker = targetWorkers.get(incomingCircuit.getCircuitID());
-        if (targetWorker != null)
-            return targetWorker;   // TODO: call connectTo if target is set.
+        if (targetWorker != null) {
+            if (target != null) {
+                logger.debug("Connect forwarder to {}", target);
+                targetWorker.getForwarder().connect(target);
+            }
+            return targetWorker;
+        }
 
         // If there is none, create one.
         SocketForwarder forwarder = new SocketForwarder(incomingCircuit, SocketFactory.getDefault());
-        TargetWorker worker = new TargetWorker(this, forwarder);
-        TargetWorker oldWorker = targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), worker);
+        targetWorker = new TargetWorker(this, forwarder);
+        TargetWorker oldWorker = targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), targetWorker);
         if (oldWorker != null) {
-            worker.close();
+            targetWorker.close();
 
             // race condition --> return existing TargetWorker
-            return oldWorker;   // TODO: call connectTo if target is set.
+            if (target != null) {
+                logger.debug("Connect forwarder to {}", target);
+                oldWorker.getForwarder().connect(target);
+            }
+            return oldWorker;
         } else {
-            return worker;   // TODO: call connectTo if target is set.
+            if (target != null) {
+                logger.debug("Connect forwarder to {}", target);
+                targetWorker.getForwarder().connect(target);
+            }
+            return targetWorker;
         }
     }
 

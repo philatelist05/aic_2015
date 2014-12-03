@@ -47,7 +47,11 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
     /**
      * Connects this forwarder to the specified target and starts this thread.
      */
-    public void connectTo(Endpoint endpoint) throws IOException {
+    @Override
+    public void connect(Endpoint endpoint) throws IOException {
+
+        // TODO Make this method thread-safe? If two ConnectCommands arrive, it may be called twice at the same time.
+
         address = endpoint.getAddress();
         port = endpoint.getPort();
         socket = socketFactory.createSocket(address, port);
