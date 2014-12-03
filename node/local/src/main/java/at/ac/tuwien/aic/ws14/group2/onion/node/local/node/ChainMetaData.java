@@ -17,11 +17,14 @@ public class ChainMetaData {
     private AtomicInteger lastUsedSequenceNumber;
 
     public ChainMetaData(Short circuitID, ConcurrentHashMap<Integer, ChainNodeMetaData> nodes) {
+        this.lastUsedSequenceNumber = new AtomicInteger(0);
         this.circuitID = circuitID;
         this.nodes = nodes;
+        this.lastNode = -1;
     }
 
     public ChainMetaData(ConcurrentHashMap<Integer, ChainNodeMetaData> nodes) {
+        this.lastUsedSequenceNumber = new AtomicInteger(0);
         this.nodes = nodes;
         this.lastNode = -1;
     }
