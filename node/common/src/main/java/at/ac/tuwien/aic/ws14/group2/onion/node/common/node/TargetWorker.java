@@ -100,8 +100,8 @@ public class TargetWorker implements AutoCloseable {
                     });
             buffer.clear();
             try {
-                // TODO forward data only if the forwarder is connected
-                forwarder.forward(bos.toByteArray());
+                if(forwarder.isConnected())
+                    forwarder.forward(bos.toByteArray());
             } catch (IOException e) {
                 logger.catching(Level.DEBUG, e);
             }

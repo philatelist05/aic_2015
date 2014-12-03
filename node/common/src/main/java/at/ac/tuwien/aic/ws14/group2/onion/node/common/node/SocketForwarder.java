@@ -33,6 +33,7 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
     private TargetWorker targetWorker;
     private boolean stop = false;
     private short lastUsedSequenceNumber = 0;
+    private boolean connected = false;
 
 
     /**
@@ -57,6 +58,7 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
         socket = socketFactory.createSocket(address, port);
         inputStream = socket.getInputStream();
         outputStream = socket.getOutputStream();
+        connected = true;
 
         this.start();
     }
@@ -72,6 +74,11 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
     @Override
     public void setTargetWorkerCallback(TargetWorker targetWorker) {
         this.targetWorker = targetWorker;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return connected;
     }
 
     @Override
@@ -126,6 +133,7 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
     @Override
     public void close() throws Exception {
         stop = true;
+        connected = false;
         this.interrupt();
         this.socket.close();
     }

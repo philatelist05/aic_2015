@@ -19,4 +19,6 @@ public interface TargetForwarder {
     void forward(byte[] data) throws IOException;
 
     void setTargetWorkerCallback(TargetWorker targetWorker);
+
+    boolean isConnected();
 }
