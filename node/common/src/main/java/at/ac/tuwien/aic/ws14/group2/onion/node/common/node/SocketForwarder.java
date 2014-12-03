@@ -1,9 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.DataCommand;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.RelayCell;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.RelayCellPayload;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
 import org.apache.logging.log4j.Level;
@@ -15,7 +12,6 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Stefan on 02.12.14.
@@ -60,6 +56,8 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
         outputStream = socket.getOutputStream();
         targetWorker.forwarderIsConnected();
 
+        Cell cell = createConnectResponseCell();
+        targetWorker.sendCell(cell);
         this.start();
     }
 
@@ -90,7 +88,7 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
                             stop = true;
                         continue;
                     }
-                    Cell cell = encryptCommandForChain(Arrays.copyOf(buffer, actualBytesRead));
+                    Cell cell = createCellWithDataCommand(Arrays.copyOf(buffer, actualBytesRead));
 
                     if (targetWorker != null)
                         targetWorker.sendCell(cell);
@@ -117,11 +115,17 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
         }
     }
 
-    private Cell encryptCommandForChain(byte[] payload) throws EncryptException, DecodeException {
+    private Cell createCellWithDataCommand(byte[] payload) throws EncryptException, DecodeException {
         DataCommand command = new DataCommand(payload);
         command.setSequenceNumber(lastUsedSequenceNumber++);
         RelayCellPayload relayCellPayload = new RelayCellPayload(command);
         relayCellPayload = relayCellPayload.encrypt(circuit.getSessionKey());
+        return new RelayCell(circuit.getCircuitID(), relayCellPayload);
+    }
+
+    private Cell createConnectResponseCell() {
+        ConnectResponseCommand command = new ConnectResponseCommand();
+        RelayCellPayload relayCellPayload = new RelayCellPayload(command);
         return new RelayCell(circuit.getCircuitID(), relayCellPayload);
     }
 
