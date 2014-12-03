@@ -112,7 +112,7 @@ public class LocalCellWorker implements CellWorker {
     }
 
     private void handleConnectResponse(ConnectResponseCommand connectResponseCommand) {
-        //TODO what to do here? :P
+        logger.debug("Received ConnectResponseCommand: '{}'", connectResponseCommand);
     }
 
     private void handleExtendResponse(ExtendResponseCommand extendResponseCommand) {
@@ -227,6 +227,7 @@ public class LocalCellWorker implements CellWorker {
         ChainNodeMetaData nextNode = nodes.get(nextNodeIndex);
         if (nextNode == null) {
             logger.info("Chain established, calling callback!");
+            logger.debug("Updated chain metadata: {}", metaData);
             callBack.chainEstablished(metaData);
         } else {
             DHKeyExchange keyExchange;
