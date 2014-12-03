@@ -59,6 +59,7 @@ public class LocalNodeCore {
 
     public void createChain(ChainMetaData chainMetaData, SocksCallBack callBack) {
         logger.info("Creating new chain");
+        logger.debug("Chain metadata: {}", chainMetaData);
         // TODO spawn Thread instead to start Chainbuilding
         // TODO add check that chain is long enough according to configuration
         if (chainMetaData == null || callBack == null) {
@@ -207,6 +208,7 @@ public class LocalNodeCore {
     }
 
     protected void sendCell(Cell cell, Endpoint endpoint) throws IOException {
+        logger.debug("Sending cell {} to Endpoint {}", cell, endpoint);
         ConnectionWorker connectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(endpoint);
         connectionWorker.sendCell(cell);
     }
