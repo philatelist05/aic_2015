@@ -119,7 +119,7 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
         DataCommand command = new DataCommand(payload);
         command.setSequenceNumber(lastUsedSequenceNumber++);
         RelayCellPayload relayCellPayload = new RelayCellPayload(command);
-        relayCellPayload.encrypt(circuit.getSessionKey());
+        relayCellPayload = relayCellPayload.encrypt(circuit.getSessionKey());
         return new RelayCell(circuit.getCircuitID(), relayCellPayload);
     }
 
