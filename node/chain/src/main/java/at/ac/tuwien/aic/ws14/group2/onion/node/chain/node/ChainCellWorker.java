@@ -188,14 +188,14 @@ public class ChainCellWorker implements CellWorker {
         extendChain(outgoingConnectionWorker, circuit, cmd.getEndpoint(), cmd.getDHHalf());
     }
 
-    private void handleConnectCommand(ConnectCommand cmd) throws CircuitIDExistsAlreadyException, IOException {
+    private void handleConnectCommand(ConnectCommand cmd) throws IOException {
         logger.info("Handling ConnectCommand: {}", cmd);
-        connectionWorker.createTargetWorker(circuit, cmd.getEndpoint());
+        connectionWorker.getOrCreateTargetWorker(circuit, cmd.getEndpoint());
     }
 
-    private void handleDataCommand(DataCommand cmd) {
+    private void handleDataCommand(DataCommand cmd) throws IOException {
         logger.info("Handling DataCommand: {}", cmd);
-        connectionWorker.getTargetWorker(circuit).sendData(cmd.getData(), cmd.getSequenceNumber());
+        connectionWorker.getOrCreateTargetWorker(circuit, null).sendData(cmd.getData(), cmd.getSequenceNumber());
     }
 
     private void extendChain(ConnectionWorker connectionWorker, Circuit incomingCircuit, Endpoint nextNode, EncryptedDHHalf dhHalf) throws IOException {

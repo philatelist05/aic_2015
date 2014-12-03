@@ -10,6 +10,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.annotation.Target;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.*;
@@ -87,22 +88,27 @@ public class ConnectionWorker implements AutoCloseable {
     }
 
     /**
-     * Creates a new TargetWorker for the specified circuit and endpoint.
-     * @throws CircuitIDExistsAlreadyException Thrown if there is already a TargetWorker for the specified circuit.
+     * Gets an existing TargetWorker for the specified circuit or creates a new one.
+     * @param target Can be null. If it is not null the TargetWorker will be connected to this endpoint.
      */
-    public void createTargetWorker(Circuit incomingCircuit, Endpoint target) throws CircuitIDExistsAlreadyException, IOException {
-        // TODO (th)
-        //SocketForwarder forwarder = new SocketForwarder(target, incomingCircuit, SocketFactory.getDefault());
-        //TargetWorker worker = new TargetWorker(this, forwarder);
-        //if (targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), worker) != null) {
-        //    worker.close();
+    public TargetWorker getOrCreateTargetWorker(Circuit incomingCircuit, Endpoint target) throws IOException {
+        // In most cases there is already a target worker.
+        TargetWorker targetWorker = targetWorkers.get(incomingCircuit.getCircuitID());
+        if (targetWorker != null)
+            return targetWorker;   // TODO: call connectTo if target is set.
 
-        //    throw new CircuitIDExistsAlreadyException("Only one target worker allowed for a single chain.");
-        //}
-    }
+        // If there is none, create one.
+        SocketForwarder forwarder = new SocketForwarder(incomingCircuit, SocketFactory.getDefault());
+        TargetWorker worker = new TargetWorker(this, forwarder);
+        TargetWorker oldWorker = targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), worker);
+        if (oldWorker != null) {
+            worker.close();
 
-    public TargetWorker getTargetWorker(Circuit incomingCircuit) {
-        return targetWorkers.get(incomingCircuit);
+            // race condition --> return existing TargetWorker
+            return oldWorker;   // TODO: call connectTo if target is set.
+        } else {
+            return worker;   // TODO: call connectTo if target is set.
+        }
     }
 
     /**
