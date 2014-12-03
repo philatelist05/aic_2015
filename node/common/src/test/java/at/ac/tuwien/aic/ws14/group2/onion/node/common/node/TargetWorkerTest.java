@@ -27,7 +27,7 @@ public class TargetWorkerTest {
         Configuration config = ConfigurationFactory.getConfiguration();
         timeout = config.getTargetWorkerTimeout();
         targetForwarder = mock(TargetForwarder.class);
-        targetWorker = new TargetWorker(mock(ConnectionWorker.class), (short) 0, targetForwarder);
+        targetWorker = new TargetWorker(mock(ConnectionWorker.class), targetForwarder);
     }
 
     @After

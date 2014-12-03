@@ -1,5 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
 import org.apache.logging.log4j.Level;
@@ -18,17 +19,16 @@ public class TargetWorker implements AutoCloseable {
     static final Logger logger = LogManager.getLogger(TargetWorker.class.getName());
 
     private final ConnectionWorker worker;
-    private final short circuitID;
     private final TargetForwarder forwarder;
     private final NoGapBuffer<Bucket> buffer;
     private final Timer bufferChecker;
     private final ClearBufferTask clearBufferTask;
 
-    public TargetWorker(ConnectionWorker worker, short circuitID, TargetForwarder forwarder) {
+    public TargetWorker(ConnectionWorker worker, TargetForwarder forwarder) {
         Configuration configuration = ConfigurationFactory.getConfiguration();
         this.worker = worker;
-        this.circuitID = circuitID;
         this.forwarder = forwarder;
+        forwarder.setTargetWorkerCallback(this);
         this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.getNr(), b2.getNr()), this::allItemsInRange, Short.MAX_VALUE);
         bufferChecker = new Timer("PeriodicBufferChecker");
         clearBufferTask = new ClearBufferTask();
@@ -65,6 +65,15 @@ public class TargetWorker implements AutoCloseable {
         bufferChecker.cancel();
     }
 
+    public void sendCell(Cell cell) {
+        try {
+            worker.sendCell(cell);
+        } catch (IOException e) {
+            logger.debug("Unable to send cell " + cell);
+            logger.catching(Level.DEBUG, e);
+        }
+    }
+
     private class ClearBufferTask extends TimerTask {
         @Override
         public void run() {
@@ -86,7 +95,11 @@ public class TargetWorker implements AutoCloseable {
                         }
                     });
             buffer.clear();
-            forwarder.forward(bos.toByteArray());
+            try {
+                forwarder.forward(bos.toByteArray());
+            } catch (IOException e) {
+                logger.catching(Level.DEBUG, e);
+            }
         }
     }
 }
