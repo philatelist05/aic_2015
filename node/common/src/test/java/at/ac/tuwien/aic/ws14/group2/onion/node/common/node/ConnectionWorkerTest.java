@@ -76,8 +76,8 @@ public class ConnectionWorkerTest {
                 return new CellCollector(cell, circuit, receivedCells);
             });
 
-            ConnectionWorker c1 = new ConnectionWorker(client1, cellWorkerFactory);
-            ConnectionWorker c2 = new ConnectionWorker(acceptedSocket1, cellWorkerFactory);
+            ConnectionWorker c1 = new ConnectionWorker(endpoint, client1, cellWorkerFactory);
+            ConnectionWorker c2 = new ConnectionWorker(endpoint, acceptedSocket1, cellWorkerFactory);
 
             assertEquals(0, receivedCells.size());
 

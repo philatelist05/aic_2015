@@ -18,7 +18,7 @@ import java.util.concurrent.*;
  * Created by Thomas on 22.11.2014.
  */
 public class ConnectionWorker implements AutoCloseable {
-    private static final Logger logger = LogManager.getLogger(ConnectionWorker.class);
+    private final Logger logger;
 
     private Socket socket;
     private OutputStream outputStream;
@@ -35,7 +35,8 @@ public class ConnectionWorker implements AutoCloseable {
     /**
      * @param socket Takes ownership of this socket.
      */
-    public ConnectionWorker(Socket socket, CellWorkerFactory cellWorkerFactory) throws IOException {
+    public ConnectionWorker(Endpoint endpoint, Socket socket, CellWorkerFactory cellWorkerFactory) throws IOException {
+        this.logger = LogManager.getLogger(ConnectionWorker.class.getCanonicalName() + "[" + endpoint.getAddress().getHostAddress() + ":" + endpoint.getPort() + "]");
         this.socket = socket;
         this.outputStream = socket.getOutputStream();
         this.inputStream = socket.getInputStream();

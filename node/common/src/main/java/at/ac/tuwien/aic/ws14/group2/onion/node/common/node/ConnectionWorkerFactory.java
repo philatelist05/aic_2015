@@ -57,7 +57,7 @@ public class ConnectionWorkerFactory {
 
     private ConnectionWorker createOrUseExisting(Endpoint endpoint) throws IOException {
         Socket socket = new Socket(endpoint.getAddress(), endpoint.getPort());
-        ConnectionWorker worker = new ConnectionWorker(socket, cellWorkerFactory);
+        ConnectionWorker worker = new ConnectionWorker(endpoint, socket, cellWorkerFactory);
 
         ConnectionWorker existingWorker = connectionWorkers.putIfAbsent(endpoint, worker);
         if (existingWorker == null) {
@@ -78,7 +78,7 @@ public class ConnectionWorkerFactory {
     public ConnectionWorker createIncomingConnectionWorker(Endpoint endpoint, Socket socket) throws ConnectionWorkerAlreadyExistsException, ConnectionWorkerException {
         ConnectionWorker worker = null;
         try {
-            worker = new ConnectionWorker(socket, cellWorkerFactory);
+            worker = new ConnectionWorker(endpoint, socket, cellWorkerFactory);
         } catch (IOException e) {
             logger.warn("Encountered IOException while creating new ConnectionWorker: {}", e.getMessage());
             throw new ConnectionWorkerException();
