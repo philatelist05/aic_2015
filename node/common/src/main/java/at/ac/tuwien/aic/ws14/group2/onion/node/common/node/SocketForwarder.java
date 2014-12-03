@@ -23,28 +23,43 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SocketForwarder extends Thread implements TargetForwarder, AutoCloseable {
     static final Logger logger = LogManager.getLogger(TargetWorker.class.getName());
 
-    private final InetAddress address;
-    private final int port;
-    private final Socket socket;
-    private final OutputStream outputStream;
-    private final InputStream inputStream;
+    private final SocketFactory socketFactory;
+    private InetAddress address;
+    private int port;
+    private Socket socket;
+    private OutputStream outputStream;
+    private  InputStream inputStream;
     private final Circuit circuit;
     private TargetWorker targetWorker;
     private boolean stop = false;
     private short lastUsedSequenceNumber = 0;
 
 
-    public SocketForwarder(Endpoint endpoint, Circuit circuit, SocketFactory socketFactory) throws IOException {
+    /**
+     * Creates a SocketForwarder which is not connected to the target yet.
+     */
+    public SocketForwarder(Circuit circuit, SocketFactory socketFactory) throws IOException {
         super();
         this.circuit = circuit;
+        this.socketFactory = socketFactory;
+    }
+
+    /**
+     * Connects this forwarder to the specified target and starts this thread.
+     */
+    public void connectTo(Endpoint endpoint) throws IOException {
         address = endpoint.getAddress();
         port = endpoint.getPort();
         socket = socketFactory.createSocket(address, port);
         inputStream = socket.getInputStream();
         outputStream = socket.getOutputStream();
+
         this.start();
     }
 
+    /**
+     * Must be called after connectTo.
+     */
     @Override
     public void forward(byte[] data) throws IOException {
         outputStream.write(data);

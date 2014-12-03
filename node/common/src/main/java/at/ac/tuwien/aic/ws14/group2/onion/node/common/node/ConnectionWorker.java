@@ -91,13 +91,14 @@ public class ConnectionWorker implements AutoCloseable {
      * @throws CircuitIDExistsAlreadyException Thrown if there is already a TargetWorker for the specified circuit.
      */
     public void createTargetWorker(Circuit incomingCircuit, Endpoint target) throws CircuitIDExistsAlreadyException, IOException {
-        SocketForwarder forwarder = new SocketForwarder(target, incomingCircuit, SocketFactory.getDefault());
-        TargetWorker worker = new TargetWorker(this, forwarder);
-        if (targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), worker) != null) {
-            worker.close();
+        // TODO (th)
+        //SocketForwarder forwarder = new SocketForwarder(target, incomingCircuit, SocketFactory.getDefault());
+        //TargetWorker worker = new TargetWorker(this, forwarder);
+        //if (targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), worker) != null) {
+        //    worker.close();
 
-            throw new CircuitIDExistsAlreadyException("Only one target worker allowed for a single chain.");
-        }
+        //    throw new CircuitIDExistsAlreadyException("Only one target worker allowed for a single chain.");
+        //}
     }
 
     public TargetWorker getTargetWorker(Circuit incomingCircuit) {

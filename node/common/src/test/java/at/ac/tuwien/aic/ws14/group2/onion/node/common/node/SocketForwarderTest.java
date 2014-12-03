@@ -105,7 +105,8 @@ public class SocketForwarderTest {
         Endpoint endpoint = mock(Endpoint.class);
         when(endpoint.getPort()).thenReturn(0);
         when(endpoint.getAddress()).thenReturn(InetAddress.getLocalHost());
-        SocketForwarder forwarder = new SocketForwarder(endpoint, circuit, socketFactory);
+        SocketForwarder forwarder = new SocketForwarder(circuit, socketFactory);
+        forwarder.connectTo(endpoint);
         forwarder.setTargetWorkerCallback(worker);
         return forwarder;
     }
