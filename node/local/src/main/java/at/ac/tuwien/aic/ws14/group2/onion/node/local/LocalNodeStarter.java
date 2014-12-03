@@ -1,7 +1,6 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalCellWorkerFactory;
@@ -22,9 +21,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.URL;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.Security;
 
 public class LocalNodeStarter {
@@ -106,7 +102,7 @@ public class LocalNodeStarter {
 		TSSLTransportFactory.TSSLTransportParameters clientParams = new TSSLTransportFactory.TSSLTransportParameters();
 		clientParams.setTrustStore(keyStoreFile.getPath(), "password");  //TODO use keystore with directory public key here!
 
-		logger.debug("Creating SSL Transport using Thrift");
+		logger.info("Creating SSL Transport using Thrift");
 		TTransport transport = null;
 
 		try {
@@ -117,18 +113,18 @@ public class LocalNodeStarter {
 			System.exit(-1);
 		}
 
-		logger.debug("Creating Thrift client");
+		logger.info("Creating Thrift client");
 		TProtocol protocol = new TBinaryProtocol(transport);
 		DirectoryService.Client client = new DirectoryService.Client(protocol);
 
 		// Create and start SOCKS server
-		logger.debug("Creating and starting SOCKS server");
+		logger.info("Creating and starting SOCKS server");
 		SocksServer socksServer = new SocksServer(configuration.getLocalNodeServerPort(), nodeCore, client);
 		socksServer.setUncaughtExceptionHandler((thread, throwable) -> logger.error("Uncaught exception in thread: " + thread.getName(), throwable));
 		socksServer.start();
 
 		// Block main thread until SOCKS server is interrupted
-		logger.debug("Waiting for SOCKS server to be interrupted");
+		logger.info("Waiting for SOCKS server to be interrupted");
 		try {
 			socksServer.join();
 		} catch (InterruptedException ignored) {

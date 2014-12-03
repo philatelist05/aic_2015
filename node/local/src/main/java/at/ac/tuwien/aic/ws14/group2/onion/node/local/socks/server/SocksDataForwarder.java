@@ -9,8 +9,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Objects;
@@ -24,27 +22,31 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 
 	private final Short circuitId;
 	private final LocalNodeCore localNodeCore;
-	private final ServerSocket serverSocket;
+	// TODO (KK) Delete
+//	private final ServerSocket serverSocket;
 	private final PriorityBlockingQueue<Bucket> responseBuffer;
+	private final Socket clientSocket;
 	private volatile boolean stop;
-	private Socket clientSocket;
 	private ResponseHandlerThread responseHandlerThread;
 
-	public SocksDataForwarder(Short circuitId, LocalNodeCore localNodeCore) throws IOException {
+	public SocksDataForwarder(Socket clientSocket, Short circuitId, LocalNodeCore localNodeCore) throws IOException {
 		this.circuitId = circuitId;
 		this.localNodeCore = localNodeCore;
+		this.clientSocket = Objects.requireNonNull(clientSocket);
+		// TODO (KK) Delete
 		// Create socket for the actual data from the originator
-		this.serverSocket = new ServerSocket(0);
+//		this.serverSocket = new ServerSocket(0);
 		this.responseBuffer = new PriorityBlockingQueue<>();
 	}
 
-	public int getLocalPort() {
-		return this.serverSocket.getLocalPort();
-	}
-
-	public InetAddress getInetAddress() {
-		return this.serverSocket.getInetAddress();
-	}
+	// TODO (KK) Delete
+//	public int getLocalPort() {
+//		return this.serverSocket.getLocalPort();
+//	}
+//
+//	public InetAddress getInetAddress() {
+//		return this.serverSocket.getInetAddress();
+//	}
 
 	/**
 	 * Send data back to the originator.
@@ -63,7 +65,7 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 
 	@Override
 	public void run() {
-		if (!serverSocket.isBound())
+		if (!clientSocket.isConnected())
 			throw new IllegalStateException(
 					"TCP listener socket not initialized");
 
@@ -71,11 +73,11 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 			try {
 
 				// Start listening for a connection
-				clientSocket = serverSocket.accept();
-
-				logger.info("Got TCP connection from originator for data transfer");
+				// TODO (KK) Delete
+//				clientSocket = serverSocket.accept();
 
 				// Start thread handling the responses
+				logger.info("Start thread handling the responses");
 				this.responseHandlerThread = new ResponseHandlerThread(this.responseBuffer, clientSocket.getOutputStream());
 				this.responseHandlerThread.setName("Response handler thread of " + this.getName());
 				this.responseHandlerThread.setUncaughtExceptionHandler(this.getUncaughtExceptionHandler());
@@ -105,9 +107,9 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 			} finally {
 				if (this.responseHandlerThread != null)
 					this.responseHandlerThread.close();
-				if (this.clientSocket != null)
-					this.clientSocket.close();
-				serverSocket.close();
+				this.clientSocket.close();
+				// TODO (KK) Delete
+//				serverSocket.close();
 			}
 		} catch (Exception e) {
 			// The if-clause down here is because of what is described in
@@ -133,9 +135,9 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 		if (this.responseHandlerThread != null)
 			this.responseHandlerThread.close();
 		this.interrupt();
-		if (this.clientSocket != null)
-			this.clientSocket.close();
-		serverSocket.close();
+		this.clientSocket.close();
+		// TODO (KK) Delete
+//		serverSocket.close();
 	}
 
 	private static class ResponseHandlerThread extends Thread implements AutoCloseable {

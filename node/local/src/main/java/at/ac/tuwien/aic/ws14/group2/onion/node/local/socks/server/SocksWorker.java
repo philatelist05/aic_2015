@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +32,7 @@ public class SocksWorker implements Runnable, AutoCloseable {
 	private static final Logger logger = LoggerFactory.getLogger(SocksWorker.class.getName());
 	private static final int CHAIN_LENGTH = 3;
 
+	// TODO (KK) Rename this since it is not only the command channel
 	private final Socket commandSocket;
 	private final Consumer<SocksWorker> closeCallback;
 	private final SynchronousQueue<ChainMetaData> chainEstablishedAnswerQueue = new SynchronousQueue<>();
@@ -99,22 +101,24 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 				SocksAddress destination = commandRequest.getDestination();
 
-				logger.info("Creating chain and connecting to " + destination.getAddress());
-
 				// Create the chain
+				logger.info("Creating chain and connecting to " + destination.getAddress());
 				createChain();
 
 				// Connect to the target
-				logger.info("Connecting to destination.");
+				logger.info("Connecting to destination");
 				localNodeCore.connectTo(circuitId, convertEndpointToSocksAddress(destination));
 
 				// Create and start the forwarder of for the client data
-				logger.info("Starting SocksDataForwarder");
-				socksDataForwarder = new SocksDataForwarder(circuitId, localNodeCore);
+				logger.info("Starting SOCKS data forwarder");
+				socksDataForwarder = new SocksDataForwarder(commandSocket, circuitId, localNodeCore);
+				socksDataForwarder.setName("SOCKS data forwarder thread of " + Thread.currentThread().getName());
+				socksDataForwarder.setUncaughtExceptionHandler(Thread.currentThread().getUncaughtExceptionHandler());
 				socksDataForwarder.start();
 
 				// Send succeeded command reply
-				CommandReply commandReply = new CommandReply(ReplyType.SUCCEEDED, new SocksAddress(socksDataForwarder.getInetAddress(), socksDataForwarder.getLocalPort()));
+				// TODO (KK) Change the address and port which is told to the originator
+				CommandReply commandReply = new CommandReply(ReplyType.SUCCEEDED, new SocksAddress(InetAddress.getLoopbackAddress(), 1));
 				outputStream.write(commandReply.toByteArray());
 
 				// Wait on SocksDataForwarder
