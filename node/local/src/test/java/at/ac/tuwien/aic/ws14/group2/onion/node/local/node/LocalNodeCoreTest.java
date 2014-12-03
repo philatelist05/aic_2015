@@ -68,7 +68,8 @@ public class LocalNodeCoreTest {
             }
         }))).thenReturn(null);
 
-        LocalNodeCore nodeCore = new LocalNodeCore(circuitIDs, chains, callbacks);
+        Endpoint endpoint = new Endpoint("localhost", 12345);
+        LocalNodeCore nodeCore = new LocalNodeCore(endpoint, circuitIDs, chains, callbacks);
 
         assertEquals(chain1, nodeCore.getChainMetaData((short) 1));
         assertEquals(chain2, nodeCore.getChainMetaData((Short.valueOf((short) 2))));

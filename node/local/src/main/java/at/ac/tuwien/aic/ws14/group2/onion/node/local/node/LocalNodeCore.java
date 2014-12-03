@@ -33,30 +33,20 @@ public class LocalNodeCore {
     private ConcurrentHashMap<Short, ChainMetaData> chains;
     private ConcurrentHashMap<Short, SocksCallBack> callbacks;
 
-    public LocalNodeCore(ConcurrentSkipListSet<Short> circuitIDs, ConcurrentHashMap<Short, ChainMetaData> chains, ConcurrentHashMap<Short, SocksCallBack> callbacks) {
+    public LocalNodeCore(Endpoint endpoint, ConcurrentSkipListSet<Short> circuitIDs, ConcurrentHashMap<Short, ChainMetaData> chains, ConcurrentHashMap<Short, SocksCallBack> callbacks) {
+        this.fakedEndpoint = endpoint;
         this.random = new Random();
         this.circuitIDs = circuitIDs;
         this.chains = chains;
         this.callbacks = callbacks;
-        try {
-            // TODO (KK) Remove faked endpoint
-            this.fakedEndpoint = new Endpoint(InetAddress.getLocalHost(), 1);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
     }
 
-    public LocalNodeCore() {
+    public LocalNodeCore(Endpoint endpoint) {
+        this.fakedEndpoint = endpoint;
         this.random = new Random();
         this.circuitIDs = new ConcurrentSkipListSet<>();
         this.chains = new ConcurrentHashMap<>();
         this.callbacks = new ConcurrentHashMap<>();
-        try {
-            // TODO (KK) Remove faked endpoint
-            this.fakedEndpoint = new Endpoint(InetAddress.getLocalHost(), 1);
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
     }
 
     public ChainMetaData getChainMetaData(Short circuitID) {
