@@ -141,7 +141,7 @@ public class ChainCellWorker implements CellWorker {
                 shutdownChain(circuit);
             }
         } else if (circuit.getSessionKey() == null) {   // coming from target
-
+            logger.info("Adding another layer of encryption to relay cell");
             // add layer of encryption
             Circuit assocCircuit = circuit.getAssociatedCircuit();
             RelayCellPayload newPayload = relayCell.getPayload().encrypt(assocCircuit.getSessionKey());
@@ -151,7 +151,7 @@ public class ChainCellWorker implements CellWorker {
             ConnectionWorker assocConnectionWorker = connectionWorkerFactory.getConnectionWorker(assocCircuit.getEndpoint());
             assocConnectionWorker.sendCell(newRelayCell);
         } else {   // coming from local node
-            logger.debug("Non-final destination of relay cell");
+            logger.info("Stripping another layer of encryption from the relay cell");
             logger.debug("Encrypted payload: {}", relayCell.getPayload());
             // remove layer of encryption and forward
             Circuit assocCircuit = circuit.getAssociatedCircuit();
