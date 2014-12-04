@@ -4,8 +4,8 @@
               xsi:schemaLocation="http://onion.ws14group2.aic.tuwien.ac.at config.xsd">
 	<node>
 		<common>
-			<local-mode>true</local-mode>
-			<host>54.93.220.183</host>
+			<local-mode>false</local-mode>
+			<host>54.149.65.84</host>
 			<port>9090</port>
 		</common>
 		<local>
