@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
@@ -22,10 +24,9 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 
 	private final Short circuitId;
 	private final LocalNodeCore localNodeCore;
-	// TODO (KK) Delete
-//	private final ServerSocket serverSocket;
 	private final PriorityBlockingQueue<Bucket> responseBuffer;
 	private final Socket clientSocket;
+	private final BlockingQueue<Object> newBucketNotifyingQueue;
 	private volatile boolean stop;
 	private ResponseHandlerThread responseHandlerThread;
 
@@ -33,20 +34,9 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 		this.circuitId = circuitId;
 		this.localNodeCore = localNodeCore;
 		this.clientSocket = Objects.requireNonNull(clientSocket);
-		// TODO (KK) Delete
-		// Create socket for the actual data from the originator
-//		this.serverSocket = new ServerSocket(0);
 		this.responseBuffer = new PriorityBlockingQueue<>();
+		this.newBucketNotifyingQueue = new LinkedBlockingQueue<>();
 	}
-
-	// TODO (KK) Delete
-//	public int getLocalPort() {
-//		return this.serverSocket.getLocalPort();
-//	}
-//
-//	public InetAddress getInetAddress() {
-//		return this.serverSocket.getInetAddress();
-//	}
 
 	/**
 	 * Send data back to the originator.
@@ -59,8 +49,8 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 		this.responseBuffer.put(new Bucket(data, sequenceNumber));
 
 		// Notify the thread about a new object in the queue if it waits for a missing number
-		if (this.responseHandlerThread != null)
-			this.responseHandlerThread.notifyAll();
+		// TODO (KK) This is maybe not the optimal method of synchronization!
+		newBucketNotifyingQueue.offer(new Object());
 	}
 
 	@Override
@@ -72,13 +62,9 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 		try {
 			try {
 
-				// Start listening for a connection
-				// TODO (KK) Delete
-//				clientSocket = serverSocket.accept();
-
 				// Start thread handling the responses
 				logger.info("Start thread handling the responses");
-				this.responseHandlerThread = new ResponseHandlerThread(this.responseBuffer, clientSocket.getOutputStream());
+				this.responseHandlerThread = new ResponseHandlerThread(this.responseBuffer, clientSocket.getOutputStream(), newBucketNotifyingQueue);
 				this.responseHandlerThread.setName("Response handler thread of " + this.getName());
 				this.responseHandlerThread.setUncaughtExceptionHandler(this.getUncaughtExceptionHandler());
 				this.responseHandlerThread.start();
@@ -108,8 +94,6 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 				if (this.responseHandlerThread != null)
 					this.responseHandlerThread.close();
 				this.clientSocket.close();
-				// TODO (KK) Delete
-//				serverSocket.close();
 			}
 		} catch (Exception e) {
 			// The if-clause down here is because of what is described in
@@ -136,8 +120,6 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 			this.responseHandlerThread.close();
 		this.interrupt();
 		this.clientSocket.close();
-		// TODO (KK) Delete
-//		serverSocket.close();
 	}
 
 	private static class ResponseHandlerThread extends Thread implements AutoCloseable {
@@ -145,15 +127,17 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 
 		private final PriorityBlockingQueue<Bucket> responseBuffer;
 		private final OutputStream outputStream;
+		private final BlockingQueue<Object> newBucketNotifyingQueue;
 		private volatile boolean stop;
 		private long lastSentSequenceNumber;
 
-		public ResponseHandlerThread(PriorityBlockingQueue<Bucket> responseBuffer, OutputStream outputStream) {
+		public ResponseHandlerThread(PriorityBlockingQueue<Bucket> responseBuffer, OutputStream outputStream, BlockingQueue<Object> newBucketNotifyingQueue) {
 			super();
 
 			this.responseBuffer = Objects.requireNonNull(responseBuffer);
 			this.outputStream = Objects.requireNonNull(outputStream);
-			this.lastSentSequenceNumber = 0;
+			this.lastSentSequenceNumber = -1;
+			this.newBucketNotifyingQueue = Objects.requireNonNull(newBucketNotifyingQueue);
 		}
 
 		@Override
@@ -167,19 +151,21 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 						Bucket bucket = this.responseBuffer.take();
 
 						long currentSequenceNumber = Short.toUnsignedLong(bucket.getNr());
-						long nextSequenceNumber = this.lastSentSequenceNumber + 1;
 
 						if (currentSequenceNumber <= lastSentSequenceNumber) {
 							// Something terribly wrong happened, run away!
 							logger.error("Missing packets! Something terribly wrong must have happened. Exiting.");
 							this.stop = true;
 							continue;
-						} else if (currentSequenceNumber > nextSequenceNumber) {
+						} else if (currentSequenceNumber > lastSentSequenceNumber + 1) {
 							// There are missing buckets, so put the current bucket back, wait and try again
 							this.responseBuffer.put(bucket);
-							this.wait();
+							// TODO (KK) This is maybe not the optimal method of synchronization!
+							this.newBucketNotifyingQueue.take();
 							continue;
 						}
+						// assert currentSequenceNumber == lastSentSequenceNumber + 1
+						this.newBucketNotifyingQueue.poll();
 
 						// Send data back
 						this.outputStream.write(bucket.getData());
