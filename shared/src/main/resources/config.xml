@@ -5,7 +5,7 @@
 	<node>
 		<common>
 			<local-mode>false</local-mode>
-			<host>54.149.65.84</host>
+			<host>54.69.215.57</host>
 			<port>9090</port>
 		</common>
 		<local>
