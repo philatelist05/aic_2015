@@ -1,4 +1,4 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
+package at.ac.tuwien.aic.ws14.group2.onion.shared.crypto;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -10,10 +10,10 @@ public class RSASignAndVerify {
 
     static final Logger logger = LogManager.getLogger(RSASignAndVerify.class.getName());
 
-    public RSASignAndVerify(){
+    public RSASignAndVerify() {
     }
 
-    public static byte[] signData(byte[] data, PrivateKey key)  {
+    public static byte[] signData(byte[] data, PrivateKey key) {
 
         byte[] signature = null;
         try {

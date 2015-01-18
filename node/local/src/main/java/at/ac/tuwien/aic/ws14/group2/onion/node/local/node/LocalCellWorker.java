@@ -1,12 +1,12 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSASignAndVerify;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSASignAndVerify;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.KeyExchangeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.CellWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;

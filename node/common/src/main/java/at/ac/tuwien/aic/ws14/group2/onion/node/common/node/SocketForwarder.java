@@ -2,7 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

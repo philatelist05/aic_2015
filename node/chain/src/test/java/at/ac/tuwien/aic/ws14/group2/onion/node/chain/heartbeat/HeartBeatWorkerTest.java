@@ -2,7 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSAKeyGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
