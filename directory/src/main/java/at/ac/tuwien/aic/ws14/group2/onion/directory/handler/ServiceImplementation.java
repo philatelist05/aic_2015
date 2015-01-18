@@ -19,10 +19,6 @@ public class ServiceImplementation implements DirectoryService.Iface {
         this.chainNodeRegistry = chainNodeRegistry;
     }
 
-    @Override
-    public void ping() throws TException {
-        //TODO remove
-    }
 
     @Override
     public boolean heartbeat(int nodeID, NodeUsage nodeUsage) throws TException {

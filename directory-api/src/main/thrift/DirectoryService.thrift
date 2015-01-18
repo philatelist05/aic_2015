@@ -25,11 +25,9 @@ struct ChainNodeInformation {
 
 service DirectoryService {
 
-   void ping(), //TODO remove
+   bool heartbeat(1: i32 nodeID, 2: NodeUsage nodeUsage),
 
-   bool heartbeat(1: i32 nodeID, 2: NodeUsage nodeUsage), //TODO switch to ID instead of nodeInformation?
-
-   i32 registerNode(1: ChainNodeInformation nodeInformation), //TODO return ID instead of bool?
+   i32 registerNode(1: ChainNodeInformation nodeInformation),
 
    list<ChainNodeInformation> getChain(1: optional i32 chainLength = 3),
 

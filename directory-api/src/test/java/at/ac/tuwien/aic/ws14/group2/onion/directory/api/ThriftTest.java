@@ -31,12 +31,8 @@ public class ThriftTest {
         public volatile boolean called;
 
         @Override
-        public void ping() throws TException {
-            called = true;
-        }
-
-        @Override
         public boolean heartbeat(int nodeID, NodeUsage nodeUsage) throws TException {
+            called = true;
             return false;
         }
 
@@ -100,7 +96,7 @@ public class ThriftTest {
         DirectoryService.Client client = new DirectoryService.Client(protocol);
 
         assertEquals(false, handler.called);
-        client.ping();
+        client.heartbeat(0, null);
         assertEquals(true, handler.called);
 
         transport.close();
@@ -144,7 +140,7 @@ public class ThriftTest {
         DirectoryService.Client client = new DirectoryService.Client(protocol);
 
         assertEquals(false, handler.called);
-        client.ping();
+        client.heartbeat(0, null);
         assertEquals(true, handler.called);
 
         transport.close();
