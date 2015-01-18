@@ -1,9 +1,9 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.chain.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSASignAndVerify;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSAKeyGenerator;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSASignAndVerify;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;

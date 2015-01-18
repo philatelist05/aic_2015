@@ -1,17 +1,15 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
+package at.ac.tuwien.aic.ws14.group2.onion.shared.crypto;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.KeyExchangeException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.spec.DHParameterSpec;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 public class DHKeyExchange {
@@ -26,7 +24,7 @@ public class DHKeyExchange {
         try {
             keyPairGenerator = KeyPairGenerator.getInstance("DH", "BC");
             keyAgreement = KeyAgreement.getInstance("DH", "BC");
-            keyFactory =  KeyFactory.getInstance("DH", "BC");
+            keyFactory = KeyFactory.getInstance("DH", "BC");
         } catch (NoSuchAlgorithmException e) {
             logger.warn("Could not find BouncyCastle provider.");
             logger.catching(Level.DEBUG, e);

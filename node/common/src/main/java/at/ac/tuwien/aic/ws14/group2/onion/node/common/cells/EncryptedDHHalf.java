@@ -1,9 +1,8 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAEncryptDecrypt;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSAEncryptDecrypt;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.DecryptException;
 
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.security.PrivateKey;
 

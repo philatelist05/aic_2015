@@ -25,8 +25,6 @@ struct ChainNodeInformation {
 
 service DirectoryService {
 
-   void ping(), //TODO remove
-
    bool heartbeat(1: i32 nodeID, 2: NodeUsage nodeUsage),
 
    i32 registerNode(1: ChainNodeInformation nodeInformation),

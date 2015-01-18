@@ -1,6 +1,5 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
+package at.ac.tuwien.aic.ws14.group2.onion.shared.crypto;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Assert;
@@ -10,7 +9,6 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
@@ -47,7 +45,7 @@ public class DHKeyExchangeTest {
         byte[] sharedSecretA = keyExchangeA.completeExchange(publicKeyB);
         byte[] sharedSecretB = keyExchangeB.completeExchange(publicKeyA);
 
-        Assert.assertArrayEquals(sharedSecretA, sharedSecretB);
+        assertArrayEquals(sharedSecretA, sharedSecretB);
     }
 
     @Test(expected = NullPointerException.class)

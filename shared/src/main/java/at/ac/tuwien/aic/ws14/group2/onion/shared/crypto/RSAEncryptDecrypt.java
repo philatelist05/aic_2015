@@ -1,12 +1,10 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
+package at.ac.tuwien.aic.ws14.group2.onion.shared.crypto;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecryptException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.DecryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -18,10 +16,10 @@ public class RSAEncryptDecrypt {
 
     static final Logger logger = LogManager.getLogger(RSAEncryptDecrypt.class.getName());
 
-    public RSAEncryptDecrypt(){
+    public RSAEncryptDecrypt() {
     }
 
-    public static byte[] encrypt(byte[] clearText, PublicKey publicKey) throws EncryptException{
+    public static byte[] encrypt(byte[] clearText, PublicKey publicKey) throws EncryptException {
 
         byte[] encryptedText = null;
 
@@ -59,7 +57,7 @@ public class RSAEncryptDecrypt {
         return encryptedText;
     }
 
-    public static byte[] decrypt(byte[] encryptedData, PrivateKey privateKey) throws DecryptException{
+    public static byte[] decrypt(byte[] encryptedData, PrivateKey privateKey) throws DecryptException {
 
         byte[] decrypted = null;
 
@@ -72,7 +70,7 @@ public class RSAEncryptDecrypt {
                 e.printStackTrace();
             }
             try {
-                decrypted =  rsa.doFinal(encryptedData);
+                decrypted = rsa.doFinal(encryptedData);
             } catch (IllegalBlockSizeException e) {
                 logger.warn("Illegal block size.");
                 logger.catching(Level.DEBUG, e);

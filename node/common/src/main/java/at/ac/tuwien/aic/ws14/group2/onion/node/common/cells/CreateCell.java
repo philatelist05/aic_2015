@@ -1,18 +1,9 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CellException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 
 /**
  * Created by Thomas on 09.11.2014.

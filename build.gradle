@@ -32,10 +32,15 @@ allprojects {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+project(':shared') {
+    dependencies {
+        compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.51'
+    }
+}
+
 project(':node:common') {
     dependencies {
 		compile project(':shared')
-        compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.51'
     }
 }
 
@@ -68,7 +73,7 @@ project(':directory') {
 
     dependencies {
         compile project(':directory-api')
-        compile project(':node:common')
+        compile project(':shared')
         compile group: 'com.google.guava', name: 'guava', version: '10.0'
     }
 }

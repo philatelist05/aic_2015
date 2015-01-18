@@ -1,11 +1,11 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.EncryptException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.KeyExchangeException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.KeyExchangeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
@@ -18,8 +18,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;

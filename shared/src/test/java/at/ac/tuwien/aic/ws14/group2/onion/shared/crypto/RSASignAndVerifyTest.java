@@ -1,4 +1,4 @@
-package at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto;
+package at.ac.tuwien.aic.ws14.group2.onion.shared.crypto;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;

@@ -1,7 +1,7 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.EncryptedDHHalf;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
 
 import java.util.concurrent.ThreadLocalRandom;
 

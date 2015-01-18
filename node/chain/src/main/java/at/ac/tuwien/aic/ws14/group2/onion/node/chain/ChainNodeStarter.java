@@ -5,7 +5,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat.HeartBeatWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainCellWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainNodeCore;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.crypto.RSAKeyGenerator;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
@@ -123,7 +123,7 @@ public class ChainNodeStarter {
         }
 
         TSSLTransportFactory.TSSLTransportParameters clientParams = new TSSLTransportFactory.TSSLTransportParameters();
-        clientParams.setTrustStore(keyStoreFile.getPath(), "password");  //TODO use keystore with directory public key here!
+        clientParams.setTrustStore(keyStoreFile.getPath(), "password");
 
         logger.debug("Creating SSL Transport using Thrift");
         TTransport transport = null;
