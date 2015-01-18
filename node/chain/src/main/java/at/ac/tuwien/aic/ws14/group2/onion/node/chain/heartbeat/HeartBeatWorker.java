@@ -21,6 +21,7 @@ public class HeartBeatWorker implements Runnable {
     private ChainNodeInformation nodeInformation;
     private long sleepInterval;
     private PrivateKey privateKey;
+    private int nodeID = -1;
 
     private LocalDateTime lastSuccessfulHeartBeat;
     private DateTimeFormatter dateTimeFormatter;
@@ -59,27 +60,27 @@ public class HeartBeatWorker implements Runnable {
             logger.debug("Trying to send heartbeat");
             boolean ret;
             try {
-                ret = client.heartbeat(nodeInformation, usage);
+                ret = client.heartbeat(nodeID, usage);
             } catch (TException e) {
                 logger.warn("Encountered TException while trying to send heartbeat: " + e.getMessage());
                 continue;
             }
 
             if (ret) {
-                logger.debug("Heartbeat successful!");
+                logger.debug("Heartbeat with ID {} successful!", nodeID);
                 lastSuccessfulHeartBeat = currentEndTime;
                 UsageCollector.currentRelayMsgCount.addAndGet(UsageCollector.currentRelayMsgCount.getAndSet(0) - relayMsgCountSnapshot);
                 UsageCollector.currentCreateMsgCount.addAndGet(UsageCollector.currentCreateMsgCount.getAndSet(0) - createMsgCountSnapshot);
             } else {
                 logger.warn("Heartbeat unsuccessful, need to register first");
                 try {
-                    ret = client.registerNode(nodeInformation);
+                    nodeID = client.registerNode(nodeInformation);
                 } catch (TException e) {
                     logger.warn("Encountered TException while trying to register node: " + e.getMessage());
                     continue;
                 }
-                if (ret) {
-                    logger.info("Registered successfully!");
+                if (nodeID >= 0) {
+                    logger.info("Registered with ID {} successfully!", nodeID);
                 } else {
                     logger.warn("Registration failed, trying again in {}ms", sleepInterval);
                 }
