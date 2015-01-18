@@ -100,7 +100,7 @@ public class LocalNodeStarter {
 		}
 
 		TSSLTransportFactory.TSSLTransportParameters clientParams = new TSSLTransportFactory.TSSLTransportParameters();
-		clientParams.setTrustStore(keyStoreFile.getPath(), "password");  //TODO use keystore with directory public key here!
+		clientParams.setTrustStore(keyStoreFile.getPath(), "password");
 
 		logger.info("Creating SSL Transport using Thrift");
 		TTransport transport = null;

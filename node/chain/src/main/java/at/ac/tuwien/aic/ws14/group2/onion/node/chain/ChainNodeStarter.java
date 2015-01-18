@@ -123,7 +123,7 @@ public class ChainNodeStarter {
         }
 
         TSSLTransportFactory.TSSLTransportParameters clientParams = new TSSLTransportFactory.TSSLTransportParameters();
-        clientParams.setTrustStore(keyStoreFile.getPath(), "password");  //TODO use keystore with directory public key here!
+        clientParams.setTrustStore(keyStoreFile.getPath(), "password");
 
         logger.debug("Creating SSL Transport using Thrift");
         TTransport transport = null;
