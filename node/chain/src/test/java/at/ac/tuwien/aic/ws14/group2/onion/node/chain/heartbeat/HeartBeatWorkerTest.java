@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import java.security.*;
 
+import static org.mockito.AdditionalMatchers.*;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -41,8 +42,8 @@ public class HeartBeatWorkerTest {
     public void testRegistration() throws Exception {
         logger.info("Testing registration");
         DirectoryService.Client client = mock(DirectoryService.Client.class);
-        when(client.heartbeat(eq(information), anyObject())).thenReturn(false).thenReturn(true);
-        when(client.registerNode(information)).thenReturn(true);
+        when(client.heartbeat(anyInt(), anyObject())).thenReturn(false).thenReturn(true);
+        when(client.registerNode(information)).thenReturn(1);
 
         logger.info("Starting HeartBeatWorker");
         Thread heartBeatWorkerThread = new Thread(new HeartBeatWorker(client, information, sleepInterval, privateKey));
@@ -56,7 +57,7 @@ public class HeartBeatWorkerTest {
         }
 
         logger.info("Verifying results");
-        verify(client).heartbeat(eq(information), anyObject());
+        verify(client).heartbeat(eq(-1), anyObject());
         verify(client).registerNode(information);
     }
 
@@ -64,7 +65,8 @@ public class HeartBeatWorkerTest {
     public void testingHeartbeat() throws Exception {
         logger.info("Testing heartbeat");
         DirectoryService.Client client = mock(DirectoryService.Client.class);
-        when(client.heartbeat(eq(information), anyObject())).thenReturn(true);
+        when(client.heartbeat(geq(0), anyObject())).thenReturn(true);
+        when(client.heartbeat(lt(0), anyObject())).thenReturn(false);
 
         logger.info("Starting HeartBeatWorker");
         Thread heartBeatWorkerThread = new Thread(new HeartBeatWorker(client, information, sleepInterval, privateKey));
@@ -78,14 +80,14 @@ public class HeartBeatWorkerTest {
         }
 
         logger.info("Verifying results");
-        verify(client, atLeast(5)).heartbeat(eq(information), anyObject());
+        verify(client, atLeast(5)).heartbeat(geq(0), anyObject());
     }
 
     @Test
     public void testingFailingClient() throws Exception {
         logger.info("Testing heartbeat behaviour using failing client");
         DirectoryService.Client client = mock(DirectoryService.Client.class);
-        when(client.heartbeat(eq(information), anyObject())).thenThrow(new TException("Mocked exception!"));
+        when(client.heartbeat(anyInt(), anyObject())).thenThrow(new TException("Mocked exception!"));
 
         logger.info("Starting HeartBeatWorker");
         Thread heartBeatWorkerThread = new Thread(new HeartBeatWorker(client, information, sleepInterval, privateKey));
@@ -99,6 +101,6 @@ public class HeartBeatWorkerTest {
         }
 
         logger.info("Verifying results");
-        verify(client, atLeast(5)).heartbeat(eq(information), anyObject());
+        verify(client, atLeast(5)).heartbeat(eq(-1), anyObject());
     }
 }

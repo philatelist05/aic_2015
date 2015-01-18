@@ -36,13 +36,13 @@ public class ThriftTest {
         }
 
         @Override
-        public boolean heartbeat(ChainNodeInformation nodeInformation, NodeUsage nodeUsage) throws TException {
+        public boolean heartbeat(int nodeID, NodeUsage nodeUsage) throws TException {
             return false;
         }
 
         @Override
-        public boolean registerNode(ChainNodeInformation nodeInformation) throws TException {
-            return false;
+        public int registerNode(ChainNodeInformation nodeInformation) throws TException {
+            return 0;
         }
 
         @Override

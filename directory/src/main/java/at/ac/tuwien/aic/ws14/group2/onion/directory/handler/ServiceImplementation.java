@@ -25,12 +25,12 @@ public class ServiceImplementation implements DirectoryService.Iface {
     }
 
     @Override
-    public boolean heartbeat(ChainNodeInformation nodeInformation, NodeUsage nodeUsage) throws TException {
-        return chainNodeRegistry.addNodeUsage(nodeInformation, nodeUsage);
+    public boolean heartbeat(int nodeID, NodeUsage nodeUsage) throws TException {
+        return chainNodeRegistry.addNodeUsage(nodeID, nodeUsage);
     }
 
     @Override
-    public boolean registerNode(ChainNodeInformation nodeInformation) throws TException {
+    public int registerNode(ChainNodeInformation nodeInformation) throws TException {
         return chainNodeRegistry.addNewChainNode(nodeInformation);
     }
 

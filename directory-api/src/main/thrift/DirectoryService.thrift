@@ -27,9 +27,9 @@ service DirectoryService {
 
    void ping(), //TODO remove
 
-   bool heartbeat(1: ChainNodeInformation nodeInformation, 2: NodeUsage nodeUsage), //TODO switch to ID instead of nodeInformation?
+   bool heartbeat(1: i32 nodeID, 2: NodeUsage nodeUsage), //TODO switch to ID instead of nodeInformation?
 
-   bool registerNode(1: ChainNodeInformation nodeInformation), //TODO return ID instead of bool?
+   i32 registerNode(1: ChainNodeInformation nodeInformation), //TODO return ID instead of bool?
 
    list<ChainNodeInformation> getChain(1: optional i32 chainLength = 3),
 
