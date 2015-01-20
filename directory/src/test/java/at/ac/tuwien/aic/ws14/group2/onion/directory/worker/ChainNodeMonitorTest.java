@@ -20,12 +20,12 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ChainNodeMonitorTest {
-
     static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
-    private static ChainNodeInformation firstNodeInfo;
-    private static ChainNodeInformation secondNodeInfo;
-    private static ChainNodeInformation thirdNodeInfo;
-    private static ConcurrentSkipListSet<ChainNodeInformation> emptyNodeSet;
+
+    private final int firstNodeInfo = 1;
+    private final int secondNodeInfo = 2;
+    private final int thirdNodeInfo = 3;
+    private static ConcurrentSkipListSet<Integer> emptyNodeSet;
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
     private int timeout = 1000;
 
@@ -40,17 +40,11 @@ public class ChainNodeMonitorTest {
         KeyPair rsaKeyPair = keyGenerator.generateKeys(0);
         privateKey = rsaKeyPair.getPrivate();
         firstNodeInfo = new ChainNodeInformation(23456, "localhost", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));                                      */
-        firstNodeInfo = new ChainNodeInformation(23456, "localhost", "PUBLICKEYFAKE");
-        secondNodeInfo = new ChainNodeInformation(34567, "localhost", "PUBLICKEYFAKEONE");
-        thirdNodeInfo = new ChainNodeInformation(45678, "localhost", "PUBLICKEYFAKETWO");
-
     }
 
     @Test
     public void testDeactivateInactiveNode() {
-        logger.info("Testing deactivation of inactive node");
-
-        ConcurrentSkipListSet<ChainNodeInformation> activeNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
+        ConcurrentSkipListSet<Integer> activeNodes = new ConcurrentSkipListSet<>();
         activeNodes.add(firstNodeInfo);
 
         NodeUsage deadNodeUsage = new NodeUsage(
@@ -60,14 +54,13 @@ public class ChainNodeMonitorTest {
                 0);
 
         ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
-        when(registry.getActiveNodes()).thenReturn(activeNodes);
+        when(registry.getActiveNodeIDs()).thenReturn(activeNodes);
         when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(deadNodeUsage);
-
 
         Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout));
         chainNodeMonitor.run();
 
-        verify(registry).getActiveNodes();
+        verify(registry).getActiveNodeIDs();
         verify(registry).getLastNodeUsage(firstNodeInfo);
         verify(registry).deactivate(firstNodeInfo);
 
@@ -75,9 +68,7 @@ public class ChainNodeMonitorTest {
 
     @Test
     public void testDoNotDeactivateActiveNode() {
-        logger.info("Testing deactivation of inactive node");
-
-        ConcurrentSkipListSet<ChainNodeInformation> activeNodes = new ConcurrentSkipListSet<ChainNodeInformation>();
+        ConcurrentSkipListSet<Integer> activeNodes = new ConcurrentSkipListSet<>();
         activeNodes.add(firstNodeInfo);
 
         NodeUsage activeNodeUsage = new NodeUsage(
@@ -87,37 +78,35 @@ public class ChainNodeMonitorTest {
                 0);
 
         ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
-        when(registry.getActiveNodes()).thenReturn(activeNodes);
+        when(registry.getActiveNodeIDs()).thenReturn(activeNodes);
         when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(activeNodeUsage);
 
 
         Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, 5000));
         chainNodeMonitor.run();
 
-        verify(registry).getActiveNodes();
+        verify(registry).getActiveNodeIDs();
         verify(registry).getLastNodeUsage(firstNodeInfo);
         verify(registry, never()).deactivate(firstNodeInfo);
 
     }
 
     @Test
-    public void testNoChangeWithNoActiveNodes() throws TException, InterruptedException {
-        logger.info("Testing that nothing changes in the registry when there are no active nodes");
-
+    public void testNoChangeInRegistryWhenNoActiveNodes() throws TException, InterruptedException {
         ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
-        when(registry.getActiveNodes()).thenReturn(emptyNodeSet);
+        when(registry.getActiveNodeIDs()).thenReturn(emptyNodeSet);
 
         Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, 0));
         chainNodeMonitor.run();
 
-        verify(registry, never()).activate(any(ChainNodeInformation.class));
-        verify(registry, never()).deactivate(any(ChainNodeInformation.class));
-        verify(registry, never()).getLastNodeUsage(any(ChainNodeInformation.class));
+        verify(registry, never()).activate(any(Integer.class));
+        verify(registry, never()).deactivate(any(Integer.class));
+        verify(registry, never()).getLastNodeUsage(any(Integer.class));
     }
 
     @Test
     public void testDeactivateInactiveAndDoNotDeactivateActiveNodes(){
-        ConcurrentSkipListSet<ChainNodeInformation> activeNodes = new ConcurrentSkipListSet<>();
+        ConcurrentSkipListSet<Integer> activeNodes = new ConcurrentSkipListSet<>();
         activeNodes.add(firstNodeInfo);
         activeNodes.add(secondNodeInfo);
         activeNodes.add(thirdNodeInfo);
@@ -144,7 +133,7 @@ public class ChainNodeMonitorTest {
         );
 
         ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
-        when(registry.getActiveNodes()).thenReturn(activeNodes);
+        when(registry.getActiveNodeIDs()).thenReturn(activeNodes);
         when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(firstActiveNodeUsage);
         when(registry.getLastNodeUsage(secondNodeInfo)).thenReturn(secondActiveNodeUsage);
         when(registry.getLastNodeUsage(thirdNodeInfo)).thenReturn(deadNodeUsage);
@@ -152,7 +141,7 @@ public class ChainNodeMonitorTest {
         Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout));
         chainNodeMonitor.run();
 
-        verify(registry).getActiveNodes();
+        verify(registry).getActiveNodeIDs();
         verify(registry).getLastNodeUsage(firstNodeInfo);
         verify(registry, never()).deactivate(firstNodeInfo);
 
