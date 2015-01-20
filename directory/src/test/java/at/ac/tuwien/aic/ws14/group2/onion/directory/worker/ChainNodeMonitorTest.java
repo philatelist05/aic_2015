@@ -119,7 +119,7 @@ public class ChainNodeMonitorTest {
 
         NodeUsage deadNodeUsage = new NodeUsage(
                 dateTimeFormatter.format(LocalDateTime.now().minusHours(3)),
-                dateTimeFormatter.format(LocalDateTime.now().minus(timeout, ChronoUnit.MILLIS)),
+                dateTimeFormatter.format(LocalDateTime.now().minus(timeout * 5, ChronoUnit.MILLIS)),
                 3,
                 4
         );
@@ -130,7 +130,7 @@ public class ChainNodeMonitorTest {
         when(registry.getLastNodeUsage(secondNodeInfo)).thenReturn(secondActiveNodeUsage);
         when(registry.getLastNodeUsage(thirdNodeInfo)).thenReturn(deadNodeUsage);
 
-        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout));
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout * 5));
         chainNodeMonitor.run();
 
         verify(registry).getActiveNodeIDs();
