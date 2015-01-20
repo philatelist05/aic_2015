@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class ChainNodeMonitor implements Runnable {
     private AmazonEC2Client ec2Client;
     private Image image;
     private SecurityGroup securityGroup;
-    private boolean test = true;
+    private LocalDateTime lastAutoStart;
 
     public ChainNodeMonitor(ChainNodeRegistry chainNodeRegistry, Configuration config) {
         this.chainNodeRegistry = chainNodeRegistry;
@@ -75,6 +76,8 @@ public class ChainNodeMonitor implements Runnable {
                     this.numberOfNodes = 0;
                     this.region = null;
                 }
+
+                lastAutoStart = LocalDateTime.now();
             }
         }
     }
@@ -123,10 +126,10 @@ public class ChainNodeMonitor implements Runnable {
                         .withMinCount(1)
                         .withMaxCount(this.numberOfNodes - activeNodes.size())
                         .withUserData(this.userData);
-                if (this.test) {
+                if (this.lastAutoStart.plus(3, ChronoUnit.MINUTES).isBefore(LocalDateTime.now())) {
+                    this.lastAutoStart = LocalDateTime.now();
                     logger.info("Request: {}", request.toString());
                     RunInstancesResult result = ec2Client.runInstances(request);
-                    this.test = false;
                     for (Instance instance : result.getReservation().getInstances()) {
                         Collection<Tag> tags = instance.getTags();
                         CreateTagsRequest tagsRequest = new CreateTagsRequest().withTags(new Tag("Name", "G2-T3-chainnode-" + UUID.randomUUID().toString())).withResources(instance.getInstanceId());
