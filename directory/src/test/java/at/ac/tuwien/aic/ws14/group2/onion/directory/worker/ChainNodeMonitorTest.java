@@ -6,6 +6,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,26 +21,17 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class ChainNodeMonitorTest {
-    static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
-
     private final int firstNodeInfo = 1;
     private final int secondNodeInfo = 2;
     private final int thirdNodeInfo = 3;
-    private static ConcurrentSkipListSet<Integer> emptyNodeSet;
+    private final int timeout = 1000;
+
+    private ConcurrentSkipListSet<Integer> emptyNodeSet;
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
-    private int timeout = 1000;
 
-    @BeforeClass
-    public static void startUp() throws NoSuchProviderException, NoSuchAlgorithmException {
-        logger.info("Setting up Test environment");
-
+    @Before
+    public void setUp() throws Exception {
         emptyNodeSet = new ConcurrentSkipListSet<>();
-        /*Security.addProvider(new BouncyCastleProvider());
-
-        RSAKeyGenerator keyGenerator = new RSAKeyGenerator();
-        KeyPair rsaKeyPair = keyGenerator.generateKeys(0);
-        privateKey = rsaKeyPair.getPrivate();
-        firstNodeInfo = new ChainNodeInformation(23456, "localhost", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));                                      */
     }
 
     @Test
