@@ -54,7 +54,7 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
         socket = socketFactory.createSocket(address, port);
         inputStream = socket.getInputStream();
         outputStream = socket.getOutputStream();
-        targetWorker.forwarderIsConnected();
+        targetWorker.startForwarding();
 
         Cell cell = createConnectResponseCell();
         targetWorker.sendCell(cell);

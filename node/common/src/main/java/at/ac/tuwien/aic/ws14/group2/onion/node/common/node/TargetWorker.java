@@ -75,7 +75,7 @@ public class TargetWorker implements AutoCloseable {
         return forwarder;
     }
 
-    public void forwarderIsConnected() {
+    public void startForwarding() {
         Configuration configuration = ConfigurationFactory.getConfiguration();
         long targetWorkerTimeout = configuration.getTargetWorkerTimeout();
 

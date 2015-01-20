@@ -6,15 +6,10 @@ import org.apache.commons.lang.ArrayUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import static org.junit.Assert.*;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class TargetWorkerTest {
 
@@ -28,6 +23,7 @@ public class TargetWorkerTest {
         timeout = config.getTargetWorkerTimeout();
         targetForwarder = mock(TargetForwarder.class);
         targetWorker = new TargetWorker(mock(ConnectionWorker.class), targetForwarder);
+        targetWorker.startForwarding();
     }
 
     @After
