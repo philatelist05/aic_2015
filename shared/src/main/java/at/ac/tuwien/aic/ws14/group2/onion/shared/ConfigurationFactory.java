@@ -52,10 +52,13 @@ public class ConfigurationFactory {
 		int targetServicePort = xmlConfiguration.getInt("node.target-service.port", 8080);
 		long targetWorkerTimeout = xmlConfiguration.getLong("node.chain.targetworker-timeout", 2000);
 		boolean nodeCommonLocalMode = xmlConfiguration.getBoolean("node.common.local-mode", true);
+		boolean directoryAutoStart = xmlConfiguration.getBoolean("node.directory.autostart", false);
+		String directoryAutoStartRegion = xmlConfiguration.getString("node.directory.region");
+		short directoryNumberOfNodes = xmlConfiguration.getShort("node.directory.numberofnodes", (short) 0);
 
 		return new Configuration(nodeCommonHost, nodeCommonPort, localNodeServerPort, localNodeListeningHost,
 				localNodeNumCellWorkers, chainNodeHeartbeatInterval, chainNodeNumCellWorkers,
 				directoryNodeHeartbeatTimeout, directoryNodeMinThriftWorker, directoryNodeMaxThriftWorker,
-				targetServiceHost, targetServicePort, targetWorkerTimeout, nodeCommonLocalMode);
+				targetServiceHost, targetServicePort, targetWorkerTimeout, nodeCommonLocalMode, directoryAutoStart, directoryAutoStartRegion, directoryNumberOfNodes);
 	}
 }
