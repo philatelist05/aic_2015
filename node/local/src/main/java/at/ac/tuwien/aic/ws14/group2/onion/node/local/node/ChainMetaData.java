@@ -6,7 +6,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ChainMetaData {
     static final Logger logger = LogManager.getLogger(ChainNodeMetaData.class.getName());
@@ -14,17 +14,17 @@ public class ChainMetaData {
     private ConcurrentHashMap<Integer, ChainNodeMetaData> nodes;
     private Integer lastNode;
     private Short circuitID;
-    private AtomicInteger lastUsedSequenceNumber;
+    private AtomicLong lastUsedSequenceNumber;
 
     public ChainMetaData(Short circuitID, ConcurrentHashMap<Integer, ChainNodeMetaData> nodes) {
-        this.lastUsedSequenceNumber = new AtomicInteger(0);
+        this.lastUsedSequenceNumber = new AtomicLong(0);
         this.circuitID = circuitID;
         this.nodes = nodes;
         this.lastNode = -1;
     }
 
     public ChainMetaData(ConcurrentHashMap<Integer, ChainNodeMetaData> nodes) {
-        this.lastUsedSequenceNumber = new AtomicInteger(0);
+        this.lastUsedSequenceNumber = new AtomicLong(0);
         this.nodes = nodes;
         this.lastNode = -1;
     }
@@ -79,7 +79,7 @@ public class ChainMetaData {
         this.circuitID = circuitID;
     }
 
-    public int incrementAndGetSequenceNumber() {
+    public long incrementAndGetSequenceNumber() {
         return lastUsedSequenceNumber.incrementAndGet();
     }
 

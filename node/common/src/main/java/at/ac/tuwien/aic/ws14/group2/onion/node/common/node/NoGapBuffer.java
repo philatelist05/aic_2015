@@ -14,9 +14,9 @@ public class NoGapBuffer<T> {
     private final ConcurrentSkipListSet<T> missingElements;
     private final ConcurrentSkipListSet<T> elements;
     private final RangeOperation<T> rangeOperation;
-    private final int capacity;
+    private final long capacity;
 
-    public NoGapBuffer(Comparator<T> comparator, RangeOperation<T> rangeOperation, int capacity) {
+    public NoGapBuffer(Comparator<T> comparator, RangeOperation<T> rangeOperation, long capacity) {
         this.rangeOperation = rangeOperation;
         this.capacity = capacity;
         missingElements = new ConcurrentSkipListSet<>(comparator);
@@ -24,7 +24,7 @@ public class NoGapBuffer<T> {
     }
 
     public synchronized void add(T t) {
-        if (size() == capacity) {
+        if ((long) size() >= capacity) {
             throw new BufferOverflowException();
         }
         if (elements.size() > 0) {

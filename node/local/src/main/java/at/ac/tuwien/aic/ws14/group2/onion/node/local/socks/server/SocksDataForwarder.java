@@ -44,7 +44,7 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 	 * @param sequenceNumber the sequence number associated with the DataCommand that contained the data
 	 * @param data           the raw data contained in the data cell
 	 */
-	public void sendDataBack(Short sequenceNumber, byte[] data) {
+	public void sendDataBack(long sequenceNumber, byte[] data) {
 		// Put the data into the priority queue
 		this.responseBuffer.put(new Bucket(data, sequenceNumber));
 
@@ -150,7 +150,7 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 					while (!stop) {
 						Bucket bucket = this.responseBuffer.take();
 
-						long currentSequenceNumber = Short.toUnsignedLong(bucket.getNr());
+						long currentSequenceNumber = bucket.getNr();
 
 						if (currentSequenceNumber <= lastSentSequenceNumber) {
 							// Something terribly wrong happened, run away!

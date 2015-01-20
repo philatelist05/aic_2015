@@ -25,7 +25,7 @@ public interface SocksCallBack {
 	 * @param sequenceNumber the sequence number associated with the DataCommand that contained the data
 	 * @param data           the raw data contained in the data cell
 	 */
-	void responseData(Short sequenceNumber, byte[] data);
+	void responseData(long sequenceNumber, byte[] data);
 
 	/**
 	 * Callback method that will be called when an unrecoverable error has occured.

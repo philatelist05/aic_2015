@@ -46,7 +46,7 @@ public class TargetWorkerTest {
     @Test
     public void testSendDataOnce() throws Exception {
         byte[] data = "Data".getBytes();
-        targetWorker.sendData(data, (short) 0);
+        targetWorker.sendData(data, 0l);
         Thread.sleep(timeout + 100);
         verify(targetForwarder, times(1)).forward(aryEq(data));
     }
@@ -54,7 +54,7 @@ public class TargetWorkerTest {
     @Test
     public void testSendDataOnceFollowedByNoData() throws Exception {
         byte[] data = "Data".getBytes();
-        targetWorker.sendData(data, (short) 0);
+        targetWorker.sendData(data, 0l);
         Thread.sleep(2* timeout + 200);
         verify(targetForwarder).forward(aryEq(data));
         verify(targetForwarder).forward(aryEq(new byte[]{}));
@@ -64,8 +64,8 @@ public class TargetWorkerTest {
     public void testSendDataCorrectOrdering() throws Exception {
         byte[] data1 = "Data1".getBytes();
         byte[] data2 = "Data2".getBytes();
-        targetWorker.sendData(data2, (short) 2);
-        targetWorker.sendData(data1, (short) 1);
+        targetWorker.sendData(data2, 2l);
+        targetWorker.sendData(data1, 1l);
         Thread.sleep(2* timeout + 200);
         verify(targetForwarder).forward(aryEq(ArrayUtils.addAll(data1, data2)));
         verify(targetForwarder).forward(aryEq(new byte[]{}));
@@ -75,8 +75,8 @@ public class TargetWorkerTest {
     public void testSendDataWithGaps() throws Exception {
         byte[] data1 = "Data1".getBytes();
         byte[] data2 = "Data2".getBytes();
-        targetWorker.sendData(data2, (short) 3);
-        targetWorker.sendData(data1, (short) 1);
+        targetWorker.sendData(data2, 3l);
+        targetWorker.sendData(data1, 1l);
         Thread.sleep(2* timeout + 200);
         verify(targetForwarder, times(0)).forward(any());
     }

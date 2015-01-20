@@ -28,12 +28,12 @@ public class TargetWorker implements AutoCloseable {
         this.worker = worker;
         this.forwarder = forwarder;
         forwarder.setTargetWorkerCallback(this);
-        this.buffer = new NoGapBuffer<>((b1, b2) -> Short.compare(b1.getNr(), b2.getNr()), this::allItemsInRange, Short.MAX_VALUE);
+        this.buffer = new NoGapBuffer<>((b1, b2) -> Long.compare(b1.getNr(), b2.getNr()), this::allItemsInRange, Integer.toUnsignedLong(-1) /*0xFFFFFFFF*/);
         bufferChecker = new Timer("PeriodicBufferChecker");
         clearBufferTask = new ClearBufferTask();
     }
 
-    public void sendData(byte[] data, short sequenceNumber) {
+    public void sendData(byte[] data, long sequenceNumber) {
         Bucket bucket = new Bucket(Arrays.copyOf(data, data.length), sequenceNumber);
         try {
             buffer.add(bucket);
@@ -46,12 +46,12 @@ public class TargetWorker implements AutoCloseable {
     private Set<Bucket> allItemsInRange(Bucket b1, Bucket b2) {
         Set<Bucket> buckets = new HashSet<>();
         if (b1.getNr() <= b2.getNr()) {
-            for (int i = b1.getNr() + 1; i < b2.getNr(); i++) {
-                buckets.add(new Bucket(new byte[]{}, (short)i));
+            for (long i = b1.getNr() + 1; i < b2.getNr(); i++) {
+                buckets.add(new Bucket(new byte[]{}, i));
             }
         } else {
-            for (int i = b1.getNr() - 1; i > b2.getNr(); i--) {
-                buckets.add(new Bucket(new byte[]{}, (short)i));
+            for (long i = b1.getNr() - 1; i > b2.getNr(); i--) {
+                buckets.add(new Bucket(new byte[]{}, i));
             }
         }
         return buckets;

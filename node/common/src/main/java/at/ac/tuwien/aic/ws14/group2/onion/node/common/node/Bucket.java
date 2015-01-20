@@ -7,9 +7,9 @@ import java.util.Arrays;
  */
 public class Bucket implements Comparable<Bucket> {
 	private final byte[] data;
-	private final short nr;
+	private final long nr;
 
-	public Bucket(byte[] data, short sequenceNumber) {
+	public Bucket(byte[] data, long sequenceNumber) {
 		this.data = data;
 		this.nr = sequenceNumber;
 	}
@@ -18,7 +18,7 @@ public class Bucket implements Comparable<Bucket> {
 		return data;
 	}
 
-	public short getNr() {
+	public long getNr() {
 		return nr;
 	}
 
@@ -49,6 +49,6 @@ public class Bucket implements Comparable<Bucket> {
 
 	@Override
 	public int compareTo(Bucket bucket) {
-		return Short.compare(this.nr, bucket.nr);
+		return Long.compare(this.nr, bucket.nr);
 	}
 }

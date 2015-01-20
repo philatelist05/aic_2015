@@ -8,7 +8,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.net.SocketFactory;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Arrays;
@@ -20,12 +22,12 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
     static final Logger logger = LogManager.getLogger(TargetWorker.class.getName());
 
     private final SocketFactory socketFactory;
+    private final Circuit circuit;
     private InetAddress address;
     private int port;
     private Socket socket;
     private OutputStream outputStream;
     private  InputStream inputStream;
-    private final Circuit circuit;
     private TargetWorker targetWorker;
     private boolean stop = false;
     private short lastUsedSequenceNumber = 0;
@@ -116,8 +118,7 @@ public class SocketForwarder extends Thread implements TargetForwarder, AutoClos
     }
 
     private Cell createCellWithDataCommand(byte[] payload) throws EncryptException, DecodeException {
-        DataCommand command = new DataCommand(payload);
-        command.setSequenceNumber(lastUsedSequenceNumber++);
+        DataCommand command = new DataCommand(lastUsedSequenceNumber++, payload);
         RelayCellPayload relayCellPayload = new RelayCellPayload(command);
         relayCellPayload = relayCellPayload.encrypt(circuit.getSessionKey());
         return new RelayCell(circuit.getCircuitID(), relayCellPayload);

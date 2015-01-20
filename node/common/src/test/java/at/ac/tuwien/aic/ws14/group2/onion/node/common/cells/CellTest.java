@@ -1,11 +1,11 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.common.cells;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSAKeyGenerator;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.DecryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,7 +24,6 @@ import java.security.Security;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertArrayEquals;
 
 /**
  * Created by Thomas on 10.11.2014.
@@ -39,6 +38,12 @@ public class CellTest {
     private static final BigInteger g = DHKeyExchange.generateRelativePrime();
     private static final BigInteger p = DHKeyExchange.generateRelativePrime();
     private static KeyPair keyPair;
+
+    @BeforeClass
+    public static void init() throws NoSuchProviderException, NoSuchAlgorithmException {
+        Security.addProvider(new BouncyCastleProvider());
+        keyPair = new RSAKeyGenerator().generateKeys(0);
+    }
 
     private InputStream getDataInput(String text) {
         byte[] data = text.getBytes(Charset.forName("ASCII"));
@@ -118,23 +123,16 @@ public class CellTest {
         return keyExchangeA.completeExchange(publicKeyB);
     }
 
-    @BeforeClass
-    public static void init() throws NoSuchProviderException, NoSuchAlgorithmException {
-        Security.addProvider(new BouncyCastleProvider());
-        keyPair = new RSAKeyGenerator().generateKeys(0);
-    }
-
     @Test
     public void singleDataCommand() throws Exception {
         InputStream input = getDataInput(shortText);
 
-        DataCommand dataCmd = new DataCommand(input);
-        dataCmd.setSequenceNumber((short)10);
+        DataCommand dataCmd = new DataCommand(10l, input);
         String data = sendAndReceiveDataCommand(dataCmd);
         assertEquals(shortText, data);
 
         try {
-            new DataCommand(input);
+            new DataCommand(10l, input);
             fail();
         } catch (DecodeException ex) {
             // end of stream
@@ -145,8 +143,7 @@ public class CellTest {
     public void singleDataCommand2() throws Exception {
         byte[] rawData = shortText.getBytes();
 
-        DataCommand dataCmd = new DataCommand(rawData);
-        dataCmd.setSequenceNumber((short)10);
+        DataCommand dataCmd = new DataCommand(10l, rawData);
 
         String data = sendAndReceiveDataCommand(dataCmd);
         assertEquals(shortText, data);
@@ -156,17 +153,16 @@ public class CellTest {
     public void manyDataCommands() throws Exception {
         InputStream input = getDataInput(longText);
 
-        DataCommand dataCmd = new DataCommand(input);
-        dataCmd.setSequenceNumber((short)10);
+        DataCommand dataCmd = new DataCommand(10l, input);
         String part0 = sendAndReceiveDataCommand(dataCmd);
 
-        dataCmd = new DataCommand(input);
+        dataCmd = new DataCommand(10l, input);
         String part1 = sendAndReceiveDataCommand(dataCmd);
 
         assertEquals(longText, part0 + part1);
 
         try {
-            new DataCommand(input);
+            new DataCommand(10l, input);
             fail();
         } catch (DecodeException ex) {
             // end of stream

@@ -1,17 +1,17 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
-import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
-import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
-import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.KeyExchangeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.SocksCallBack;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ErrorCode;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.KeyExchangeException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -143,12 +143,10 @@ public class LocalNodeCore {
         ChainMetaData chainMetaData = getChainMetaData(circuitID);
         SocksCallBack callBack = getCallBack(circuitID);
         synchronized (chainMetaData) {
-            int sequenceNumber = chainMetaData.incrementAndGetSequenceNumber();
+            long sequenceNumber = chainMetaData.incrementAndGetSequenceNumber();
             DataCommand payload;
             try {
-                //FIXME change SN to int or do fancy magic here..
-                payload = new DataCommand(data);
-                payload.setSequenceNumber((short) sequenceNumber);
+                payload = new DataCommand(sequenceNumber, data);
             } catch (DecodeException e) {
                 callBack.error(ErrorCode.TOO_MUCH_DATA);
                 return;

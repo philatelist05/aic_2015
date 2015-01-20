@@ -192,7 +192,7 @@ public class SocksWorker implements Runnable, AutoCloseable {
 		}
 
 		@Override
-		public void responseData(Short sequenceNumber, byte[] data) {
+		public void responseData(long sequenceNumber, byte[] data) {
 			if (SocksWorker.this.socksDataForwarder == null) {
 				logger.error("Got response data when socksDataForwarder was still null. Ignoring data!");
 				return;
