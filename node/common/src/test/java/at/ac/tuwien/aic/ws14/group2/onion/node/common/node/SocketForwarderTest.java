@@ -37,7 +37,7 @@ public class SocketForwarderTest {
         socketForwarder = createSocketForwarder(socketFactory, targetWorker);
 
         Thread.sleep(1000);
-        verify(targetWorker, times(1)).sendCell(Matchers.<Cell>any());
+        verify(targetWorker, times(2)).sendCell(Matchers.<Cell>any());
     }
 
     @Test
@@ -49,7 +49,7 @@ public class SocketForwarderTest {
         socketForwarder = createSocketForwarder(socketFactory, targetWorker);
 
         Thread.sleep(1000);
-        verify(targetWorker, times(1)).sendCell(Matchers.<Cell>any());
+        verify(targetWorker, times(2)).sendCell(Matchers.<Cell>any());
     }
 
     @Test
@@ -61,7 +61,7 @@ public class SocketForwarderTest {
         socketForwarder = createSocketForwarder(socketFactory, targetWorker);
 
         Thread.sleep(1000);
-        verify(targetWorker, times(2)).sendCell(Matchers.<Cell>any());
+        verify(targetWorker, times(3)).sendCell(Matchers.<Cell>any());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class SocketForwarderTest {
         socketForwarder = createSocketForwarder(socketFactory, targetWorker);
 
         Thread.sleep(1000);
-        verify(targetWorker, times(2)).sendCell(Matchers.<Cell>any());
+        verify(targetWorker, times(3)).sendCell(Matchers.<Cell>any());
     }
 
     @Test
