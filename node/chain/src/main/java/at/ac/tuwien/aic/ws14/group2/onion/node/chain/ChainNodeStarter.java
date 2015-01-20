@@ -97,6 +97,11 @@ public class ChainNodeStarter {
         nodeCoreThread.start();
 
         ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, chainNodeHostname, Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
+
+        //TODO: Get here real region, dns , ... from AWS API
+        nodeInformation.setRegion("");
+        nodeInformation.setDomainName("");
+
         logger.info("ChainNodeInformation: {}", nodeInformation);
 
         logger.info("Establishing Thrift client connection");
