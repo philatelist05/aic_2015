@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.directory.worker;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.ChainNodeRegistry;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
@@ -27,7 +28,8 @@ public class ChainNodeMonitorTest {
     private static ChainNodeInformation thirdNodeInfo;
     private static ConcurrentSkipListSet<ChainNodeInformation> emptyNodeSet;
     private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
-    private int timeout = 1000;
+    private static Configuration configuration;
+    private static long timeout = 1000;
 
     @BeforeClass
     public static void startUp() throws NoSuchProviderException, NoSuchAlgorithmException {
@@ -43,7 +45,11 @@ public class ChainNodeMonitorTest {
         firstNodeInfo = new ChainNodeInformation(23456, "localhost", "PUBLICKEYFAKE");
         secondNodeInfo = new ChainNodeInformation(34567, "localhost", "PUBLICKEYFAKEONE");
         thirdNodeInfo = new ChainNodeInformation(45678, "localhost", "PUBLICKEYFAKETWO");
-
+        configuration = mock(Configuration.class);
+        when(configuration.getDirectoryAutoStartRegion()).thenReturn(null);
+        when(configuration.getDirectoryNumberOfNodes()).thenReturn((short) -1);
+        when(configuration.getDirectoryNodeHeartbeatTimeout()).thenReturn(1000L);
+        timeout = configuration.getDirectoryNodeHeartbeatTimeout();
     }
 
     @Test
@@ -64,7 +70,7 @@ public class ChainNodeMonitorTest {
         when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(deadNodeUsage);
 
 
-        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout));
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, configuration));
         chainNodeMonitor.run();
 
         verify(registry).getActiveNodes();
@@ -91,7 +97,7 @@ public class ChainNodeMonitorTest {
         when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(activeNodeUsage);
 
 
-        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, 5000));
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, configuration));
         chainNodeMonitor.run();
 
         verify(registry).getActiveNodes();
@@ -107,12 +113,14 @@ public class ChainNodeMonitorTest {
         ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
         when(registry.getActiveNodes()).thenReturn(emptyNodeSet);
 
-        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, 0));
+        when(configuration.getDirectoryNodeHeartbeatTimeout()).thenReturn(0L);
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, configuration));
         chainNodeMonitor.run();
 
         verify(registry, never()).activate(any(ChainNodeInformation.class));
         verify(registry, never()).deactivate(any(ChainNodeInformation.class));
         verify(registry, never()).getLastNodeUsage(any(ChainNodeInformation.class));
+        when(configuration.getDirectoryNodeHeartbeatTimeout()).thenReturn(1000L);
     }
 
     @Test
@@ -149,7 +157,7 @@ public class ChainNodeMonitorTest {
         when(registry.getLastNodeUsage(secondNodeInfo)).thenReturn(secondActiveNodeUsage);
         when(registry.getLastNodeUsage(thirdNodeInfo)).thenReturn(deadNodeUsage);
 
-        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, timeout));
+        Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, configuration));
         chainNodeMonitor.run();
 
         verify(registry).getActiveNodes();

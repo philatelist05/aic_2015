@@ -3,20 +3,22 @@ package at.ac.tuwien.aic.ws14.group2.onion.directory.worker;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.ChainNodeRegistry;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.*;
+import com.google.common.io.ByteStreams;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.text.DateFormat;
-import java.text.ParseException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.Base64;
 import java.util.Set;
 
 public class ChainNodeMonitor implements Runnable {
@@ -24,10 +26,55 @@ public class ChainNodeMonitor implements Runnable {
 
     private ChainNodeRegistry chainNodeRegistry;
     private long timeout;
+    private short numberOfNodes = -1;
+    private String region = null;
+    private String userData;
+    private AmazonEC2Client ec2Client;
+    private Image image;
+    private SecurityGroup securityGroup;
+    private boolean test = true;
 
-    public ChainNodeMonitor(ChainNodeRegistry chainNodeRegistry, long timeout) {
+    public ChainNodeMonitor(ChainNodeRegistry chainNodeRegistry, Configuration config) {
         this.chainNodeRegistry = chainNodeRegistry;
-        this.timeout = timeout;
+        this.timeout = config.getDirectoryNodeHeartbeatTimeout();
+        if (config.isLocalMode() || !config.isDirectoryAutoStart()) {
+            logger.info("Starting chain node monitor without loadbalancing.");
+        } else {
+            logger.info("Starting chain node monitor with loadbalancing: {} nodes in region '{}'", config.getDirectoryNumberOfNodes(), config.getDirectoryAutoStartRegion());
+            this.numberOfNodes = config.getDirectoryNumberOfNodes();
+            this.region = config.getDirectoryAutoStartRegion();
+
+            if (this.numberOfNodes > 0 && this.region != null) {
+                this.ec2Client = new AmazonEC2Client(new ProfileCredentialsProvider());
+                ec2Client.setEndpoint(this.region);
+
+                DescribeImagesRequest describeImagesRequest = new DescribeImagesRequest().withFilters(new Filter("description").withValues("G2-T3-template"));
+                DescribeImagesResult describeImagesResult = ec2Client.describeImages(describeImagesRequest);
+                logger.debug("Images:");
+                for (Image image : describeImagesResult.getImages()) {
+                    logger.debug(image.toString());
+                }
+                this.image = describeImagesResult.getImages().get(0);
+
+                DescribeSecurityGroupsRequest describeSecurityGroupsRequest = new DescribeSecurityGroupsRequest().withFilters(new Filter("group-name").withValues("G2-T3"));
+                DescribeSecurityGroupsResult describeSecurityGroupsResult = ec2Client.describeSecurityGroups(describeSecurityGroupsRequest);
+                logger.debug("Security groups:");
+                for (SecurityGroup securityGroup : describeSecurityGroupsResult.getSecurityGroups()) {
+                    logger.debug(securityGroup.toString());
+                }
+                this.securityGroup = describeSecurityGroupsResult.getSecurityGroups().get(0);
+
+                InputStream startScript = this.getClass().getClassLoader().getResourceAsStream("startchainnode.sh");
+
+                try {
+                    this.userData = Base64.getEncoder().encodeToString(ByteStreams.toByteArray(startScript));
+                } catch (IOException e) {
+                    logger.warn("Startscript not found - disabling loadbalancing..");
+                    this.numberOfNodes = 0;
+                    this.region = null;
+                }
+            }
+        }
     }
 
     @Override
@@ -38,28 +85,47 @@ public class ChainNodeMonitor implements Runnable {
 
         if (activeNodes == null || activeNodes.isEmpty()) {
             logger.warn("No active ChainNodes, nothing to do..");
-            logger.info("Finished health check");
-            return;
         } else {
             logger.info("Found {} active nodes.", activeNodes.size());
-        }
 
-        for (ChainNodeInformation nodeInformation : activeNodes) {
-            NodeUsage usage = chainNodeRegistry.getLastNodeUsage(nodeInformation);
-            if (usage != null) {
-                try {
-                    LocalDateTime then = LocalDateTime.parse(usage.getEndTime(), DateTimeFormatter.ISO_DATE_TIME);
-                    LocalDateTime now = LocalDateTime.now();
-                    if (then.until(now, ChronoUnit.MILLIS) > timeout) {
+            for (ChainNodeInformation nodeInformation : activeNodes) {
+                NodeUsage usage = chainNodeRegistry.getLastNodeUsage(nodeInformation);
+                if (usage != null) {
+                    try {
+                        LocalDateTime then = LocalDateTime.parse(usage.getEndTime(), DateTimeFormatter.ISO_DATE_TIME);
+                        LocalDateTime now = LocalDateTime.now();
+                        if (then.until(now, ChronoUnit.MILLIS) > timeout) {
+                            chainNodeRegistry.deactivate(nodeInformation);
+                        }
+                    } catch (DateTimeParseException e) {
+                        logger.warn("Cannot parse endDate '{}' of NodeUsageSummary for ChainNode '{}'", usage.getEndTime(), nodeInformation);
+                        logger.debug(e.getStackTrace());
+                    } catch (ArithmeticException e) {
+                        logger.warn("Overflow occurred while calculation timeout, deactivating..");
+                        logger.catching(Level.DEBUG, e);
                         chainNodeRegistry.deactivate(nodeInformation);
                     }
-                } catch (DateTimeParseException e) {
-                    logger.warn("Cannot parse endDate '{}' of NodeUsageSummary for ChainNode '{}'", usage.getEndTime(), nodeInformation);
-                    logger.debug(e.getStackTrace());
-                } catch (ArithmeticException e) {
-                    logger.warn("Overflow occurred while calculation timeout, deactivating..");
-                    logger.catching(Level.DEBUG, e);
-                    chainNodeRegistry.deactivate(nodeInformation);
+                }
+            }
+
+        }
+
+        if (this.region != null && this.numberOfNodes > 0) {
+            activeNodes = chainNodeRegistry.getActiveNodes();
+            if (activeNodes.size() < this.numberOfNodes) {
+                logger.info("Not enough active nodes, starting new instances..");
+                RunInstancesRequest request = new RunInstancesRequest()
+                        .withImageId(image.getImageId())
+                        .withSecurityGroups(securityGroup.getGroupId())
+                        .withInstanceType(InstanceType.T2Micro)
+                        .withMinCount(1)
+                        .withMaxCount(this.numberOfNodes - activeNodes.size())
+                        .withUserData(this.userData);
+                if (this.test) {
+                    logger.info("Request: {}", request.toString());
+                    RunInstancesResult result = ec2Client.runInstances(request);
+                    this.test = false;
+                    logger.info("Result: {}", result.toString());
                 }
             }
         }

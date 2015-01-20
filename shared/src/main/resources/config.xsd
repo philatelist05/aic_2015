@@ -128,6 +128,9 @@
 				</xs:annotation>
 			</xs:element>
 			<xs:element name="thriftworker" type="onion:thriftworkerType"/>
+			<xs:element name="autostart" type="xs:boolean"/>
+			<xs:element name="numberofnodes" type="xs:short"/>
+			<xs:element name="region" type="xs:string"/>
 		</xs:all>
 	</xs:complexType>
 

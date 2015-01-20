@@ -24,6 +24,9 @@
 				<min>3</min>
 				<max>16</max>
 			</thriftworker>
+			<autostart>true</autostart>
+			<numberofnodes>1</numberofnodes>
+			<region>ec2.us-west-2.amazonaws.com</region>
 		</directory>
 	</node>
 	<target-service>
