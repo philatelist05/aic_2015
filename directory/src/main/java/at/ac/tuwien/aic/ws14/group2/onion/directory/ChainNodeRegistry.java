@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.directory;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsageSummary;
+import at.ac.tuwien.aic.ws14.group2.onion.directory.exceptions.NoSuchChainNodeAvailable;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
@@ -36,22 +37,19 @@ public class ChainNodeRegistry {
     }
 
     //TODO check signature?
-    public boolean addNodeUsage(int chainNodeID, NodeUsage usage) {
+    public void addNodeUsage(int chainNodeID, NodeUsage usage) throws NoSuchChainNodeAvailable {
         logger.debug("Recording NodeUsage for ChainNode '{}': {}", chainNodeID, usage);
 
         ConcurrentLinkedDeque<NodeUsage> usages = nodeUsages.get(chainNodeID);
 
         if (usages == null) {
-            //TODO Exception
-            logger.warn("Cannot record NodeUsage for unknown ID '{}'", chainNodeID);
-            return false;
+            throw new NoSuchChainNodeAvailable("Cannot record NodeUsage for unknown ID " + chainNodeID);
         } else {
             usages.addLast(usage);
             ChainNodeInformation chainNodeInformation = nodeMapping.get(chainNodeID);
             if (!activeNodes.contains(chainNodeInformation)) {
                 activate(chainNodeInformation);
             }
-            return true;
         }
     }
 
