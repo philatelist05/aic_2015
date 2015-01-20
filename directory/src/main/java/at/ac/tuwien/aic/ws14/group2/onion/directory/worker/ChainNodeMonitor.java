@@ -19,7 +19,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Set;
+import java.util.UUID;
 
 public class ChainNodeMonitor implements Runnable {
     static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
@@ -114,7 +116,7 @@ public class ChainNodeMonitor implements Runnable {
                 logger.info("Not enough active nodes, starting new instances..");
                 RunInstancesRequest request = new RunInstancesRequest()
                         .withImageId(image.getImageId())
-                        .withSecurityGroups(securityGroup.getGroupId())
+                        .withSecurityGroupIds(securityGroup.getGroupId())
                         .withInstanceType(InstanceType.T2Micro)
                         .withMinCount(1)
                         .withMaxCount(this.numberOfNodes - activeNodes.size())
@@ -123,9 +125,15 @@ public class ChainNodeMonitor implements Runnable {
                     logger.info("Request: {}", request.toString());
                     RunInstancesResult result = ec2Client.runInstances(request);
                     this.test = false;
+                    for (Instance instance : result.getReservation().getInstances()) {
+                        Collection<Tag> tags = instance.getTags();
+                        CreateTagsRequest tagsRequest = new CreateTagsRequest().withTags(new Tag("Name", "G2-T3-chainnode-" + UUID.randomUUID().toString())).withResources(instance.getInstanceId());
+                        ec2Client.createTags(tagsRequest);
+                    }
                     logger.info("Result: {}", result.toString());
                 }
             }
+
         }
 
         logger.info("Finished health check");
