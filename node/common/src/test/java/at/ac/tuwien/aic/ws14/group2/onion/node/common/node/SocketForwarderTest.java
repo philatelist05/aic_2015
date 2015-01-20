@@ -29,6 +29,18 @@ public class SocketForwarderTest {
     }
 
     @Test
+    public void testSocketResponseCell() throws Exception {
+        InputStream in = new ByteArrayInputStream(randomByteArray(1));
+        OutputStream out = new ByteArrayOutputStream();
+        SocketFactory socketFactory = createSocketFactory(in, out);
+        targetWorker = mock(TargetWorker.class);
+        socketForwarder = createSocketForwarder(socketFactory, targetWorker);
+
+        socketForwarder.close();
+        verify(targetWorker, times(1)).sendCell(Matchers.<Cell>any());
+    }
+
+    @Test
     public void testSocketInputOneCell() throws Exception {
         InputStream in = new ByteArrayInputStream(randomByteArray(1));
         OutputStream out = new ByteArrayOutputStream();
