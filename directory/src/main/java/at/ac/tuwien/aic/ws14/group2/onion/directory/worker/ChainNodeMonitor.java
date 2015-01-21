@@ -18,9 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 
@@ -136,9 +134,7 @@ public class ChainNodeMonitor implements Runnable {
                     logger.info("Result: {}", result.toString());
                 }
             }
-
         }
-
         logger.info("Finished health check");
     }
 }

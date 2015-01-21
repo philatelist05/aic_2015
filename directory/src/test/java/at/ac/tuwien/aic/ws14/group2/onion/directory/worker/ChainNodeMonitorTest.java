@@ -1,14 +1,12 @@
 package at.ac.tuwien.aic.ws14.group2.onion.directory.worker;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.ChainNodeRegistry;
-import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
-import com.sun.net.httpserver.Filter;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -61,6 +59,7 @@ public class ChainNodeMonitorTest {
         when(registry.getActiveNodeIDs()).thenReturn(activeNodes);
         when(registry.getLastNodeUsage(firstNodeInfo)).thenReturn(deadNodeUsage);
 
+
         Thread chainNodeMonitor = new Thread(new ChainNodeMonitor(registry, configuration));
         chainNodeMonitor.run();
 
@@ -100,7 +99,7 @@ public class ChainNodeMonitorTest {
         ChainNodeRegistry registry = mock(ChainNodeRegistry.class);
         when(registry.getActiveNodeIDs()).thenReturn(emptyNodeSet);
 
-        when(configuration.getDirectoryNodeHeartbeatTimeout()).thenReturn(5000L);
+        when(configuration.getDirectoryNodeHeartbeatTimeout()).thenReturn(0L);
         Thread chainNodeMonitorThread = new Thread(new ChainNodeMonitor(registry, configuration));
         chainNodeMonitorThread.run();
 
