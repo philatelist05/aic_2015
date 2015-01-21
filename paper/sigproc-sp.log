@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2015.1.16)  20 JAN 2015 19:06
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014) (preloaded format=pdflatex 2015.1.16)  21 JAN 2015 12:11
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -279,142 +279,154 @@ File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
 
 
 ]
-LaTeX Font Info:    Try loading font information for T1+aett on input line 218.
+<anonion.png, id=11, 427.5975pt x 388.45125pt>
+File: anonion.png Graphic file (type png)
+ <use anonion.png>
+Package pdftex.def Info: anonion.png used on input line 205.
+(pdftex.def)             Requested size: 252.0pt x 228.92937pt.
 
+Overfull \hbox (12.0pt too wide) in paragraph at lines 205--206
+ [][] 
+ []
+
+LaTeX Font Info:    Try loading font information for T1+aett on input line 235.
 
 (/usr/local/texlive/2014/texmf-dist/tex/latex/ae/t1aett.fd
 File: t1aett.fd 1997/11/16 Font definitions for T1/aett.
 )
 
 LaTeX Warning: Citation `Lamport:LaTeX' on page \thepage  undefined on input li
-ne 238.
+ne 255.
 
+[2 <./anonion.png>]
 
 LaTeX Warning: Citation `Lamport:LaTeX' on page \thepage  undefined on input li
-ne 253.
+ne 270.
 
 
 LaTeX Warning: Citation `bowman:reasoning' on page \thepage  undefined on input
- line 279.
+ line 296.
 
 
 LaTeX Warning: Citation `clark:pct' on page \thepage  undefined on input line 2
-79.
+96.
 
 
 LaTeX Warning: Citation `braams:babel' on page \thepage  undefined on input lin
-e 279.
+e 296.
 
 
 LaTeX Warning: Citation `herlihy:methodology' on page \thepage  undefined on in
-put line 279.
+put line 296.
 
 
 LaTeX Warning: Citation `clark:pct' on page \thepage  undefined on input line 2
-81.
+98.
 
 
 LaTeX Warning: Citation `salas:calculus' on page \thepage  undefined on input l
-ine 281.
-
-
-LaTeX Warning: Citation `Lamport:LaTeX' on page \thepage  undefined on input li
-ne 281.
-
-
-LaTeX Warning: Citation `Lamport:LaTeX' on page \thepage  undefined on input li
-ne 287.
+ine 298.
 
 
 LaTeX Warning: Citation `Lamport:LaTeX' on page \thepage  undefined on input li
 ne 298.
 
-[2]
-Overfull \hbox (1.39365pt too wide) in paragraph at lines 318--322
+
+LaTeX Warning: Citation `Lamport:LaTeX' on page \thepage  undefined on input li
+ne 304.
+
+
+LaTeX Warning: Citation `Lamport:LaTeX' on page \thepage  undefined on input li
+ne 315.
+
+
+Overfull \hbox (1.39365pt too wide) in paragraph at lines 335--339
 []\T1/aer/m/n/9 Immediately fol-low-ing this sen-tence is the point at which
  []
 
 
-LaTeX Warning: File `fly.eps' not found on input line 373.
+LaTeX Warning: File `fly.eps' not found on input line 390.
 
 Package epstopdf Info: Source file: <fly.eps>
 (epstopdf)             Output file: <fly-eps-converted-to.pdf>
 (epstopdf)             Command: <repstopdf --outfile=fly-eps-converted-to.pdf f
 ly.eps>
-(epstopdf)             \includegraphics on input line 373.
+(epstopdf)             \includegraphics on input line 390.
 Package epstopdf Info: Output file is already uptodate.
 
-./sigproc-sp.tex:373: Package pdftex.def Error: File `fly-eps-converted-to.pdf'
+./sigproc-sp.tex:390: Package pdftex.def Error: File `fly-eps-converted-to.pdf'
  not found.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.373 \epsfig{file=fly.eps}
+l.390 \epsfig{file=fly.eps}
                            
 ? 
 
-LaTeX Warning: File `fly.eps' not found on input line 379.
+LaTeX Warning: File `fly.eps' not found on input line 396.
 
 Package epstopdf Info: Source file: <fly.eps>
 (epstopdf)             Output file: <fly-eps-converted-to.pdf>
 (epstopdf)             Command: <repstopdf --outfile=fly-eps-converted-to.pdf f
 ly.eps>
-(epstopdf)             \includegraphics on input line 379.
+(epstopdf)             \includegraphics on input line 396.
 Package epstopdf Info: Output file is already uptodate.
 
-./sigproc-sp.tex:379: Package pdftex.def Error: File `fly-eps-converted-to.pdf'
+./sigproc-sp.tex:396: Package pdftex.def Error: File `fly-eps-converted-to.pdf'
  not found.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.379 \epsfig{file=fly.eps, height=1in, width=1in}
+l.396 \epsfig{file=fly.eps, height=1in, width=1in}
                                                   
 ? 
 
 LaTeX Font Warning: Font shape `T1/aett/bx/n' undefined
-(Font)              using `T1/aett/m/n' instead on input line 381.
+(Font)              using `T1/aett/m/n' instead on input line 398.
 
+[3]
 \c@theorem=\count115
 \c@definition=\count116
 
-LaTeX Warning: File `rosette.ps' not found on input line 425.
+
+LaTeX Warning: File `rosette.ps' not found on input line 442.
 
 
-./sigproc-sp.tex:425: LaTeX Error: Unknown graphics extension: .ps.
+./sigproc-sp.tex:442: LaTeX Error: Unknown graphics extension: .ps.
 
 See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.425 ...{file=rosette.ps, height=1in, width=1in,}
+l.442 ...{file=rosette.ps, height=1in, width=1in,}
                                                   
 ? 
 
-LaTeX Warning: File `flies.eps' not found on input line 436.
+LaTeX Warning: File `flies.eps' not found on input line 453.
 
 Package epstopdf Info: Source file: <flies.eps>
 (epstopdf)             Output file: <flies-eps-converted-to.pdf>
 (epstopdf)             Command: <repstopdf --outfile=flies-eps-converted-to.pdf
  flies.eps>
-(epstopdf)             \includegraphics on input line 436.
+(epstopdf)             \includegraphics on input line 453.
 Package epstopdf Info: Output file is already uptodate.
 
-./sigproc-sp.tex:436: Package pdftex.def Error: File `flies-eps-converted-to.pd
+./sigproc-sp.tex:453: Package pdftex.def Error: File `flies-eps-converted-to.pd
 f' not found.
 
 See the pdftex.def package documentation for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.436 \epsfig{file=flies.eps}
+l.453 \epsfig{file=flies.eps}
                              
 ? 
 
-Overfull \hbox (15.60826pt too wide) detected at line 461
+Overfull \hbox (15.60826pt too wide) detected at line 478
 \OML/cmm/m/it/9 l \OT1/cmr/m/n/9 = [] \OML/cmm/m/it/9 f\OT1/cmr/m/n/9 (\OML/cmm
 /m/it/9 x\OT1/cmr/m/n/9 ) = [] [] = [] \OML/cmm/m/it/9 g\OT1/cmr/m/n/9 (\OML/cm
 m/m/it/9 x\OT1/cmr/m/n/9 ) \OMS/cmsy/m/n/9 ^^A [] [] \OT1/cmr/m/n/9 = 0 \OMS/cm
@@ -423,23 +435,23 @@ sy/m/n/9 ^^A \OML/cmm/m/it/9 L \OT1/cmr/m/n/9 = 0\OML/cmm/m/it/9 ;
 
 
 LaTeX Warning: Citation `salas:calculus' on page \thepage  undefined on input l
-ine 471.
+ine 488.
 
-[3]
+[4]
 No file sigproc-sp.bbl.
-[4] (./sigproc-sp.aux)
+[5] (./sigproc-sp.aux)
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
  ) 
 Here is how much of TeX's memory you used:
- 2838 strings out of 493117
- 36023 string characters out of 6135433
- 102697 words of memory out of 5000000
- 6212 multiletter control sequences out of 15000+600000
+ 2845 strings out of 493117
+ 36120 string characters out of 6135433
+ 103705 words of memory out of 5000000
+ 6217 multiletter control sequences out of 15000+600000
  58528 words of font info for 82 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,10n,28p,497b,233s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 41i,10n,28p,1079b,234s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2014/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
 exlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/local/tex
 live/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/local/tex
@@ -458,10 +470,10 @@ ts/type1/urw/helvetic/uhvr8a.pfb></usr/local/texlive/2014/texmf-dist/fonts/type
 1/urw/times/utmb8a.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/urw/time
 s/utmbi8a.pfb></usr/local/texlive/2014/texmf-dist/fonts/type1/urw/times/utmri8a
 .pfb>
-Output written on sigproc-sp.pdf (4 pages, 205270 bytes).
+Output written on sigproc-sp.pdf (5 pages, 232326 bytes).
 PDF statistics:
- 86 PDF objects out of 1000 (max. 8388607)
- 62 compressed objects within 1 object stream
+ 90 PDF objects out of 1000 (max. 8388607)
+ 64 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 6 words of extra memory for PDF output out of 10000 (max. 10000000)
 

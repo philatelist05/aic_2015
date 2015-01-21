@@ -124,7 +124,7 @@ This paper describes anonymous connections and their implementation using Cloud-
 Anonymity networks enable users to communicate over the public Web while hiding their identity from one another.
 Nevertheless, is Internet communication private? Greatest concerns today is preventing outsiders listening in on electronic
 conversation. But \textit{traffic analysis} can also leak some sensitive information because encrypted messages can be tracked, revealing 
-who is talking to whom. [anonymus connections and onion routing introduction]
+who is talking to whom. [anonymuos connections and onion routing introduction]
 
 Todays best and most popular tool for accessing the Internet anonymously is Tor. By taking the traffic through a sequence of nodes, 
 Tor allows the traffic to appear to target from its last node, not from the user directly. Main disadvantage of Tor is that its relays are hosted 
@@ -168,7 +168,8 @@ provides two-way, real-time, connection-based communication that does not requir
 %proceedings paper, rather than with giving rigorous descriptions
 %or explanations of such commands.
 
-\section{Onion routing overview}
+\section{Onion routing}
+\subsection{Overview}
 
 In onion routing, user connects to a target over a sequence of machines called \textit{onion routers}, rather than connect directly to a target.
 This way the \textit{originator} and the target remain anonymous to \textit{observer}. It is possible for \textit{originator} to remain anonymous
@@ -185,10 +186,26 @@ removes one layer of encryption, like peeling an onion, so at the target the dat
 to every \textit{onion router} along the connection. [onion routing for anonymous and private internet connection]
 
 \subsection{Overhead}
-Because of the public key decryption, the most expensive calculation in the onion routing network is public-key cryptography, and it only takes place at the connection setup. In the data movement phase only the symmetric-key cryptography is used, which is much faster and can be as fast as ordinary link encryption. Delay in the data transfer depends on the number of the \textit{onion routers}. Overall, overhead in the \textit{onion routing} is sufficiently small.
+Because of the public key decryption, the most expensive calculation in the onion routing network is public-key cryptography, and it only takes place at the connection setup. In the data movement phase only the symmetric-key cryptography is used, which is much faster and can be as fast as ordinary link encryption. Delay in the data transfer depends on the number of the \textit{onion routers}. Overall, overhead in the \textit{onion routing} is sufficiently small. [Onion Routing for Anonymus and Private Internet Connection]
 
 \section{Formal Description}
-./gral
+
+Let say we have N number of routers, where each router have its own public (Su) and private (Sr) key. Public key is known to the \textit{originator} and private keys are known to the router. [Onion Routing for Anonymous Communications]
+
+As outlined before, \textit{onion routing protocol} relays on the public-key cryptography, therefore functions for encryption \textit{E[key](data)} and decryption \textit{D[key](data)} are needed. Key par in the public-key cryptography is generated in the way that data encrypted with public key Su can be decrypted only with private key Sr, and vice versa, i.e. \textit{D[Su](E[ Sr](data)) = data} and \textit{D[Sr](E[Su](data)) = data}. [Onion Routing for Anonymous Communications]
+
+When \textit{originator} wants to send informations over the \textit{onion routing network}, he sends a request to the \textit{onion proxy} and gets back the set of randomly chosen \textit{onion routers}, e.g. <4, 3, 5>. This means that information, which travels from the \textit{originator} to the \textit{target}, will be routed over this three routers respectively. The first router in the circuit\footnote{Circuit represents the logical connection between two nodes} is called \textit{entry node} and the last node is called \textit{exit node}. Before information is sent to the \textit{entry node}, \textit{onion proxy} creates an \textit{onion}, which in our case looks like: \textit{E[4u](3's IP address, E[3u]( 5' s IP address, E[5u](data)))}. The \textit{onion} is then forwarded to the \textit{entry node} (4). The \textit{entry node} decrypts the \textit{onion} with its private key, reads the IP address of the next node (3) and passes the the data to it where the same process is repeated. [Onion Routing for Anonymous Communications]
+
+It is possible that each router has a number of TCP connection to the other routers, and multiple circuits between two same nodes might use the same TCP connection.Therefore, every router needs to remember the association between two circuits. [Onion Routing for Anonymous Communications]
+
+When the circuit <4, 3, 5> is established it allows data to travel in both ways without including routing information. In the example above, when a response message from the \textit{target} arrives at the \textit{exit node} (5), (5) already know to which circuit and node (3) it should forward the information. (5) first encrypt the data it received from the \textit{target } with its private key and sends it to (3). (3) encrypts the data with its private key and sends it to (4). (4) does the same thing and passes the data to the \textit{onion proxy}. In order to read the original information, the \textit{onion proxy} decrypts the data it received from (4) as: \textit{D[4u](D[3u](D[5u]( encrypted onion)))}. [Onion Routing for Anonymous Communications]
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{anonion.png}
+    \caption{Onion routing [citation]}
+    \label{fig:awesome_image}
+\end{figure}
 %Typically, the body of a paper is organized
 %into a hierarchical structure, with numbered or unnumbered
 %headings for sections, subsections, sub-subsections, and even
