@@ -68,29 +68,23 @@ public class ChainNodeRegistry {
             AmazonEC2Client ec2Client = new AmazonEC2Client(new ProfileCredentialsProvider());
             ec2Client.setRegion(Region.getRegion(Regions.fromName(chainNodeInformation.getRegion())));
             boolean instanceNotYetAvailable = true;
-            logger.info("All instances:");
-            for (Reservation reservation: ec2Client.describeInstances().getReservations()) {
-                for (Instance instance: reservation.getInstances()) {
-                    logger.info(instance.toString());
-                }
-            }
             while (instanceNotYetAvailable) {
 
-                logger.info("Trying to get instance information for id '{}'", chainNodeInformation.getInstanceId());
+                logger.debug("Trying to get instance information for id '{}'", chainNodeInformation.getInstanceId());
                 DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
                 try {
                     DescribeInstancesResult result = ec2Client.describeInstances(request);
                     for (Instance instance : result.getReservations().get(0).getInstances()) {
                         for (Tag tag : instance.getTags()) {
-                            logger.info("Instance tagged with: " + tag.toString());
+                            logger.debug("Instance tagged with: " + tag.toString());
+                            if (tag.getKey().equals("Name")) {
+                                chainNodeInformation.setInstanceName(tag.getValue());
+                            }
                         }
-                        String availabilityZone = instance.getPlacement().getAvailabilityZone();
-                        String region = availabilityZone.substring(0, availabilityZone.length()-1);
-                        logger.info("Region: " + region);
                     }
                     instanceNotYetAvailable = false;
                 } catch (AmazonServiceException e) {
-                    logger.info("AmazonServiceException: '{}'", e.getMessage());
+                    logger.warn("AmazonServiceException: '{}'", e.getMessage());
                     try {
                         Thread.sleep(60000);
                         continue;
