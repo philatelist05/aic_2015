@@ -66,6 +66,7 @@ public class ChainNodeRegistry {
         if (ec2Client != null) {
             boolean instanceNotYetAvailable = true;
             while (instanceNotYetAvailable) {
+                logger.info("Trying to get instance information for id '{}'", chainNodeInformation.getInstanceId());
                 DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
                 try {
                     DescribeInstancesResult result = ec2Client.describeInstances(request);
@@ -79,14 +80,13 @@ public class ChainNodeRegistry {
                     }
                     instanceNotYetAvailable = false;
                 } catch (AmazonServiceException e) {
-                    if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
-                        try {
-                            Thread.sleep(1000);
-                            continue;
-                        } catch (InterruptedException e1) {
-                            logger.warn("Interrupted.");
-                            return -1;
-                        }
+                    logger.info("AmazonServiceException: '{}'", e.getMessage());
+                    try {
+                        Thread.sleep(1000);
+                        continue;
+                    } catch (InterruptedException e1) {
+                        logger.warn("Interrupted.");
+                        return -1;
                     }
                 }
             }
