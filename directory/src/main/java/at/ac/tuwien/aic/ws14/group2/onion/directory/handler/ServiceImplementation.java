@@ -31,7 +31,8 @@ public class ServiceImplementation implements DirectoryService.Iface {
             chainNodeRegistry.addNodeUsage(nodeID, nodeUsage);
             return true;
         } catch (NoSuchChainNodeAvailable e) {
-            logger.catching(Level.WARN, e);
+            logger.warn("Received heartbeat for not registered chainnode..");
+            logger.catching(Level.DEBUG, e);
             return false;
         }
     }
