@@ -5,6 +5,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsageSummary;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.exceptions.NoSuchChainNodeAvailable;
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2Client;
@@ -30,7 +31,7 @@ public class ChainNodeRegistry {
     private final ConcurrentSkipListSet<Integer> inactiveNodes;
     private final ConcurrentHashMap<Integer, ChainNodeInformation> nodeMapping;
     private final AtomicInteger nextNodeID;
-    private AmazonEC2Client ec2Client;
+    private boolean localMode = true;
 
     public ChainNodeRegistry() {
         logger.info("Initializing ChainNodeRegistry");
@@ -63,7 +64,9 @@ public class ChainNodeRegistry {
 
         logger.info("Adding new ChainNode '{}'", chainNodeInformation);
 
-        if (ec2Client != null) {
+        if (!localMode) {
+            AmazonEC2Client ec2Client = new AmazonEC2Client(new ProfileCredentialsProvider());
+            ec2Client.setRegion(Region.getRegion(Regions.fromName(chainNodeInformation.getRegion())));
             boolean instanceNotYetAvailable = true;
             logger.info("All instances:");
             for (Reservation reservation: ec2Client.describeInstances().getReservations()) {
@@ -151,7 +154,7 @@ public class ChainNodeRegistry {
         return usages == null ? null : usages.getLast();
     }
 
-    public void setEc2Client(AmazonEC2Client ec2Client) {
-        this.ec2Client = ec2Client;
+    public void setLocalMode(boolean localMode) {
+        this.localMode = localMode;
     }
 }

@@ -91,6 +91,11 @@ public class ChainNodeStarter {
                 in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
                 nodeInformation.setDomainName(in.readLine());
                 in.close();
+                awsCheckUrl = new URL("http://instance-data/latest/meta-data/placement/availability-zone");
+                in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
+                String availabilityZone = in.readLine();
+                nodeInformation.setRegion(availabilityZone.substring(0, availabilityZone.length()-1));
+                in.close();
             } catch (Exception e) {
                 logger.fatal("Could not determine public IP, aborting.");
                 logger.catching(Level.DEBUG, e);
