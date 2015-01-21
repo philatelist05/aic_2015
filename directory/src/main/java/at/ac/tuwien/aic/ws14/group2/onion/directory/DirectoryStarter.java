@@ -5,6 +5,8 @@ import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.handler.ServiceImplementation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.worker.ChainNodeMonitor;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.services.ec2.AmazonEC2Client;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +33,12 @@ public class DirectoryStarter {
         logger.info("Starting Directory server..");
 
         ChainNodeRegistry chainNodeRegistry = new ChainNodeRegistry();
+
+        if (configuration.isLocalMode()) {
+            AmazonEC2Client ec2Client = new AmazonEC2Client(new ProfileCredentialsProvider());
+            chainNodeRegistry.setEc2Client(ec2Client);
+        }
+
 
         ServiceImplementation handler = new ServiceImplementation(chainNodeRegistry);
         DirectoryService.Processor<DirectoryService.Iface> processor = new DirectoryService.Processor<>(handler);

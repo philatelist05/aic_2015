@@ -4,9 +4,11 @@ import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInforma
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsageSummary;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.exceptions.NoSuchChainNodeAvailable;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +29,7 @@ public class ChainNodeRegistry {
     private final ConcurrentSkipListSet<Integer> inactiveNodes;
     private final ConcurrentHashMap<Integer, ChainNodeInformation> nodeMapping;
     private final AtomicInteger nextNodeID;
+    private AmazonEC2Client ec2Client;
 
     public ChainNodeRegistry() {
         logger.info("Initializing ChainNodeRegistry");
@@ -59,7 +62,19 @@ public class ChainNodeRegistry {
 
         logger.info("Adding new ChainNode '{}'", chainNodeInformation);
 
+        if (ec2Client != null) {
+            DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
+            DescribeInstancesResult result = ec2Client.describeInstances(request);
+            for (Instance instance : result.getReservations().get(0).getInstances()) {
+                for (Tag tag: instance.getTags()) {
+                     logger.info("Instance tagged with: " + tag.toString());
+                }
+            }
+            Region region = Regions.getCurrentRegion();
+            logger.info("Region: " + region.getName());
+        }
         int nodeID = nextNodeID.getAndIncrement();
+
         nodeMapping.put(nodeID, chainNodeInformation);
         nodeUsages.put(nodeID, new ConcurrentLinkedDeque<>());
         return nodeID;
@@ -109,5 +124,9 @@ public class ChainNodeRegistry {
     public NodeUsage getLastNodeUsage(int chainNodeID) {
         ConcurrentLinkedDeque<NodeUsage> usages = nodeUsages.get(chainNodeID);
         return usages == null ? null : usages.getLast();
+    }
+
+    public void setEc2Client(AmazonEC2Client ec2Client) {
+        this.ec2Client = ec2Client;
     }
 }

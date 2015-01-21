@@ -73,14 +73,19 @@ public class ChainNodeStarter {
 
         String directoryHostname = "localhost";
         String chainNodeHostname = "localhost";
+        String awsId = null;
         if (!configuration.isLocalMode()) {
             logger.info("Getting public IP");
             directoryHostname = configuration.getNodeCommonHost();
-            URL awsCheckIp;
+            URL awsCheckUrl;
             try {
-                awsCheckIp = new URL("http://checkip.amazonaws.com/");
-                BufferedReader in = new BufferedReader(new InputStreamReader(awsCheckIp.openStream()));
+                awsCheckUrl = new URL("http://checkip.amazonaws.com/");
+                BufferedReader in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
                 chainNodeHostname = in.readLine();
+                in.close();
+                awsCheckUrl = new URL("http://instance-data/latest/meta-data/instance-id");
+                in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
+                awsId = in.readLine();
                 in.close();
             } catch (Exception e) {
                 logger.fatal("Could not determine public IP, aborting.");
@@ -97,6 +102,9 @@ public class ChainNodeStarter {
         nodeCoreThread.start();
 
         ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, chainNodeHostname, Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
+        if (awsId != null) {
+            nodeInformation.setInstanceId(awsId);
+        }
 
         //TODO: Get here real region, dns , ... from AWS API
         nodeInformation.setRegion("");

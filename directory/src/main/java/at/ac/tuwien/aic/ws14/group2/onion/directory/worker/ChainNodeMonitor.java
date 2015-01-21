@@ -26,6 +26,7 @@ import java.util.UUID;
 
 public class ChainNodeMonitor implements Runnable {
     static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
+    private final int awsStartupDelay = 3;
 
     private ChainNodeRegistry chainNodeRegistry;
     private long timeout;
@@ -77,7 +78,7 @@ public class ChainNodeMonitor implements Runnable {
                     this.region = null;
                 }
 
-                lastAutoStart = LocalDateTime.now();
+                lastAutoStart = LocalDateTime.now().minus(awsStartupDelay, ChronoUnit.MINUTES);
             }
         }
     }
@@ -124,7 +125,7 @@ public class ChainNodeMonitor implements Runnable {
                         .withMinCount(1)
                         .withMaxCount(this.numberOfNodes - activeNodes.size())
                         .withUserData(this.userData);
-                if (this.lastAutoStart.plus(3, ChronoUnit.MINUTES).isBefore(LocalDateTime.now())) {
+                if (this.lastAutoStart.plus(awsStartupDelay, ChronoUnit.MINUTES).isBefore(LocalDateTime.now())) {
                     this.lastAutoStart = LocalDateTime.now();
                     logger.info("Request: {}", request.toString());
                     RunInstancesResult result = ec2Client.runInstances(request);
