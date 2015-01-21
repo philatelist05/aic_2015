@@ -89,7 +89,7 @@ public class ChainNodeStarter {
                 in.close();
                 awsCheckUrl = new URL("http://instance-data/latest/meta-data/public-hostname");
                 in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
-                nodeInformation.setInstanceId(in.readLine());
+                nodeInformation.setDomainName(in.readLine());
                 in.close();
             } catch (Exception e) {
                 logger.fatal("Could not determine public IP, aborting.");
