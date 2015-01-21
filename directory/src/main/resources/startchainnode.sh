@@ -6,6 +6,7 @@ BRANCH=aws
 su ubuntu
 cd "$DIR"
 git stash
+git pull
 git checkout "$BRANCH"
 git pull
 ./gradlew installApp
