@@ -4,6 +4,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInforma
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsageSummary;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.exceptions.NoSuchChainNodeAvailable;
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2Client;
@@ -63,15 +64,32 @@ public class ChainNodeRegistry {
         logger.info("Adding new ChainNode '{}'", chainNodeInformation);
 
         if (ec2Client != null) {
-            DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
-            DescribeInstancesResult result = ec2Client.describeInstances(request);
-            for (Instance instance : result.getReservations().get(0).getInstances()) {
-                for (Tag tag: instance.getTags()) {
-                     logger.info("Instance tagged with: " + tag.toString());
+            boolean instanceNotYetAvailable = true;
+            while (instanceNotYetAvailable) {
+                DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
+                try {
+                    DescribeInstancesResult result = ec2Client.describeInstances(request);
+                    for (Instance instance : result.getReservations().get(0).getInstances()) {
+                        for (Tag tag : instance.getTags()) {
+                            logger.info("Instance tagged with: " + tag.toString());
+                        }
+                        String availabilityZone = instance.getPlacement().getAvailabilityZone();
+                        String region = availabilityZone.substring(0, availabilityZone.length()-1);
+                        logger.info("Region: " + region);
+                    }
+                    instanceNotYetAvailable = false;
+                } catch (AmazonServiceException e) {
+                    if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                        try {
+                            Thread.sleep(1000);
+                            continue;
+                        } catch (InterruptedException e1) {
+                            logger.warn("Interrupted.");
+                            return -1;
+                        }
+                    }
                 }
             }
-            Region region = Regions.getCurrentRegion();
-            logger.info("Region: " + region.getName());
         }
         int nodeID = nextNodeID.getAndIncrement();
 
