@@ -34,7 +34,7 @@ public class DirectoryStarter {
 
         ChainNodeRegistry chainNodeRegistry = new ChainNodeRegistry();
 
-        if (configuration.isLocalMode()) {
+        if (!configuration.isLocalMode()) {
             AmazonEC2Client ec2Client = new AmazonEC2Client(new ProfileCredentialsProvider());
             chainNodeRegistry.setEc2Client(ec2Client);
         }
