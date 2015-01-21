@@ -24,7 +24,7 @@ import java.util.UUID;
 
 public class ChainNodeMonitor implements Runnable {
     static final Logger logger = LogManager.getLogger(ChainNodeMonitor.class.getName());
-    private final int awsStartupDelay = 5;
+    private final int awsStartupDelay = 60;
 
     private ChainNodeRegistry chainNodeRegistry;
     private long timeout;

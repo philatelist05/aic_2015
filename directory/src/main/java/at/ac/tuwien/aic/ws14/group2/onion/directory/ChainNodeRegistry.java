@@ -65,7 +65,14 @@ public class ChainNodeRegistry {
 
         if (ec2Client != null) {
             boolean instanceNotYetAvailable = true;
+            logger.info("All instances:");
+            for (Reservation reservation: ec2Client.describeInstances().getReservations()) {
+                for (Instance instance: reservation.getInstances()) {
+                    logger.info(instance.toString());
+                }
+            }
             while (instanceNotYetAvailable) {
+
                 logger.info("Trying to get instance information for id '{}'", chainNodeInformation.getInstanceId());
                 DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
                 try {
@@ -82,7 +89,7 @@ public class ChainNodeRegistry {
                 } catch (AmazonServiceException e) {
                     logger.info("AmazonServiceException: '{}'", e.getMessage());
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep(60000);
                         continue;
                     } catch (InterruptedException e1) {
                         logger.warn("Interrupted.");
