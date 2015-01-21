@@ -104,12 +104,12 @@ public class ChainNodeRegistry {
     }
 
     public Set<Integer> getActiveNodeIDs() {
-        logger.info("Returning active ChainNode IDs");
+        logger.debug("Returning active ChainNode IDs");
         return new HashSet<>(activeNodes);
     }
 
     public Set<ChainNodeInformation> getActiveNodes() {
-        logger.info("Returning active ChainNodes");
+        logger.debug("Returning active ChainNodes");
         Set<Integer> ids = getActiveNodeIDs();
         Set<ChainNodeInformation> cni = new HashSet<>();
         synchronized (nodeMapping) {
