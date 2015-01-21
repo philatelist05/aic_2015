@@ -129,7 +129,6 @@ public class ChainNodeMonitor implements Runnable {
                     logger.info("Request: {}", request.toString());
                     RunInstancesResult result = ec2Client.runInstances(request);
                     for (Instance instance : result.getReservation().getInstances()) {
-                        Collection<Tag> tags = instance.getTags();
                         CreateTagsRequest tagsRequest = new CreateTagsRequest().withTags(new Tag("Name", "G2-T3-chainnode-" + UUID.randomUUID().toString())).withResources(instance.getInstanceId());
                         ec2Client.createTags(tagsRequest);
                     }
