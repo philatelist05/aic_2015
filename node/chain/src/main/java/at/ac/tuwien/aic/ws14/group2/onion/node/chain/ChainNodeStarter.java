@@ -73,7 +73,7 @@ public class ChainNodeStarter {
 
         String directoryHostname = "localhost";
         String chainNodeHostname = "localhost";
-        String awsId = null;
+        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, "127.0.0.1", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         if (!configuration.isLocalMode()) {
             logger.info("Getting public IP");
             directoryHostname = configuration.getNodeCommonHost();
@@ -81,11 +81,15 @@ public class ChainNodeStarter {
             try {
                 awsCheckUrl = new URL("http://checkip.amazonaws.com/");
                 BufferedReader in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
-                chainNodeHostname = in.readLine();
+                nodeInformation.setAddress(in.readLine());
                 in.close();
                 awsCheckUrl = new URL("http://instance-data/latest/meta-data/instance-id");
                 in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
-                awsId = in.readLine();
+                nodeInformation.setInstanceId(in.readLine());
+                in.close();
+                awsCheckUrl = new URL("http://instance-data/latest/meta-data/public-hostname");
+                in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
+                nodeInformation.setInstanceId(in.readLine());
                 in.close();
             } catch (Exception e) {
                 logger.fatal("Could not determine public IP, aborting.");
@@ -100,15 +104,6 @@ public class ChainNodeStarter {
         logger.info("Starting node core");
         Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
         nodeCoreThread.start();
-
-        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, chainNodeHostname, Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
-        if (awsId != null) {
-            nodeInformation.setInstanceId(awsId);
-        }
-
-        //TODO: Get here real region, dns , ... from AWS API
-        nodeInformation.setRegion("");
-        nodeInformation.setDomainName("");
 
         logger.info("ChainNodeInformation: {}", nodeInformation);
 
