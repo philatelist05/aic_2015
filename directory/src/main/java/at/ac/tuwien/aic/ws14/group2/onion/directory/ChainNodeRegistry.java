@@ -4,9 +4,13 @@ import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInforma
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsageSummary;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.exceptions.NoSuchChainNodeAvailable;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.Maps;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +31,7 @@ public class ChainNodeRegistry {
     private final ConcurrentSkipListSet<Integer> inactiveNodes;
     private final ConcurrentHashMap<Integer, ChainNodeInformation> nodeMapping;
     private final AtomicInteger nextNodeID;
+    private boolean localMode = true;
 
     public ChainNodeRegistry() {
         logger.info("Initializing ChainNodeRegistry");
@@ -59,7 +64,39 @@ public class ChainNodeRegistry {
 
         logger.info("Adding new ChainNode '{}'", chainNodeInformation);
 
+        if (!localMode) {
+            AmazonEC2Client ec2Client = new AmazonEC2Client(new ProfileCredentialsProvider());
+            ec2Client.setRegion(Region.getRegion(Regions.fromName(chainNodeInformation.getRegion())));
+            boolean instanceNotYetAvailable = true;
+            while (instanceNotYetAvailable) {
+
+                logger.debug("Trying to get instance information for id '{}'", chainNodeInformation.getInstanceId());
+                DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
+                try {
+                    DescribeInstancesResult result = ec2Client.describeInstances(request);
+                    for (Instance instance : result.getReservations().get(0).getInstances()) {
+                        for (Tag tag : instance.getTags()) {
+                            logger.debug("Instance tagged with: " + tag.toString());
+                            if (tag.getKey().equals("Name")) {
+                                chainNodeInformation.setInstanceName(tag.getValue());
+                            }
+                        }
+                    }
+                    instanceNotYetAvailable = false;
+                } catch (AmazonServiceException e) {
+                    logger.warn("AmazonServiceException: '{}'", e.getMessage());
+                    try {
+                        Thread.sleep(60000);
+                        continue;
+                    } catch (InterruptedException e1) {
+                        logger.warn("Interrupted.");
+                        return -1;
+                    }
+                }
+            }
+        }
         int nodeID = nextNodeID.getAndIncrement();
+
         nodeMapping.put(nodeID, chainNodeInformation);
         nodeUsages.put(nodeID, new ConcurrentLinkedDeque<>());
         return nodeID;
@@ -89,12 +126,12 @@ public class ChainNodeRegistry {
     }
 
     public Set<Integer> getActiveNodeIDs() {
-        logger.info("Returning active ChainNode IDs");
+        logger.debug("Returning active ChainNode IDs");
         return new HashSet<>(activeNodes);
     }
 
     public Set<ChainNodeInformation> getActiveNodes() {
-        logger.info("Returning active ChainNodes");
+        logger.debug("Returning active ChainNodes");
         Set<Integer> ids = getActiveNodeIDs();
         Set<ChainNodeInformation> cni = new HashSet<>();
         synchronized (nodeMapping) {
@@ -109,5 +146,9 @@ public class ChainNodeRegistry {
     public NodeUsage getLastNodeUsage(int chainNodeID) {
         ConcurrentLinkedDeque<NodeUsage> usages = nodeUsages.get(chainNodeID);
         return usages == null ? null : usages.getLast();
+    }
+
+    public void setLocalMode(boolean localMode) {
+        this.localMode = localMode;
     }
 }

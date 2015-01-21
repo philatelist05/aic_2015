@@ -73,14 +73,28 @@ public class ChainNodeStarter {
 
         String directoryHostname = "localhost";
         String chainNodeHostname = "localhost";
+        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, "127.0.0.1", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         if (!configuration.isLocalMode()) {
             logger.info("Getting public IP");
             directoryHostname = configuration.getNodeCommonHost();
-            URL awsCheckIp;
+            URL awsCheckUrl;
             try {
-                awsCheckIp = new URL("http://checkip.amazonaws.com/");
-                BufferedReader in = new BufferedReader(new InputStreamReader(awsCheckIp.openStream()));
-                chainNodeHostname = in.readLine();
+                awsCheckUrl = new URL("http://checkip.amazonaws.com/");
+                BufferedReader in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
+                nodeInformation.setAddress(in.readLine());
+                in.close();
+                awsCheckUrl = new URL("http://instance-data/latest/meta-data/instance-id");
+                in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
+                nodeInformation.setInstanceId(in.readLine());
+                in.close();
+                awsCheckUrl = new URL("http://instance-data/latest/meta-data/public-hostname");
+                in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
+                nodeInformation.setDomainName(in.readLine());
+                in.close();
+                awsCheckUrl = new URL("http://instance-data/latest/meta-data/placement/availability-zone");
+                in = new BufferedReader(new InputStreamReader(awsCheckUrl.openStream()));
+                String availabilityZone = in.readLine();
+                nodeInformation.setRegion(availabilityZone.substring(0, availabilityZone.length()-1));
                 in.close();
             } catch (Exception e) {
                 logger.fatal("Could not determine public IP, aborting.");
@@ -95,12 +109,6 @@ public class ChainNodeStarter {
         logger.info("Starting node core");
         Thread nodeCoreThread = new Thread(new ChainNodeCore(listeningSocket));
         nodeCoreThread.start();
-
-        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, chainNodeHostname, Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
-
-        //TODO: Get here real region, dns , ... from AWS API
-        nodeInformation.setRegion("");
-        nodeInformation.setDomainName("");
 
         logger.info("ChainNodeInformation: {}", nodeInformation);
 
