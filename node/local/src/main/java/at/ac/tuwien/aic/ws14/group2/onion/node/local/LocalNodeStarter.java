@@ -43,33 +43,11 @@ public class LocalNodeStarter {
 
 		if (!configuration.isLocalMode()) {
 			directoryHost = configuration.getNodeCommonHost();
-			URL awsCheckIp;
-			try {
-				awsCheckIp = new URL("http://checkip.amazonaws.com/");
-				BufferedReader in = new BufferedReader(new InputStreamReader(awsCheckIp.openStream()));
-				localHost = in.readLine();
-				in.close();
-			} catch (Exception e) {
-				logger.fatal("Could not determine public IP, aborting.");
-				logger.catching(Level.DEBUG, e);
-				System.exit(-1);
-			}
+			localHost = getAWSHost();
 		}
 
-		ServerSocket fakeListeningSocket = null;
-		int listeningPort = 30000;
-		while (fakeListeningSocket == null && listeningPort < 39999) {
-			listeningPort++;
-			try {
-				fakeListeningSocket = new ServerSocket(listeningPort, 100);
-			} catch (IOException e) {
-			}
-		}
-
-		if (fakeListeningSocket == null) {
-			logger.fatal("Failed to create listening Socket!");
-			System.exit(-1);
-		}
+		ServerSocket fakeListeningSocket = createFakeServerSocket(30000, 39999);
+		int listeningPort = fakeListeningSocket.getLocalPort();
 
 		logger.info("Creating NodeCore");
 		Endpoint fakeEndpoint = new Endpoint(localHost, listeningPort);
@@ -79,25 +57,7 @@ public class LocalNodeStarter {
 		ConnectionWorkerFactory.setCellWorkerFactory(new LocalCellWorkerFactory(nodeCore));
 
 		logger.info("Establishing Thrift client connection");
-		logger.info("Creating temp file for keystore");
-		ClassLoader cl = LocalNodeStarter.class.getClassLoader();
-		File keyStoreFile = null;
-		try {
-			InputStream input = cl.getResourceAsStream("keys/thrift-directory-clients.jks");
-			keyStoreFile = File.createTempFile("directory-ks", ".tmp");
-			OutputStream out = new FileOutputStream(keyStoreFile);
-			int read;
-			byte[] bytes = new byte[1024];
-
-			while ((read = input.read(bytes)) != -1) {
-				out.write(bytes, 0, read);
-			}
-			keyStoreFile.deleteOnExit();
-		} catch (IOException e) {
-			logger.fatal("Could not load keys for Thrift service");
-			logger.catching(Level.DEBUG, e);
-			System.exit(-1);
-		}
+		File keyStoreFile = loadThriftKeyFileFrom("keys/thrift-directory-clients.jks");
 
 		TSSLTransportFactory.TSSLTransportParameters clientParams = new TSSLTransportFactory.TSSLTransportParameters();
 		clientParams.setTrustStore(keyStoreFile.getPath(), "password");
@@ -123,11 +83,68 @@ public class LocalNodeStarter {
 		socksServer.setUncaughtExceptionHandler((thread, throwable) -> logger.error("Uncaught exception in thread: " + thread.getName(), throwable));
 		socksServer.start();
 
+		//TODO: Do here Web-UI initialization
+
 		// Block main thread until SOCKS server is interrupted
 		logger.info("Waiting for SOCKS server to be interrupted");
 		try {
 			socksServer.join();
 		} catch (InterruptedException ignored) {
 		}
+	}
+
+	private static File loadThriftKeyFileFrom(String path) {
+		File keyStoreFile = null;
+		ClassLoader cl = LocalNodeStarter.class.getClassLoader();
+		try {
+			InputStream input = cl.getResourceAsStream(path);
+
+			logger.info("Creating temp file for keystore");
+			keyStoreFile = File.createTempFile("directory-ks", ".tmp");
+			OutputStream out = new FileOutputStream(keyStoreFile);
+			int read;
+			byte[] bytes = new byte[1024];
+
+			while ((read = input.read(bytes)) != -1) {
+				out.write(bytes, 0, read);
+			}
+			keyStoreFile.deleteOnExit();
+		} catch (IOException e) {
+			logger.fatal("Could not load keys for Thrift service");
+			logger.catching(Level.DEBUG, e);
+			System.exit(-1);
+		}
+		return keyStoreFile;
+	}
+
+	private static ServerSocket createFakeServerSocket(int lowerBound, int upperBound) {
+		ServerSocket fakeListeningSocket = null;
+		while (fakeListeningSocket == null && lowerBound++ < upperBound) {
+			try {
+				fakeListeningSocket = new ServerSocket(lowerBound, 100);
+			} catch (IOException ignored) {
+			}
+		}
+		if (fakeListeningSocket == null) {
+			logger.fatal("Failed to create listening Socket!");
+			System.exit(-1);
+		}
+		return fakeListeningSocket;
+	}
+
+	private static String getAWSHost() {
+		URL awsCheckIp;
+		String host = "";
+		try {
+            awsCheckIp = new URL("http://checkip.amazonaws.com/");
+            BufferedReader in = new BufferedReader(new InputStreamReader(awsCheckIp.openStream()));
+            host = in.readLine();
+            in.close();
+        } catch (Exception e) {
+            logger.fatal("Could not determine public IP, aborting.");
+            logger.catching(Level.DEBUG, e);
+            System.exit(-1);
+        }
+		return host;
 	}
 }
