@@ -2,7 +2,6 @@ package at.ac.tuwien.aic.ws14.group2.onion.directory;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
-import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsageSummary;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.exceptions.NoSuchChainNodeAvailable;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSASignAndVerify;
 import com.amazonaws.AmazonServiceException;
@@ -37,7 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ChainNodeRegistry {
 	static final Logger logger = LogManager.getLogger(ChainNodeRegistry.class.getName());
 
-	private final ConcurrentHashMap<Integer, ConcurrentLinkedDeque<NodeUsage>> nodeUsages;
+	private final ConcurrentHashMap<Integer, NodeUsage> nodeUsages;   // stores the last NodeUsage for a node
 	private final ConcurrentSkipListSet<Integer> activeNodes;
 	private final ConcurrentSkipListSet<Integer> inactiveNodes;
 	private final ConcurrentHashMap<Integer, ChainNodeInformation> nodeMapping;
@@ -57,10 +56,9 @@ public class ChainNodeRegistry {
 	public void addNodeUsage(int chainNodeID, NodeUsage usage) throws NoSuchChainNodeAvailable {
 		logger.debug("Recording NodeUsage for ChainNode '{}': {}", chainNodeID, usage);
 
-		ConcurrentLinkedDeque<NodeUsage> usages = nodeUsages.get(chainNodeID);
 		ChainNodeInformation nodeInformation = nodeMapping.get(chainNodeID);
 
-		if (usages == null || nodeInformation == null)
+		if (nodeInformation == null)
 			throw new NoSuchChainNodeAvailable("Cannot record NodeUsage for unknown ID " + chainNodeID);
 
 		// Check signature
@@ -86,7 +84,7 @@ public class ChainNodeRegistry {
 			}
 		}
 
-		usages.addLast(usage);
+        nodeUsages.put(chainNodeID, usage);
 		if (!activeNodes.contains(chainNodeID)) {
 			activate(chainNodeID);
 		}
@@ -114,7 +112,6 @@ public class ChainNodeRegistry {
 		int nodeID = nextNodeID.getAndIncrement();
 
 		nodeMapping.put(nodeID, chainNodeInformation);
-		nodeUsages.put(nodeID, new ConcurrentLinkedDeque<>());
 		return nodeID;
 	}
 
@@ -166,11 +163,6 @@ public class ChainNodeRegistry {
 		}
 	}
 
-	public Map<ChainNodeInformation, NodeUsageSummary> getActiveStatistics() {
-		//TODO implement - calculate summaries here?
-		return null;
-	}
-
 	public Set<Integer> getActiveNodeIDs() {
 		logger.debug("Returning active ChainNode IDs");
 		return new HashSet<>(activeNodes);
@@ -190,8 +182,7 @@ public class ChainNodeRegistry {
 	}
 
 	public NodeUsage getLastNodeUsage(int chainNodeID) {
-		ConcurrentLinkedDeque<NodeUsage> usages = nodeUsages.get(chainNodeID);
-		return usages == null ? null : usages.getLast();
+		return nodeUsages.get(chainNodeID);
 	}
 
 	public void setLocalMode(boolean localMode) {
