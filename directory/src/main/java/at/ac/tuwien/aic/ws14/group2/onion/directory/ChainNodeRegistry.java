@@ -25,10 +25,8 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,7 +50,6 @@ public class ChainNodeRegistry {
 		this.nextNodeID = new AtomicInteger();
 	}
 
-	//TODO check signature?
 	public void addNodeUsage(int chainNodeID, NodeUsage usage) throws NoSuchChainNodeAvailable {
 		logger.debug("Recording NodeUsage for ChainNode '{}': {}", chainNodeID, usage);
 
@@ -61,33 +58,35 @@ public class ChainNodeRegistry {
 		if (nodeInformation == null)
 			throw new NoSuchChainNodeAvailable("Cannot record NodeUsage for unknown ID " + chainNodeID);
 
-		// Check signature
-		{
-			final String signature = usage.getSignature();
-			// Unset signature for calculating the new signature
-			usage.unsetSignature();
+		if (!isSignatureValid(usage, nodeInformation))
+			return;
 
-			final byte[] decodedSignature = Base64.decode(signature);
-			try {
-				final PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Base64.decode(nodeInformation.getPublicRsaKey())));
-				final byte[] data = usage.toString().getBytes(Charset.forName("UTF-8"));
-
-				if (!RSASignAndVerify.verifySig(data, publicKey, decodedSignature)) {
-
-					// Signature is not valid!!
-					logger.warn("Signature of heartbeat message is invalid.  Ignoring this heartbeat message.");
-					return;
-				}
-			} catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
-				logger.error("Error while checking the signature of the heart beat data. Ignoring this heartbeat message.", e);
-				return;
-			}
-		}
-
-        nodeUsages.put(chainNodeID, usage);
+		nodeUsages.put(chainNodeID, usage);
 		if (!activeNodes.contains(chainNodeID)) {
 			activate(chainNodeID);
 		}
+	}
+
+	private boolean isSignatureValid(NodeUsage usage, ChainNodeInformation nodeInformation) {
+		final String signature = usage.getSignature();
+		// Unset signature for calculating the new signature
+		usage.unsetSignature();
+
+		final byte[] decodedSignature = Base64.decode(signature);
+		try {
+            final PublicKey publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(Base64.decode(nodeInformation.getPublicRsaKey())));
+            final byte[] data = usage.toString().getBytes(Charset.forName("UTF-8"));
+
+            if (!RSASignAndVerify.verifySig(data, publicKey, decodedSignature)) {
+                // Signature is not valid!!
+                logger.warn("Signature of heartbeat message is invalid.  Ignoring this heartbeat message.");
+				return false;
+            }
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException e) {
+            logger.error("Error while checking the signature of the heart beat data. Ignoring this heartbeat message.", e);
+			return false;
+        }
+		return true;
 	}
 
 	/**
