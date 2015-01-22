@@ -187,4 +187,8 @@ public class ChainNodeRegistry {
 	public void setLocalMode(boolean localMode) {
 		this.localMode = localMode;
 	}
+
+    public ChainNodeInformation getChainNodeInformation(int chainNodeID) {
+        return nodeMapping.get(chainNodeID);
+    }
 }

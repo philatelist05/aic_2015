@@ -177,6 +177,8 @@ public class ChainCellWorker implements CellWorker {
     }
 
     private void handleDestroyCell() throws IOException {
+        logger.info("Handling DestroyCell");
+
         DestroyCell receivedCell = (DestroyCell)cell;
         Circuit assocCircuit = circuit.getAssociatedCircuit();
 
