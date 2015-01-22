@@ -11,14 +11,6 @@ struct NodeUsage {
     8: optional string signature
 }
 
-struct NodeUsageSummary {
-    1: string beginTime,
-    2: string endTime,
-    3: i64 relayMsgCount,
-    4: i64 createMsgCount,
-    5: optional string signature
-}
-
 struct ChainNodeInformation {
     1: i32 port,
     2: string address,

@@ -2,7 +2,6 @@ package at.ac.tuwien.aic.ws14.group2.onion.directory;
 
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
-import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsageSummary;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.exceptions.NoSuchChainNodeAvailable;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSASignAndVerify;
 import com.amazonaws.AmazonServiceException;
@@ -154,11 +153,6 @@ public class ChainNodeRegistry {
 			activeNodes.remove(chainNodeID);
 			inactiveNodes.add(chainNodeID);
 		}
-	}
-
-	public Map<ChainNodeInformation, NodeUsageSummary> getActiveStatistics() {
-		//TODO implement - calculate summaries here?
-		return null;
 	}
 
 	public Set<Integer> getActiveNodeIDs() {
