@@ -5,11 +5,11 @@ import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat.HeartBeatWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainCellWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.node.ChainNodeCore;
-import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSAKeyGenerator;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
+import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSAKeyGenerator;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +62,7 @@ public class ChainNodeStarter {
             listeningPort++;
             try {
                 listeningSocket = new ServerSocket(listeningPort, 100);
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
 
@@ -73,7 +73,8 @@ public class ChainNodeStarter {
 
         String directoryHostname = "localhost";
         String chainNodeHostname = "localhost";
-        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, "127.0.0.1", Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
+        ChainNodeInformation nodeInformation = new ChainNodeInformation(listeningPort, "127.0.0.1",
+                Base64.toBase64String(rsaKeyPair.getPublic().getEncoded()));
         if (!configuration.isLocalMode()) {
             logger.info("Getting public IP");
             directoryHostname = configuration.getNodeCommonHost();

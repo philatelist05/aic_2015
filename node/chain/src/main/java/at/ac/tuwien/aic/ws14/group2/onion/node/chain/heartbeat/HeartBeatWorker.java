@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
 import org.bouncycastle.util.encoders.Base64;
 
+import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -66,7 +67,8 @@ public class HeartBeatWorker implements Runnable {
                     circuitCountSnapshot,
                     chainCountSnapshot,
                     targetCountSnapshot);
-            usage.setSignature(Base64.toBase64String(RSASignAndVerify.signData(usage.toString().getBytes(), privateKey)));
+            usage.setSignature(Base64.toBase64String(RSASignAndVerify.signData(
+                    usage.toString().getBytes(Charset.forName("UTF-8")), privateKey)));
 
             logger.debug("Trying to send heartbeat");
             boolean ret;
