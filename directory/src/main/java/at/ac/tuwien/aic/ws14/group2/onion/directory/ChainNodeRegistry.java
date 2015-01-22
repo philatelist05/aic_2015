@@ -14,6 +14,7 @@ import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bouncycastle.util.encoders.Base64;
@@ -103,34 +104,11 @@ public class ChainNodeRegistry {
 		logger.info("Adding new ChainNode '{}'", chainNodeInformation);
 
 		if (!localMode) {
-			AmazonEC2Client ec2Client = new AmazonEC2Client(new ProfileCredentialsProvider());
-			ec2Client.setRegion(Region.getRegion(Regions.fromName(chainNodeInformation.getRegion())));
-			boolean instanceNotYetAvailable = true;
-			while (instanceNotYetAvailable) {
-
-				logger.debug("Trying to get instance information for id '{}'", chainNodeInformation.getInstanceId());
-				DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
-				try {
-					DescribeInstancesResult result = ec2Client.describeInstances(request);
-					for (Instance instance : result.getReservations().get(0).getInstances()) {
-						for (Tag tag : instance.getTags()) {
-							logger.debug("Instance tagged with: " + tag.toString());
-							if (tag.getKey().equals("Name")) {
-								chainNodeInformation.setInstanceName(tag.getValue());
-							}
-						}
-					}
-					instanceNotYetAvailable = false;
-				} catch (AmazonServiceException e) {
-					logger.warn("AmazonServiceException: '{}'", e.getMessage());
-					try {
-						Thread.sleep(60000);
-						continue;
-					} catch (InterruptedException e1) {
-						logger.warn("Interrupted.");
-						return -1;
-					}
-				}
+			try {
+				fillInfoFromAWS(chainNodeInformation);
+			} catch (IllegalStateException e) {
+				logger.catching(Level.WARN, e);
+				return -1;
 			}
 		}
 		int nodeID = nextNodeID.getAndIncrement();
@@ -138,6 +116,36 @@ public class ChainNodeRegistry {
 		nodeMapping.put(nodeID, chainNodeInformation);
 		nodeUsages.put(nodeID, new ConcurrentLinkedDeque<>());
 		return nodeID;
+	}
+
+	private void fillInfoFromAWS(ChainNodeInformation chainNodeInformation) throws IllegalStateException {
+		AmazonEC2Client ec2Client = new AmazonEC2Client(new ProfileCredentialsProvider());
+		ec2Client.setRegion(Region.getRegion(Regions.fromName(chainNodeInformation.getRegion())));
+		boolean instanceNotYetAvailable = true;
+		while (instanceNotYetAvailable) {
+
+			logger.debug("Trying to get instance information for id '{}'", chainNodeInformation.getInstanceId());
+			DescribeInstancesRequest request = new DescribeInstancesRequest().withInstanceIds(chainNodeInformation.getInstanceId());
+			try {
+				DescribeInstancesResult result = ec2Client.describeInstances(request);
+				for (Instance instance : result.getReservations().get(0).getInstances()) {
+					for (Tag tag : instance.getTags()) {
+						logger.debug("Instance tagged with: " + tag.toString());
+						if (tag.getKey().equals("Name")) {
+							chainNodeInformation.setInstanceName(tag.getValue());
+						}
+					}
+				}
+				instanceNotYetAvailable = false;
+			} catch (AmazonServiceException e) {
+				logger.warn("AmazonServiceException: '{}'", e.getMessage());
+				try {
+					Thread.sleep(60000);
+				} catch (InterruptedException e1) {
+					throw new IllegalStateException("interrupted while filling info from AWS", e1);
+				}
+			}
+		}
 	}
 
 	public void activate(int chainNodeID) {
