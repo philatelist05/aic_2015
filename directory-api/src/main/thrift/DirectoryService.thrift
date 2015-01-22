@@ -5,7 +5,10 @@ struct NodeUsage {
     2: string endTime,
     3: i64 relayMsgCount,
     4: i64 createMsgCount,
-    5: optional string signature
+    5: i64 circuitCount,
+    6: i64 chainCount,
+    7: i64 targetCount,
+    8: optional string signature
 }
 
 struct NodeUsageSummary {

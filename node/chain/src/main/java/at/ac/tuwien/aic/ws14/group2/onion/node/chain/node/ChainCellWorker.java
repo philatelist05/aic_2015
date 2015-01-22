@@ -1,12 +1,13 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.chain.node;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat.UsageCollector;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.*;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSASignAndVerify;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.DecryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -63,10 +64,13 @@ public class ChainCellWorker implements CellWorker {
     }
 
     private void handleCreateCell() throws IOException, DecryptException {
+        UsageCollector.incrementCreateCounter();
+
         CreateCell createCell = (CreateCell) cell;
         Circuit newCircuit = new Circuit(createCell.getCircuitID(), createCell.getEndpoint());
         try {
             connectionWorker.addCircuit(newCircuit);
+            UsageCollector.setCircuitCount(connectionWorker.getCircuitCount());
         } catch (CircuitIDExistsAlreadyException e) {
             logger.warn("Circuit ID race condition happened for node at {}", createCell.getEndpoint());
 
@@ -89,6 +93,8 @@ public class ChainCellWorker implements CellWorker {
             shutdownChain(circuit);
             return;
         }
+
+        UsageCollector.incrementChainCounter();
 
         newCircuit.setSessionKey(sharedSecret);
         connectionWorker.sendCell(new CreateResponseCell(newCircuit.getCircuitID(), dhPublicKey, RSASignAndVerify.signData(dhPublicKey, this.privateKey)));
@@ -117,9 +123,13 @@ public class ChainCellWorker implements CellWorker {
             ConnectionWorker incomingConnectionWorker = connectionWorkerFactory.getConnectionWorker(assocCircuit.getEndpoint());
             incomingConnectionWorker.sendCell(cell);
         }
+
+        UsageCollector.setCircuitCount(connectionWorker.getCircuitCount());
     }
 
     private void handleRelayCell() throws Exception {
+        UsageCollector.incrementRelayCounter();
+
         RelayCell relayCell = (RelayCell)cell;
 
         if (circuit.getAssociatedCircuit() == null) {   // unencrypted payload coming from local node
@@ -180,6 +190,9 @@ public class ChainCellWorker implements CellWorker {
             connectionWorker.removeCircuit(assocCircuit);
             connectionWorker.removeTargetWorker(assocCircuit);
         }
+
+        UsageCollector.setCircuitCount(connectionWorker.getCircuitCount());
+        UsageCollector.setTargetCount(connectionWorker.getTargetWorkerCount());
     }
 
     private void handleExtendCommand(ExtendCommand cmd) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
@@ -191,11 +204,16 @@ public class ChainCellWorker implements CellWorker {
     private void handleConnectCommand(ConnectCommand cmd) throws IOException {
         logger.info("Handling ConnectCommand: {}", cmd);
         connectionWorker.getOrCreateTargetWorker(circuit, cmd.getEndpoint());
+        UsageCollector.setTargetCount(connectionWorker.getTargetWorkerCount());
     }
 
     private void handleDataCommand(DataCommand cmd) throws IOException {
         logger.info("Handling DataCommand: {}", cmd);
-        connectionWorker.getOrCreateTargetWorker(circuit, null).sendData(cmd.getData(), cmd.getSequenceNumber());
+
+        TargetWorker tw = connectionWorker.getOrCreateTargetWorker(circuit, null);
+        UsageCollector.setTargetCount(connectionWorker.getTargetWorkerCount());
+
+        tw.sendData(cmd.getData(), cmd.getSequenceNumber());
     }
 
     private void extendChain(ConnectionWorker connectionWorker, Circuit incomingCircuit, Endpoint nextNode, EncryptedDHHalf dhHalf) throws IOException {
@@ -203,6 +221,8 @@ public class ChainCellWorker implements CellWorker {
         Circuit outgoingCircuit = connectionWorker.createAndAddCircuit(nextNode);
         outgoingCircuit.setAssociatedCircuit(incomingCircuit);
         incomingCircuit.setAssociatedCircuit(outgoingCircuit);
+
+        UsageCollector.setCircuitCount(connectionWorker.getCircuitCount());
 
         // remember DH half in case we have to retry the operation
         outgoingCircuit.setDHHalf(dhHalf);
@@ -234,5 +254,9 @@ public class ChainCellWorker implements CellWorker {
         } catch (IOException e) {
             logger.warn("Could not send DestroyCell during chain destruction.", e);
         }
+
+        UsageCollector.setCircuitCount(connectionWorker.getCircuitCount());
+        UsageCollector.setTargetCount(connectionWorker.getTargetWorkerCount());
+        UsageCollector.decrementChainCounter();
     }
 }

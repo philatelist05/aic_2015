@@ -10,10 +10,12 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.annotation.Target;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Thomas on 22.11.2014.
@@ -21,17 +23,17 @@ import java.util.concurrent.*;
 public class ConnectionWorker implements AutoCloseable {
     private final Logger logger;
 
-    private Socket socket;
-    private OutputStream outputStream;
-    private InputStream inputStream;
+    private final Socket socket;
+    private final OutputStream outputStream;
+    private final InputStream inputStream;
 
-    private ConcurrentHashMap<Short, Circuit> circuits = new ConcurrentHashMap<>();             // circuit ID to circuit
-    private ConcurrentHashMap<Short, TargetWorker> targetWorkers = new ConcurrentHashMap<>();   // circuit ID to target worker
+    private final ConcurrentHashMap<Short, Circuit> circuits = new ConcurrentHashMap<>();             // circuit ID to circuit
+    private final ConcurrentHashMap<Short, TargetWorker> targetWorkers = new ConcurrentHashMap<>();   // circuit ID to target worker
 
-    private CellWorkerFactory cellWorkerFactory;
+    private final CellWorkerFactory cellWorkerFactory;
 
-    private Thread cellReceiverThread;
-    private ExecutorService cellWorkerPool = Executors.newCachedThreadPool();
+    private final Thread cellReceiverThread;
+    private final ExecutorService cellWorkerPool = Executors.newCachedThreadPool();
 
     /**
      * @param socket Takes ownership of this socket.
@@ -103,7 +105,7 @@ public class ConnectionWorker implements AutoCloseable {
         }
 
         // If there is none, create one.
-        SocketForwarder forwarder = new SocketForwarder(incomingCircuit, SocketFactory.getDefault(), targetWorker);
+        SocketForwarder forwarder = new SocketForwarder(incomingCircuit, SocketFactory.getDefault(), null);
         targetWorker = new TargetWorker(this, forwarder);
         TargetWorker oldWorker = targetWorkers.putIfAbsent(incomingCircuit.getCircuitID(), targetWorker);
         if (oldWorker != null) {
@@ -167,6 +169,14 @@ public class ConnectionWorker implements AutoCloseable {
         }
 
         return circuit;
+    }
+
+    public int getCircuitCount() {
+        return circuits.size();
+    }
+
+    public int getTargetWorkerCount() {
+        return targetWorkers.size();
     }
 
     /**
