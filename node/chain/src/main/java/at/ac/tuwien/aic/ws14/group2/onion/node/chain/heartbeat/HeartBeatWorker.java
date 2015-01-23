@@ -70,7 +70,7 @@ public class HeartBeatWorker implements Runnable {
             usage.setSignature(Base64.toBase64String(RSASignAndVerify.signData(
                     usage.toString().getBytes(Charset.forName("UTF-8")), privateKey)));
 
-            logger.debug("Trying to send heartbeat");
+            //logger.debug("Trying to send heartbeat");
             boolean ret;
             try {
                 ret = client.heartbeat(nodeID, usage);
@@ -80,7 +80,7 @@ public class HeartBeatWorker implements Runnable {
             }
 
             if (ret) {
-                logger.debug("Heartbeat with ID {} successful!", nodeID);
+                //logger.debug("Heartbeat with ID {} successful!", nodeID);
                 lastSuccessfulHeartBeat = currentEndTime;
                 UsageCollector.currentRelayMsgCount.accumulateAndGet(relayMsgCountSnapshot, (current, update) -> current - update);
                 UsageCollector.currentCreateMsgCount.accumulateAndGet(createMsgCountSnapshot, (current, update) -> current - update);
