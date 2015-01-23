@@ -17,6 +17,8 @@ import org.apache.thrift.transport.TSSLTransportFactory;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -83,14 +85,35 @@ public class LocalNodeStarter {
 		socksServer.setUncaughtExceptionHandler((thread, throwable) -> logger.error("Uncaught exception in thread: " + thread.getName(), throwable));
 		socksServer.start();
 
-		//TODO: Do here Web-UI initialization
+		//Create and start WebServer
+		Server webServer = createWebServer(8080);
+		logger.info("Starting WebServer");
+		try {
+			webServer.start();
+		} catch (Exception e) {
+			logger.fatal("Could not start WebServer");
+			logger.catching(Level.DEBUG, e);
+			System.exit(-1);
+		}
 
-		// Block main thread until SOCKS server is interrupted
+
+		// Block main thread until SOCKS server and WebServer is interrupted
 		logger.info("Waiting for SOCKS server to be interrupted");
 		try {
 			socksServer.join();
+			webServer.join();
 		} catch (InterruptedException ignored) {
 		}
+	}
+
+	private static Server createWebServer(int port) {
+		WebAppContext context = new WebAppContext();
+		context.setContextPath("/");
+		//TODO: Relying on hardcoded paths to war file is awful
+		context.setWar("./node/local/build/libs/local-0.1.0.war");
+		Server server = new Server(port);
+		server.setHandler(context);
+		return server;
 	}
 
 	private static File loadThriftKeyFileFrom(String path) {
