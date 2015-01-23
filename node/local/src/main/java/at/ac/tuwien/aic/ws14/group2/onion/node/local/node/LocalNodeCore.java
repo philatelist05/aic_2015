@@ -116,6 +116,24 @@ public class LocalNodeCore {
         }
     }
 
+    public void destroyChain(short circuitID) {
+        ChainMetaData chainMetaData = getChainMetaData(circuitID);
+        SocksCallBack callBack = getCallBack(circuitID);
+        synchronized (chainMetaData) {
+            Endpoint endpoint = chainMetaData.getNodes().get(0).getEndPoint();
+
+            logger.info("Sending DestroyCell to node {} over circuit {}", endpoint, circuitID);
+
+            try {
+                sendCell(new DestroyCell(circuitID), endpoint);
+            } catch (IOException e) {
+                callBack.error(ErrorCode.CW_FAILURE);
+            }
+        }
+
+        removeChain(circuitID);
+    }
+
     public void connectTo(Short circuitID, Endpoint endpoint) {
         logger.info("Sending ConnectCommand to target {} over circuit {}", endpoint, circuitID);
 

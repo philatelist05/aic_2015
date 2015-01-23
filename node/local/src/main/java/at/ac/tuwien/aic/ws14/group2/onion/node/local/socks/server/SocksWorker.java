@@ -122,6 +122,8 @@ public class SocksWorker implements Runnable, AutoCloseable {
 				// Wait on SocksDataForwarder
 				socksDataForwarder.join();
 
+                shutdownChain();
+
 			} finally {
 				close();
 			}
@@ -162,6 +164,11 @@ public class SocksWorker implements Runnable, AutoCloseable {
 		chainMetaData = this.chainEstablishedAnswerQueue.take();
 		circuitId = chainMetaData.getCircuitID();
 	}
+
+    private void shutdownChain() {
+        logger.info("shutting down chain");
+        localNodeCore.destroyChain(circuitId);
+    }
 
 	@Override
 	public void close() throws IOException {

@@ -179,18 +179,22 @@ public class ChainCellWorker implements CellWorker {
     private void handleDestroyCell() throws IOException {
         logger.info("Handling DestroyCell");
 
-        DestroyCell receivedCell = (DestroyCell)cell;
         Circuit assocCircuit = circuit.getAssociatedCircuit();
+        ConnectionWorker assocConnectionWorker = null;
 
-        if (assocCircuit != null)
-            connectionWorker.sendCell(new DestroyCell(assocCircuit.getCircuitID()));
+        if (assocCircuit != null) {
+            logger.debug("Sending DestroyCell over circuit {}", assocCircuit.getCircuitID());
+
+            assocConnectionWorker = connectionWorkerFactory.getConnectionWorker(assocCircuit.getEndpoint());
+            assocConnectionWorker.sendCell(new DestroyCell(assocCircuit.getCircuitID()));
+        }
 
         connectionWorker.removeCircuit(circuit);
         connectionWorker.removeTargetWorker(circuit);
 
         if (assocCircuit != null) {
-            connectionWorker.removeCircuit(assocCircuit);
-            connectionWorker.removeTargetWorker(assocCircuit);
+            assocConnectionWorker.removeCircuit(assocCircuit);
+            assocConnectionWorker.removeTargetWorker(assocCircuit);
         }
 
         UsageCollector.setCircuitCount(connectionWorker.getCircuitCount());
