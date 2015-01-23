@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
 import org.bouncycastle.util.encoders.Base64;
 
+import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -54,8 +55,20 @@ public class HeartBeatWorker implements Runnable {
             LocalDateTime currentEndTime = LocalDateTime.now();
             long relayMsgCountSnapshot = UsageCollector.currentRelayMsgCount.get();
             long createMsgCountSnapshot = UsageCollector.currentCreateMsgCount.get();
-            NodeUsage usage = new NodeUsage(lastSuccessfulHeartBeat.format(dateTimeFormatter), currentEndTime.format(dateTimeFormatter), relayMsgCountSnapshot, createMsgCountSnapshot);
-            usage.setSignature(Base64.toBase64String(RSASignAndVerify.signData(usage.toString().getBytes(), privateKey)));
+            long circuitCountSnapshot = UsageCollector.circuitCount.get();
+            long targetCountSnapshot = UsageCollector.targetCount.get();
+            long chainCountSnapshot = UsageCollector.chainCount.get();
+
+            NodeUsage usage = new NodeUsage(
+                    lastSuccessfulHeartBeat.format(dateTimeFormatter),
+                    currentEndTime.format(dateTimeFormatter),
+                    relayMsgCountSnapshot,
+                    createMsgCountSnapshot,
+                    circuitCountSnapshot,
+                    chainCountSnapshot,
+                    targetCountSnapshot);
+            usage.setSignature(Base64.toBase64String(RSASignAndVerify.signData(
+                    usage.toString().getBytes(Charset.forName("UTF-8")), privateKey)));
 
             logger.debug("Trying to send heartbeat");
             boolean ret;
@@ -69,8 +82,8 @@ public class HeartBeatWorker implements Runnable {
             if (ret) {
                 logger.debug("Heartbeat with ID {} successful!", nodeID);
                 lastSuccessfulHeartBeat = currentEndTime;
-                UsageCollector.currentRelayMsgCount.addAndGet(UsageCollector.currentRelayMsgCount.getAndSet(0) - relayMsgCountSnapshot);
-                UsageCollector.currentCreateMsgCount.addAndGet(UsageCollector.currentCreateMsgCount.getAndSet(0) - createMsgCountSnapshot);
+                UsageCollector.currentRelayMsgCount.accumulateAndGet(relayMsgCountSnapshot, (current, update) -> current - update);
+                UsageCollector.currentCreateMsgCount.accumulateAndGet(createMsgCountSnapshot, (current, update) -> current - update);
             } else {
                 logger.warn("Heartbeat unsuccessful, need to register first");
                 try {

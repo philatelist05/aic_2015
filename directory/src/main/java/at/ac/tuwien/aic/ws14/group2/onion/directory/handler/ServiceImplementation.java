@@ -10,15 +10,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ServiceImplementation implements DirectoryService.Iface {
     static final Logger logger = LogManager.getLogger(ServiceImplementation.class.getName());
 
     private ChainNodeRegistry chainNodeRegistry;
+    private Random random = new Random();
 
     public ServiceImplementation(ChainNodeRegistry chainNodeRegistry) {
         this.chainNodeRegistry = chainNodeRegistry;
@@ -31,7 +29,8 @@ public class ServiceImplementation implements DirectoryService.Iface {
             chainNodeRegistry.addNodeUsage(nodeID, nodeUsage);
             return true;
         } catch (NoSuchChainNodeAvailable e) {
-            logger.catching(Level.WARN, e);
+            logger.warn("Received heartbeat for not registered chainnode..");
+            logger.catching(Level.DEBUG, e);
             return false;
         }
     }
@@ -43,16 +42,71 @@ public class ServiceImplementation implements DirectoryService.Iface {
 
     @Override
     public List<ChainNodeInformation> getChain(int chainLength) throws TException {
-        Set<ChainNodeInformation> activeNodes = chainNodeRegistry.getActiveNodes();
-        if (activeNodes.size() < chainLength) {
+        if (chainLength < 1) {
+            logger.error("requested chain too short");
             return null;
-        } else {
-            ArrayList<ChainNodeInformation> chainNodes = new ArrayList<>(chainLength);
-            Iterator<ChainNodeInformation> iterator = activeNodes.iterator();
-            while (chainNodes.size() < chainLength) {
-                chainNodes.add(iterator.next());
-            }
-            return chainNodes;
         }
+
+        ArrayList<NodeScore> scores = new ArrayList<>();
+
+        // calculate a score for each node representing the probability to be chosen
+        Set<Integer> ids = chainNodeRegistry.getActiveNodeIDs();
+        for (Integer id : ids) {
+            NodeScore score = new NodeScore();
+
+            score.setNodeID(id);
+
+            // NodeUsage might have been deleted in the meantime!
+            NodeUsage nodeUsage = chainNodeRegistry.getLastNodeUsage(id);
+            if (nodeUsage == null)
+                continue;
+
+            // ChainNodeInformation might have been deleted in the meantime!
+            score.setNodeInfo(chainNodeRegistry.getChainNodeInformation(id));
+            if (score.getNodeInfo() == null)
+                continue;
+
+            score.setChainNodeScore(calculateChainNodeScore(nodeUsage));
+            score.setTargetNodeScore(calculateTargetNodeScore(nodeUsage));
+
+            scores.add(score);
+        }
+
+        if (scores.size() < chainLength) {
+            logger.error("not enough active nodes ({}) for requested chain length", scores.size());
+            return null;
+        }
+
+        // select target node
+        NodeScore targetScore = Collections.max(scores, (a, b) -> Double.compare(a.getTargetNodeScore(), b.getTargetNodeScore()));
+        scores.remove(targetScore);
+
+        ArrayList<ChainNodeInformation> selectedNodes = new ArrayList<>();
+
+        // select other chain nodes
+        scores.sort((a, b) -> Double.compare(b.getChainNodeScore(), a.getChainNodeScore()));
+        for (int i = 0; i < chainLength - 1; i++) {
+            selectedNodes.add(scores.get(i).getNodeInfo());
+        }
+
+        selectedNodes.add(targetScore.getNodeInfo());
+
+        return selectedNodes;
+    }
+
+    /**
+     * Returns the score/probability for a node to become a chain node but no target node.
+     */
+    private double calculateChainNodeScore(NodeUsage nodeUsage) {
+        // TODO: more intelligent calculation
+        return random.nextDouble();
+    }
+
+    /**
+     * Returns the score/probability for a node to become a target node.
+     */
+    private double calculateTargetNodeScore(NodeUsage nodeUsage) {
+        // TODO: more intelligent calculation
+        return random.nextDouble();
     }
 }

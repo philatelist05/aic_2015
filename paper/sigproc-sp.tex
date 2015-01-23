@@ -74,7 +74,7 @@
 %
 % 1st. author
 \alignauthor
-Fabian Grünbichler
+Fabian Grï¿½nbichler
 % 2nd. author
 \alignauthor
 Klaus Krapfenbauer
@@ -595,6 +595,7 @@ We differentiate two types of cells for closing stream. When the stream is close
 
 \section{Performance evaluation: Tor and Cloud-based Onion Routing}
 
+<<<<<<< HEAD
 This evaluation considers two experiments for comparison: \cite{cite2}
 \begin{itemize}
   \item downloading single files (TorPref)
@@ -602,16 +603,107 @@ This evaluation considers two experiments for comparison: \cite{cite2}
 \end{itemize}
 
 \textbf{Individual Files Download:}
+=======
+%\begin{figure}
+%\centering
+%\epsfig{file=fly.eps}
+%\caption{A sample black and white graphic (.eps format).}
+%\end{figure}
+%
+%\begin{figure}
+%\centering
+%\epsfig{file=fly.eps, height=1in, width=1in}
+%\caption{A sample black and white graphic (.eps format)
+%that has been resized with the \texttt{epsfig} command.}
+%\end{figure}
+>>>>>>> origin
 
 For performance evaluation when downloading single files, Tor-supplied TorPref\footnote{https://metrics.torproject.org/tools.html} measurement tool is used. For experiments are used five \textit{cloud-based onion routing circuits} which were built over the US and EU datacenters, and five Tor circuits, randomly built by Tor. Three files of size 50KB, 1MB and 50MB, were downloaded repeating each download 100 times. The results are shown in the Figure 3 (left), and as you can see, the average \textit{cloud-based onion routing's} performance is better then Tor's.\cite{cite2}
 
 \textbf{Downloading Web pages:}
 
+<<<<<<< HEAD
 For this purposes 10 \textbf{entire} home pages were downloaded using Tor, \textit{cloud-based onion routing} and a direct Internet connection, and each home page was downloaded 10 times in a row. For the \textit{cloud-based onion routing} downloads, two use cases were tested, one with the \textit{cloud-based onion routing relay} under load (serving 50 connections at the time) and serving just one connection at the time. In the Figure 3 (center) you can see that the \textit{cloud-based onion routing} is several times faster then Tor, although it is slower then direct access.\cite{cite2}
+=======
+%\begin{figure}
+%\centering
+%\psfig{file=rosette.ps, height=1in, width=1in,}
+%\caption{A sample black and white graphic (.ps format) that has
+%been resized with the \texttt{psfig} command.}
+%\end{figure}
+>>>>>>> origin
 
 \textbf{Concurrent Users:}
 
+<<<<<<< HEAD
 Here is evaluated the number of concurrent users that one node can maintain. Also, for the purposes of this experiment, nodes of the different size (nodes differ in CPU, memory and I/O resources) from Amazon EC2 are evaluated. You can see that m1.large and c1.medium can maintain more then 100 concurrent users, while the t.micro has problem with handling 10 users. The results are shown in Figure 3 (right) where you can see that the two largest instances achieved speed between 50 Mbps and 120 Mbps.\cite{cite2}
+=======
+%\begin{figure*}
+%\centering
+%\epsfig{file=flies.eps}
+%\caption{A sample black and white graphic (.eps format)
+%that needs to span two columns of text.}
+%\end{figure*}
+%and don't forget to end the environment with
+%{figure*}, not {figure}!
+ 
+There is one other similar construct environment, which is
+already set up
+for you; i.e. you must \textit{not} use
+a \texttt{{\char'134}newdef} command to
+create it: the \textbf{proof} environment.  Here
+is a example of its use:
+\begin{proof}
+Suppose on the contrary there exists a real number $L$ such that
+\begin{displaymath}
+\lim_{x\rightarrow\infty} \frac{f(x)}{g(x)} = L.
+\end{displaymath}
+Then
+\begin{displaymath}
+l=\lim_{x\rightarrow c} f(x)
+= \lim_{x\rightarrow c}
+\left[ g{x} \cdot \frac{f(x)}{g(x)} \right ]
+= \lim_{x\rightarrow c} g(x) \cdot \lim_{x\rightarrow c}
+\frac{f(x)}{g(x)} = 0\cdot L = 0,
+\end{displaymath}
+which contradicts our assumption that $l\neq 0$.
+\end{proof}
+
+Complete rules about using these environments and using the
+two different creation commands are in the
+\textit{Author's Guide}; please consult it for more
+detailed instructions.  If you need to use another construct,
+not listed therein, which you want to have the same
+formatting as the Theorem
+or the Definition\cite{salas:calculus} shown above,
+use the \texttt{{\char'134}newtheorem} or the
+\texttt{{\char'134}newdef} command,
+respectively, to create it.
+
+\subsection*{A {\secit Caveat} for the \TeX\ Expert}
+Because you have just been given permission to
+use the \texttt{{\char'134}newdef} command to create a
+new form, you might think you can
+use \TeX's \texttt{{\char'134}def} to create a
+new command: \textit{Please refrain from doing this!}
+Remember that your \LaTeX\ source code is primarily intended
+to create camera-ready copy, but may be converted
+to other forms -- e.g. HTML. If you inadvertently omit
+some or all of the \texttt{{\char'134}def}s recompilation will
+be, to say the least, problematic.
+
+\section{Conclusions}
+This paragraph will end the body of this sample document.
+Remember that you might still have Acknowledgments or
+Appendices; brief samples of these
+follow.  There is still the Bibliography to deal with; and
+we will make a disclaimer about that here: with the exception
+of the reference to the \LaTeX\ book, the citations in
+this paper are to articles which have nothing to
+do with the present subject and are used as
+examples only.
+%\end{document}  % This is where a 'short' article might terminate
+>>>>>>> origin
 
 \section{Conclusion}
 TODO

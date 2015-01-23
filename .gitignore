@@ -19,3 +19,5 @@ gradle-app.setting
 *.ipr
 *.iws
 .idea_modules/
+
+.DS_Store
