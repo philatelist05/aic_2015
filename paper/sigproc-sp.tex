@@ -31,7 +31,7 @@
 
 \begin{document}
 
-\title{Anonymity Network: Cloud based onion routing}
+\title{Anonymity Network: Cloud-based Onion Routing}
 %
 % You need the command \numberofauthors to handle the 'placement
 % and alignment' of the authors beneath the title.
@@ -124,16 +124,16 @@ This paper describes anonymous connections and their implementation using Cloud-
 Anonymity networks enable users to communicate over the public Web while hiding their identity from one another.
 Nevertheless, is Internet communication private? Greatest concerns today is preventing outsiders listening in on electronic
 conversation. But \textit{traffic analysis} can also leak some sensitive information because encrypted messages can be tracked, revealing 
-who is talking to whom. [anonymuos connections and onion routing introduction]
+who is talking to whom. \cite{cite1}
 
 Todays best and most popular tool for accessing the Internet anonymously is Tor. By taking the traffic through a sequence of nodes, 
 Tor allows the traffic to appear to target from its last node, not from the user directly. Main disadvantage of Tor is that its relays are hosted 
 by a volunteers all over the world. This volunteers mainly use private, consumer-grade ISP connections which often have limited bandwidth 
-capacity, therefore Tor faces performance drops. [a proposal for COR]
+capacity, therefore Tor faces performance drops. \cite{cite2}
 
 Moving onion routing services to the "cloud" will benefit with possibility to rotate between numbers of IP addresses as well as 
 with large number of high-quality, high-bandwidth nodes. Great advantage of the "cloud" infrastructure  lays in its "elasticity".
-By spawning new virtual machine instance in the "cloud" one can easily add or remove a new node to a "cloud". [a proposal for COR]
+By spawning new virtual machine instance in the "cloud" one can easily add or remove a new node to a "cloud". \cite{cite2}
 
 Main goal of \textit{traffic analysis} is to discover participants of conversation, weather the participants are exchanging mails or 
 user is just browsing the Web. Bearing this in mind, the \textit{anonymity networks} are developed to obfuscate the observers 
@@ -141,7 +141,7 @@ by making them difficult to identify informations, that are stored into the pack
 Thus, any information that carries identifying data must be sent through the \textit{anonymus  network}. Onion routing is implementation 
 of \textit{anonymous network} that stands out with low latency and overhead. Fundamentally, onion routing relays on Tor's protocol and 
 provides two-way, real-time, connection-based communication that does not require the target to participate in the \textit{anonymity} protocol.
- All afore mentioned features together make anonymising communication on the Web easier.
+ All afore mentioned features together make anonymising communication on the Web easier. \cite{cite1} \cite{cite2}
 %The \textit{proceedings} are the records of a conference.
 %ACM seeks to give these conference by-products a uniform,
 %high-quality appearance.  To do this, ACM has some rigid
@@ -172,7 +172,7 @@ provides two-way, real-time, connection-based communication that does not requir
 \subsection{Overview}
 
 In onion routing, user connects to a target over a sequence of machines called \textit{onion routers}, rather than connect directly to a target.
-This way the \textit{originator} and the target remain anonymous to \textit{observer}. It is possible for \textit{originator} to remain anonymous
+This way the \textit{originator} and the target remain anonymous to \textit{observer}. It is possible for the \textit{originator} to remain anonymous
 to the target. In this case all informations that identifies the \textit{originator} have to be removed from the data stream before being sent over
 the \textit{onion routing network}.
 
@@ -183,29 +183,107 @@ along the route. An \textit{onion} is a layered data structure that encapsulates
 during the data transfer. Along the route each \textit{onion router} uses its public key do decript the entire \textit{onion}. This way the identity of the next router 
 along the route as well as embedded \textit{onion} is exposed. The \textit{onion router} ends the data to the next router and after the connection is established, the data can be sent in both directions. Using the keys and algorithms from the onion, the data is encrypted before it is sent from the originator. During the data transfer along the route, each \textit{onion router} 
 removes one layer of encryption, like peeling an onion, so at the target the data arrives as a plain text. Because of the layered public key cryptography an \textit{onion} looks different 
-to every \textit{onion router} along the connection. [onion routing for anonymous and private internet connection]
+to every \textit{onion router} along the connection. \cite{cite3}
 
 \subsection{Overhead}
-Because of the public key decryption, the most expensive calculation in the onion routing network is public-key cryptography, and it only takes place at the connection setup. In the data movement phase only the symmetric-key cryptography is used, which is much faster and can be as fast as ordinary link encryption. Delay in the data transfer depends on the number of the \textit{onion routers}. Overall, overhead in the \textit{onion routing} is sufficiently small. [Onion Routing for Anonymus and Private Internet Connection]
+Because of the public key decryption, the most expensive calculation in the onion routing network is public-key cryptography, and it only takes place at the connection setup. In the data movement phase only the symmetric-key cryptography is used, which is much faster and can be as fast as ordinary link encryption. Delay in the data transfer depends on the number of the \textit{onion routers}. Overall, overhead in the \textit{onion routing} is sufficiently small. \cite{cite3}
 
-\section{Formal Description}
+\subsection{Formal Description}
 
-Let say we have N number of routers, where each router have its own public (Su) and private (Sr) key. Public key is known to the \textit{originator} and private keys are known to the router. [Onion Routing for Anonymous Communications]
+Let say we have N number of routers, where each router have its own public (Su) and private (Sr) key. Public key is known to the \textit{originator} and private keys are known to the router. \cite{cite4}
 
-As outlined before, \textit{onion routing protocol} relays on the public-key cryptography, therefore functions for encryption \textit{E[key](data)} and decryption \textit{D[key](data)} are needed. Key par in the public-key cryptography is generated in the way that data encrypted with public key Su can be decrypted only with private key Sr, and vice versa, i.e. \textit{D[Su](E[ Sr](data)) = data} and \textit{D[Sr](E[Su](data)) = data}. [Onion Routing for Anonymous Communications]
+As outlined before, \textit{onion routing protocol} relays on the public-key cryptography, therefore functions for encryption \textit{E[key](data)} and decryption \textit{D[key](data)} are needed. Key par in the public-key cryptography is generated in the way that data encrypted with public key Su can be decrypted only with private key Sr, and vice versa, i.e. \textit{D[Su](E[ Sr](data)) = data} and \textit{D[Sr](E[Su](data)) = data}. \cite{cite4}
 
-When \textit{originator} wants to send informations over the \textit{onion routing network}, he sends a request to the \textit{onion proxy} and gets back the set of randomly chosen \textit{onion routers}, e.g. <4, 3, 5>. This means that information, which travels from the \textit{originator} to the \textit{target}, will be routed over this three routers respectively. The first router in the circuit\footnote{Circuit represents the logical connection between two nodes} is called \textit{entry node} and the last node is called \textit{exit node}. Before information is sent to the \textit{entry node}, \textit{onion proxy} creates an \textit{onion}, which in our case looks like: \textit{E[4u](3's IP address, E[3u]( 5' s IP address, E[5u](data)))}. The \textit{onion} is then forwarded to the \textit{entry node} (4). The \textit{entry node} decrypts the \textit{onion} with its private key, reads the IP address of the next node (3) and passes the the data to it where the same process is repeated. [Onion Routing for Anonymous Communications]
+When \textit{originator} wants to send informations over the \textit{onion routing network}, he sends a request to the \textit{onion proxy} and gets back the set of randomly chosen \textit{onion routers}, e.g. <4, 3, 5>. This means that information, which travels from the \textit{originator} to the \textit{target}, will be routed over this three routers respectively. The first router in the circuit\footnote{Circuit represents the logical connection between two nodes} is called \textit{entry node} and the last node is called \textit{exit node}. Before information is sent to the \textit{entry node}, \textit{onion proxy} creates an \textit{onion}, which in our case looks like: \textit{E[4u](3's IP address, E[3u]( 5' s IP address, E[5u](data)))}. The \textit{onion} is then forwarded to the \textit{entry node} (4). The \textit{entry node} decrypts the \textit{onion} with its private key, reads the IP address of the next node (3) and passes the the data to it where the same process is repeated. \cite{cite4}
 
-It is possible that each router has a number of TCP connection to the other routers, and multiple circuits between two same nodes might use the same TCP connection.Therefore, every router needs to remember the association between two circuits. [Onion Routing for Anonymous Communications]
+It is possible that each router has a number of TCP connection to the other routers, and multiple circuits between two same nodes might use the same TCP connection.Therefore, every router needs to remember the association between two circuits. \cite{cite4}
 
-When the circuit <4, 3, 5> is established it allows data to travel in both ways without including routing information. In the example above, when a response message from the \textit{target} arrives at the \textit{exit node} (5), (5) already know to which circuit and node (3) it should forward the information. (5) first encrypt the data it received from the \textit{target } with its private key and sends it to (3). (3) encrypts the data with its private key and sends it to (4). (4) does the same thing and passes the data to the \textit{onion proxy}. In order to read the original information, the \textit{onion proxy} decrypts the data it received from (4) as: \textit{D[4u](D[3u](D[5u]( encrypted onion)))}. [Onion Routing for Anonymous Communications]
+When the circuit <4, 3, 5> is established it allows data to travel in both ways without including routing information. In the example above, when a response message from the \textit{target} arrives at the \textit{exit node} (5), (5) already know to which circuit and node (3) it should forward the information. (5) first encrypt the data it received from the \textit{target } with its private key and sends it to (3). (3) encrypts the data with its private key and sends it to (4). (4) does the same thing and passes the data to the \textit{onion proxy}. In order to read the original information, the \textit{onion proxy} decrypts the data it received from (4) as: \textit{D[4u](D[3u](D[5u]( encrypted onion)))}. \cite{cite4}
 
 \begin{figure}
     \centering
     \includegraphics[width=0.5\textwidth]{anonion.png}
-    \caption{Onion routing [citation]}
-    \label{fig:awesome_image}
+    \caption{Onion routing \cite{cite4}}
+    \label{fig:onion_image}
 \end{figure}
+
+\subsection{Advanced considerations}
+
+Thera are many ways to attack \textit{onion routing} systems today: Denial of Service (DoS) attacks, Distributed Denial of Service (DDoS) attacks, passive tracking analysis, active tracking analysis.\cite{cite4}
+
+Making \textit{onion routing} secure is a research area that grows from day to day with plenty of different ideas. \cite{cite4}
+
+\subsubsection{Denial of Service (Dos) and Distributed DoS} 
+
+As stated in the The World Wide Web Security FAQ: \textit{Denial of Service (DoS) is an attack designed to render a computer or network incapable of providing normal services. The most common DoS attacks will target the computer's network bandwidth or connectivity. Bandwidth attacks flood the network with such a high volume of traffic, that all available network resources are consumed and legitimate user requests can not get through. Connectivity attacks flood a computer with such a high volume of connection requests, that all available operating system resources are consumed, and the computer can no longer process legitimate user requests.} \cite{cite5}
+
+\textit{A Distributed Denial of Service (DDoS) attack uses many computers to launch a coordinated DoS attack against one or more targets.} \cite{cite5}
+
+The best way to protect from the DoS attacks is to use digital currency like Hashcash\footnote{http://www.hashcash.org}. 
+
+\subsubsection{Traffic Analysis}
+
+The best way to protect from traffic analysis is to pay attention on the the size of the onion (all onions should be the same size) and make sure that information about timing on circuits is well hidden. \cite{cite4}
+
+\section{Tor}
+\subsection{Overview}
+
+Tor is a second generation and the most sophisticated implementation of the \textit{onion routing}. First important upgrade that Tor brings is \textbf{perfect forward secrecy}: Tor now uses the \textit{"session" key} design, where the \textit{originator} negotiates with every node upon a \textit{"session" key} (shared secret). \textit{"Session" key} exchange protocol which Tor uses is called Diffie-Hellman key exchange [W. Diffie and M.E. Hellman, New directions in cryptography, IEEE Transactions on Information Theory 22 (1976), 644-654.] and keys that are generated during this exchange are valid only during the communication (depend on the circuit's lifetime). Public-key encryption is used only to establish connection. \cite{cite4} \cite{cite6}
+
+\textbf{Congestion control}: Tor have an ability to detect congestion and sends less data until congestion goes down while maintaining anonymity. \cite{cite6}
+
+\textbf{Directory servers}: Most reliable nodes act as \textit{directory servers}: they are able to control and monitor the chain nodes. Only \textit{directory servers} know the public key and IP address of the chain nodes, and every activ chain node has to register itself to the \textit{directory servers}. \cite{cite6}
+
+\textbf{Leaky-pipe circuit topology}: \textit{Onion routing} allows only last node in the chain to be the \textit{exit node}. In Tor's implementation of the \textit{onion routing} this is changed allowing every node in the chain to be the \textit{exit node}. \cite{cite4}
+
+\textbf{End-to-end integrity checking}: Tor verifies data integrity until it leaves the chain so that not a single node in the chain can change the contents of data cells. \cite{cite6}
+
+\subsection{Design}
+
+Tor's every \textit{onion router} connects over a TLS to every other \textit{onion router} in the network. Each user ted to use Tor runs \textit{onion proxy} to maintain a circuits over the network, to communicate with \textit{directory server} and to maintain tho connections with user's applications.  \cite{cite6}
+
+Each \textit{onion router} have a \textit{onion key} which is used to setup the circuit and \textit{identity key} which is used to register to the \textit{directory server} and to sign TLS certificates.  \cite{cite6}
+
+Main unit of communication in Tor are fixed-size \textit{cells}.  \cite{cite6}
+
+\subsection{Cells}
+
+In Tor's design every \textit{cell} is consists of header and payload and is fixed-size of 512 bytes. In the header of the \textit{cell} is a circuit identification number (CircID), which is used to identify the individual logical connection and instruction which tells what to do with the payload. We can distinguish two types of \textit{cells},  \textit{control cells} and  \textit{relay cells}.  \cite{cite6}
+
+\textit{Control cells} consist of a commands: \textit{padding}, \textit{create} and \textit{created} (create a new circuit), \textit{destroy} (destroy a circuit) \cite{cite6}
+
+\textit{Relay cells} are special as they tell the receiving node to forward the (encrypted) payload to the target. Content of the \textit{relay cells} is encrypted using AES. The commands of the \textit{relay cells} are: \textit{relay begin} (open a stream), \textit{relay data}, \textit{relay nd} (close a stream), \textit{relay connected} (successful  relay begin), \textit{relay teardown} (close a broken stream), \textit{relay extend} (extend the circuit), \textit{relay extended} (acknowledge of the  \textit{relay extend}),  \textit{relay truncate} (terminate only part of the\textit{circuit}),  \textit{relay truncated} (acknowledge of the  \textit{relay truncate}),  \textit{relay sendme} (congestion control),  \textit{relay drop}.  \cite{cite6}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{cell.png}
+    \caption{Cell \cite{cite6}}
+    \label{fig:cell_image}
+\end{figure}
+
+\subsection{Construction of a circuit}
+
+To create a \textit{circuit}, originator's \textit{onion proxy} sends a \textit{create cell} (with new CircID), which payload contains the first half of the Diffie-Hellman handshake, to the first node. First node responds with the \textit{created cell} containing its half of Diffie-Hellman and hash of their shared secret. At this point \textit{circuit} between this two nodes is created and they can send \textit{relay cells} to each other.  \cite{cite6}
+
+To extend the circuit to the next node, originator's \textit{onion proxy} sends, along with the address of the second node and first half of the Diffie-Hellman handshake, to the first node a \textit{relay extend cell}. First node wraps the data in a \textit{create cell} (with new CircID) and passes it to the second node. Second node responds to the first node with the \textit{created cell}, along with its half of Diffie-Hellman and hash to their shared secret, which wraps the data in a \textit{relay extended cell} and passes to the originator. Now the \textit{circuit} is extended. \cite{cite6}
+
+To extend the \textit{circuit} further, above mentioned protocol is repeated.
+
+To tear down a \textit{circuit}, originator sends a \textit{destroy cell} which every node receives, closes that \textit{circuit} and passes the \textit{destroy cell} forward. Because of the incrementally nature of the \textit{circuit} building, originator can send a \textit{relay truncate cell} to one node in the circuit. That node passes the \textit{cell} forward and replays with the \textit{relay truncated cell}. This way originator is able to extend the circuit to different node. \cite{cite6}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=1\textwidth]{evaluation.png}
+    \caption{Evaluation \cite{cite2}}
+    \label{fig:eval_image}
+\end{figure*}
+
+\subsection{Opening and closing stream}
+
+When originator wants to open a new connection to the target, he sends a request to the \textit{onion proxy} to open a stream. By sending the \textit{relay begin cell} to the \textit{exit node}, \textit{onion proxy} opens the stream. When the \textit{exit node} is connected to the target it sends the \textit{rally connected cell}. Now the \textit{onion proxy} can send data over the circuit in a \textit{relay data cell}. \cite{cite6}
+
+We differentiate two types of cells for closing stream. When the stream is closed normally, one node sends a the \textit{relay end cell}, and the other side responds with its \textit{relay end cell}. For the stream that closes abnormally, the node next to the failed node sends a \textit{relay teardown cell}. \cite{cite6}
+
 %Typically, the body of a paper is organized
 %into a hierarchical structure, with numbered or unnumbered
 %headings for sections, subsections, sub-subsections, and even
@@ -228,307 +306,322 @@ When the circuit <4, 3, 5> is established it allows data to travel in both ways 
 %the \textbf{document} environment, you can indicate the
 %start of a new paragraph with a blank line in your
 %input file; that is why this sentence forms a separate paragraph.
-
-\subsection{Type Changes and {\subsecit Special} Characters}
-We have already seen several typeface changes in this sample.  You
-can indicate italicized words or phrases in your text with
-the command \texttt{{\char'134}textit}; emboldening with the
-command \texttt{{\char'134}textbf}
-and typewriter-style (for instance, for computer code) with
-\texttt{{\char'134}texttt}.  But remember, you do not
-have to indicate typestyle changes when such changes are
-part of the \textit{structural} elements of your
-article; for instance, the heading of this subsection will
-be in a sans serif\footnote{A third footnote, here.
-Let's make this a rather short one to
-see how it looks.} typeface, but that is handled by the
-document class file. Take care with the use
-of\footnote{A fourth, and last, footnote.}
-the curly braces in typeface changes; they mark
-the beginning and end of
-the text that is to be in the different typeface.
-
-You can use whatever symbols, accented characters, or
-non-English characters you need anywhere in your document;
-you can find a complete list of what is
-available in the \textit{\LaTeX\
-User's Guide}\cite{Lamport:LaTeX}.
-
-\subsection{Math Equations}
-You may want to display math equations in three distinct styles:
-inline, numbered or non-numbered display.  Each of
-the three are discussed in the next sections.
-
-\subsubsection{Inline (In-text) Equations}
-A formula that appears in the running text is called an
-inline or in-text formula.  It is produced by the
-\textbf{math} environment, which can be
-invoked with the usual \texttt{{\char'134}begin. . .{\char'134}end}
-construction or with the short form \texttt{\$. . .\$}. You
-can use any of the symbols and structures,
-from $\alpha$ to $\omega$, available in
-\LaTeX\cite{Lamport:LaTeX}; this section will simply show a
-few examples of in-text equations in context. Notice how
-this equation: \begin{math}\lim_{n\rightarrow \infty}x=0\end{math},
-set here in in-line math style, looks slightly different when
-set in display style.  (See next section).
-
-\subsubsection{Display Equations}
-A numbered display equation -- one set off by vertical space
-from the text and centered horizontally -- is produced
-by the \textbf{equation} environment. An unnumbered display
-equation is produced by the \textbf{displaymath} environment.
-
-Again, in either environment, you can use any of the symbols
-and structures available in \LaTeX; this section will just
-give a couple of examples of display equations in context.
-First, consider the equation, shown as an inline equation above:
-\begin{equation}\lim_{n\rightarrow \infty}x=0\end{equation}
-Notice how it is formatted somewhat differently in
-the \textbf{displaymath}
-environment.  Now, we'll enter an unnumbered equation:
-\begin{displaymath}\sum_{i=0}^{\infty} x + 1\end{displaymath}
-and follow it with another numbered equation:
-\begin{equation}\sum_{i=0}^{\infty}x_i=\int_{0}^{\pi+2} f\end{equation}
-just to demonstrate \LaTeX's able handling of numbering.
-
-\subsection{Citations}
-Citations to articles \cite{bowman:reasoning, clark:pct, braams:babel, herlihy:methodology},
-conference
-proceedings \cite{clark:pct} or books \cite{salas:calculus, Lamport:LaTeX} listed
-in the Bibliography section of your
-article will occur throughout the text of your article.
-You should use BibTeX to automatically produce this bibliography;
-you simply need to insert one of several citation commands with
-a key of the item cited in the proper location in
-the \texttt{.tex} file \cite{Lamport:LaTeX}.
-The key is a short reference you invent to uniquely
-identify each work; in this sample document, the key is
-the first author's surname and a
-word from the title.  This identifying key is included
-with each item in the \texttt{.bib} file for your article.
-
-The details of the construction of the \texttt{.bib} file
-are beyond the scope of this sample document, but more
-information can be found in the \textit{Author's Guide},
-and exhaustive details in the \textit{\LaTeX\ User's
-Guide}\cite{Lamport:LaTeX}.
-
-This article shows only the plainest form
-of the citation command, using \texttt{{\char'134}cite}.
-This is what is stipulated in the SIGS style specifications.
-No other citation format is endorsed.
-
-\subsection{Tables}
-Because tables cannot be split across pages, the best
-placement for them is typically the top of the page
-nearest their initial cite.  To
-ensure this proper ``floating'' placement of tables, use the
-environment \textbf{table} to enclose the table's contents and
-the table caption.  The contents of the table itself must go
-in the \textbf{tabular} environment, to
-be aligned properly in rows and columns, with the desired
-horizontal and vertical rules.  Again, detailed instructions
-on \textbf{tabular} material
-is found in the \textit{\LaTeX\ User's Guide}.
-
-Immediately following this sentence is the point at which
-Table 1 is included in the input file; compare the
-placement of the table here with the table in the printed
-dvi output of this document.
-
-\begin{table}
-\centering
-\caption{Frequency of Special Characters}
-\begin{tabular}{|c|c|l|} \hline
-Non-English or Math&Frequency&Comments\\ \hline
-\O & 1 in 1,000& For Swedish names\\ \hline
-$\pi$ & 1 in 5& Common in math\\ \hline
-\$ & 4 in 5 & Used in business\\ \hline
-$\Psi^2_1$ & 1 in 40,000& Unexplained usage\\
-\hline\end{tabular}
-\end{table}
-
-To set a wider table, which takes up the whole width of
-the page's live area, use the environment
-\textbf{table*} to enclose the table's contents and
-the table caption.  As with a single-column table, this wide
-table will ``float" to a location deemed more desirable.
-Immediately following this sentence is the point at which
-Table 2 is included in the input file; again, it is
-instructive to compare the placement of the
-table here with the table in the printed dvi
-output of this document.
-
-
-\begin{table*}
-\centering
-\caption{Some Typical Commands}
-\begin{tabular}{|c|c|l|} \hline
-Command&A Number&Comments\\ \hline
-\texttt{{\char'134}alignauthor} & 100& Author alignment\\ \hline
-\texttt{{\char'134}numberofauthors}& 200& Author enumeration\\ \hline
-\texttt{{\char'134}table}& 300 & For tables\\ \hline
-\texttt{{\char'134}table*}& 400& For wider tables\\ \hline\end{tabular}
-\end{table*}
+%\subsection{Type Changes and {\subsecit Special} Characters}
+%We have already seen several typeface changes in this sample.  You
+%can indicate italicized words or phrases in your text with
+%the command \texttt{{\char'134}textit}; emboldening with the
+%command \texttt{{\char'134}textbf}
+%and typewriter-style (for instance, for computer code) with
+%\texttt{{\char'134}texttt}.  But remember, you do not
+%have to indicate typestyle changes when such changes are
+%part of the \textit{structural} elements of your
+%article; for instance, the heading of this subsection will
+%be in a sans serif\footnote{A third footnote, here.
+%Let's make this a rather short one to
+%see how it looks.} typeface, but that is handled by the
+%document class file. Take care with the use
+%of\footnote{A fourth, and last, footnote.}
+%the curly braces in typeface changes; they mark
+%the beginning and end of
+%the text that is to be in the different typeface.
+%
+%You can use whatever symbols, accented characters, or
+%non-English characters you need anywhere in your document;
+%you can find a complete list of what is
+%available in the \textit{\LaTeX\
+%User's Guide}\cite{Lamport:LaTeX}.
+%
+%\subsection{Math Equations}
+%You may want to display math equations in three distinct styles:
+%inline, numbered or non-numbered display.  Each of
+%the three are discussed in the next sections.
+%
+%\subsubsection{Inline (In-text) Equations}
+%A formula that appears in the running text is called an
+%inline or in-text formula.  It is produced by the
+%\textbf{math} environment, which can be
+%invoked with the usual \texttt{{\char'134}begin. . .{\char'134}end}
+%construction or with the short form \texttt{\$. . .\$}. You
+%can use any of the symbols and structures,
+%from $\alpha$ to $\omega$, available in
+%\LaTeX\cite{Lamport:LaTeX}; this section will simply show a
+%few examples of in-text equations in context. Notice how
+%this equation: \begin{math}\lim_{n\rightarrow \infty}x=0\end{math},
+%set here in in-line math style, looks slightly different when
+%set in display style.  (See next section).
+%
+%\subsubsection{Display Equations}
+%A numbered display equation -- one set off by vertical space
+%from the text and centered horizontally -- is produced
+%by the \textbf{equation} environment. An unnumbered display
+%equation is produced by the \textbf{displaymath} environment.
+%
+%Again, in either environment, you can use any of the symbols
+%and structures available in \LaTeX; this section will just
+%give a couple of examples of display equations in context.
+%First, consider the equation, shown as an inline equation above:
+%\begin{equation}\lim_{n\rightarrow \infty}x=0\end{equation}
+%Notice how it is formatted somewhat differently in
+%the \textbf{displaymath}
+%environment.  Now, we'll enter an unnumbered equation:
+%\begin{displaymath}\sum_{i=0}^{\infty} x + 1\end{displaymath}
+%and follow it with another numbered equation:
+%\begin{equation}\sum_{i=0}^{\infty}x_i=\int_{0}^{\pi+2} f\end{equation}
+%just to demonstrate \LaTeX's able handling of numbering.
+%
+%\subsection{Citations}
+%Citations to articles \cite{bowman:reasoning, clark:pct, braams:babel, herlihy:methodology},
+%conference
+%proceedings \cite{clark:pct} or books \cite{salas:calculus, Lamport:LaTeX} listed
+%in the Bibliography section of your
+%article will occur throughout the text of your article.
+%You should use BibTeX to automatically produce this bibliography;
+%you simply need to insert one of several citation commands with
+%a key of the item cited in the proper location in
+%the \texttt{.tex} file \cite{Lamport:LaTeX}.
+%The key is a short reference you invent to uniquely
+%identify each work; in this sample document, the key is
+%the first author's surname and a
+%word from the title.  This identifying key is included
+%with each item in the \texttt{.bib} file for your article.
+%
+%The details of the construction of the \texttt{.bib} file
+%are beyond the scope of this sample document, but more
+%information can be found in the \textit{Author's Guide},
+%and exhaustive details in the \textit{\LaTeX\ User's
+%Guide}\cite{Lamport:LaTeX}.
+%
+%This article shows only the plainest form
+%of the citation command, using \texttt{{\char'134}cite}.
+%This is what is stipulated in the SIGS style specifications.
+%No other citation format is endorsed.
+%
+%\subsection{Tables}
+%Because tables cannot be split across pages, the best
+%placement for them is typically the top of the page
+%nearest their initial cite.  To
+%ensure this proper ``floating'' placement of tables, use the
+%environment \textbf{table} to enclose the table's contents and
+%the table caption.  The contents of the table itself must go
+%in the \textbf{tabular} environment, to
+%be aligned properly in rows and columns, with the desired
+%horizontal and vertical rules.  Again, detailed instructions
+%on \textbf{tabular} material
+%is found in the \textit{\LaTeX\ User's Guide}.
+%
+%Immediately following this sentence is the point at which
+%Table 1 is included in the input file; compare the
+%placement of the table here with the table in the printed
+%dvi output of this document.
+%
+%\begin{table}
+%\centering
+%\caption{Frequency of Special Characters}
+%\begin{tabular}{|c|c|l|} \hline
+%Non-English or Math&Frequency&Comments\\ \hline
+%\O & 1 in 1,000& For Swedish names\\ \hline
+%$\pi$ & 1 in 5& Common in math\\ \hline
+%\$ & 4 in 5 & Used in business\\ \hline
+%$\Psi^2_1$ & 1 in 40,000& Unexplained usage\\
+%\hline\end{tabular}
+%\end{table}
+%
+%To set a wider table, which takes up the whole width of
+%the page's live area, use the environment
+%\textbf{table*} to enclose the table's contents and
+%the table caption.  As with a single-column table, this wide
+%table will ``float" to a location deemed more desirable.
+%Immediately following this sentence is the point at which
+%Table 2 is included in the input file; again, it is
+%instructive to compare the placement of the
+%table here with the table in the printed dvi
+%output of this document.
+%
+%
+%\begin{table*}
+%\centering
+%\caption{Some Typical Commands}
+%\begin{tabular}{|c|c|l|} \hline
+%Command&A Number&Comments\\ \hline
+%\texttt{{\char'134}alignauthor} & 100& Author alignment\\ \hline
+%\texttt{{\char'134}numberofauthors}& 200& Author enumeration\\ \hline
+%\texttt{{\char'134}table}& 300 & For tables\\ \hline
+%\texttt{{\char'134}table*}& 400& For wider tables\\ \hline\end{tabular}
+%\end{table*}
 % end the environment with {table*}, NOTE not {table}!
-
-\subsection{Figures}
-Like tables, figures cannot be split across pages; the
-best placement for them
-is typically the top or the bottom of the page nearest
-their initial cite.  To ensure this proper ``floating'' placement
-of figures, use the environment
-\textbf{figure} to enclose the figure and its caption.
-
-This sample document contains examples of \textbf{.eps}
-and \textbf{.ps} files to be displayable with \LaTeX.  More
-details on each of these is found in the \textit{Author's Guide}.
-
-\begin{figure}
-\centering
-\epsfig{file=fly.eps}
-\caption{A sample black and white graphic (.eps format).}
-\end{figure}
-
-\begin{figure}
-\centering
-\epsfig{file=fly.eps, height=1in, width=1in}
-\caption{A sample black and white graphic (.eps format)
-that has been resized with the \texttt{epsfig} command.}
-\end{figure}
-
-
-As was the case with tables, you may want a figure
-that spans two columns.  To do this, and still to
-ensure proper ``floating'' placement of tables, use the environment
-\textbf{figure*} to enclose the figure and its caption.
-
-Note that either {\textbf{.ps}} or {\textbf{.eps}} formats are
-used; use
-the \texttt{{\char'134}epsfig} or \texttt{{\char'134}psfig}
-commands as appropriate for the different file types.
-
-\subsection{Theorem-like Constructs}
-Other common constructs that may occur in your article are
-the forms for logical constructs like theorems, axioms,
-corollaries and proofs.  There are
-two forms, one produced by the
-command \texttt{{\char'134}newtheorem} and the
-other by the command \texttt{{\char'134}newdef}; perhaps
-the clearest and easiest way to distinguish them is
-to compare the two in the output of this sample document:
-
-This uses the \textbf{theorem} environment, created by
-the\linebreak\texttt{{\char'134}newtheorem} command:
-\newtheorem{theorem}{Theorem}
-\begin{theorem}
-Let $f$ be continuous on $[a,b]$.  If $G$ is
-an antiderivative for $f$ on $[a,b]$, then
-\begin{displaymath}\int^b_af(t)dt = G(b) - G(a).\end{displaymath}
-\end{theorem}
-
-The other uses the \textbf{definition} environment, created
-by the \texttt{{\char'134}newdef} command:
-\newdef{definition}{Definition}
-\begin{definition}
-If $z$ is irrational, then by $e^z$ we mean the
-unique number which has
-logarithm $z$: \begin{displaymath}{\log e^z = z}\end{displaymath}
-\end{definition}
-
-\begin{figure}
-\centering
-\psfig{file=rosette.ps, height=1in, width=1in,}
-\caption{A sample black and white graphic (.ps format) that has
-been resized with the \texttt{psfig} command.}
-\end{figure}
-
-Two lists of constructs that use one of these
-forms is given in the
-\textit{Author's  Guidelines}.
-
-\begin{figure*}
-\centering
-\epsfig{file=flies.eps}
-\caption{A sample black and white graphic (.eps format)
-that needs to span two columns of text.}
-\end{figure*}
-and don't forget to end the environment with
-{figure*}, not {figure}!
- 
-There is one other similar construct environment, which is
-already set up
-for you; i.e. you must \textit{not} use
-a \texttt{{\char'134}newdef} command to
-create it: the \textbf{proof} environment.  Here
-is a example of its use:
-\begin{proof}
-Suppose on the contrary there exists a real number $L$ such that
-\begin{displaymath}
-\lim_{x\rightarrow\infty} \frac{f(x)}{g(x)} = L.
-\end{displaymath}
-Then
-\begin{displaymath}
-l=\lim_{x\rightarrow c} f(x)
-= \lim_{x\rightarrow c}
-\left[ g{x} \cdot \frac{f(x)}{g(x)} \right ]
-= \lim_{x\rightarrow c} g(x) \cdot \lim_{x\rightarrow c}
-\frac{f(x)}{g(x)} = 0\cdot L = 0,
-\end{displaymath}
-which contradicts our assumption that $l\neq 0$.
-\end{proof}
-
-Complete rules about using these environments and using the
-two different creation commands are in the
-\textit{Author's Guide}; please consult it for more
-detailed instructions.  If you need to use another construct,
-not listed therein, which you want to have the same
-formatting as the Theorem
-or the Definition\cite{salas:calculus} shown above,
-use the \texttt{{\char'134}newtheorem} or the
-\texttt{{\char'134}newdef} command,
-respectively, to create it.
-
-\subsection*{A {\secit Caveat} for the \TeX\ Expert}
-Because you have just been given permission to
-use the \texttt{{\char'134}newdef} command to create a
-new form, you might think you can
-use \TeX's \texttt{{\char'134}def} to create a
-new command: \textit{Please refrain from doing this!}
-Remember that your \LaTeX\ source code is primarily intended
-to create camera-ready copy, but may be converted
-to other forms -- e.g. HTML. If you inadvertently omit
-some or all of the \texttt{{\char'134}def}s recompilation will
-be, to say the least, problematic.
-
-\section{Conclusions}
-This paragraph will end the body of this sample document.
-Remember that you might still have Acknowledgments or
-Appendices; brief samples of these
-follow.  There is still the Bibliography to deal with; and
-we will make a disclaimer about that here: with the exception
-of the reference to the \LaTeX\ book, the citations in
-this paper are to articles which have nothing to
-do with the present subject and are used as
-examples only.
+%
+%\subsection{Figures}
+%Like tables, figures cannot be split across pages; the
+%best placement for them
+%is typically the top or the bottom of the page nearest
+%their initial cite.  To ensure this proper ``floating'' placement
+%of figures, use the environment
+%\textbf{figure} to enclose the figure and its caption.
+%
+%This sample document contains examples of \textbf{.eps}
+%and \textbf{.ps} files to be displayable with \LaTeX.  More
+%details on each of these is found in the \textit{Author's Guide}.
+%
+%\begin{figure}
+%\centering
+%\epsfig{file=fly.eps}
+%\caption{A sample black and white graphic (.eps format).}
+%\end{figure}
+%
+%\begin{figure}
+%\centering
+%\epsfig{file=fly.eps, height=1in, width=1in}
+%\caption{A sample black and white graphic (.eps format)
+%that has been resized with the \texttt{epsfig} command.}
+%\end{figure}
+%
+%
+%As was the case with tables, you may want a figure
+%that spans two columns.  To do this, and still to
+%ensure proper ``floating'' placement of tables, use the environment
+%\textbf{figure*} to enclose the figure and its caption.
+%
+%Note that either {\textbf{.ps}} or {\textbf{.eps}} formats are
+%used; use
+%the \texttt{{\char'134}epsfig} or \texttt{{\char'134}psfig}
+%commands as appropriate for the different file types.
+%
+%\subsection{Theorem-like Constructs}
+%Other common constructs that may occur in your article are
+%the forms for logical constructs like theorems, axioms,
+%corollaries and proofs.  There are
+%two forms, one produced by the
+%command \texttt{{\char'134}newtheorem} and the
+%other by the command \texttt{{\char'134}newdef}; perhaps
+%the clearest and easiest way to distinguish them is
+%to compare the two in the output of this sample document:
+%
+%This uses the \textbf{theorem} environment, created by
+%the\linebreak\texttt{{\char'134}newtheorem} command:
+%\newtheorem{theorem}{Theorem}
+%\begin{theorem}
+%Let $f$ be continuous on $[a,b]$.  If $G$ is
+%an antiderivative for $f$ on $[a,b]$, then
+%\begin{displaymath}\int^b_af(t)dt = G(b) - G(a).\end{displaymath}
+%\end{theorem}
+%
+%The other uses the \textbf{definition} environment, created
+%by the \texttt{{\char'134}newdef} command:
+%\newdef{definition}{Definition}
+%\begin{definition}
+%If $z$ is irrational, then by $e^z$ we mean the
+%unique number which has
+%logarithm $z$: \begin{displaymath}{\log e^z = z}\end{displaymath}
+%\end{definition}
+%
+%\begin{figure}
+%\centering
+%\psfig{file=rosette.ps, height=1in, width=1in,}
+%\caption{A sample black and white graphic (.ps format) that has
+%been resized with the \texttt{psfig} command.}
+%\end{figure}
+%
+%Two lists of constructs that use one of these
+%forms is given in the
+%\textit{Author's  Guidelines}.
+%
+%\begin{figure*}
+%\centering
+%\epsfig{file=flies.eps}
+%\caption{A sample black and white graphic (.eps format)
+%that needs to span two columns of text.}
+%\end{figure*}
+%and don't forget to end the environment with
+%{figure*}, not {figure}!
+% 
+%There is one other similar construct environment, which is
+%already set up
+%for you; i.e. you must \textit{not} use
+%a \texttt{{\char'134}newdef} command to
+%create it: the \textbf{proof} environment.  Here
+%is a example of its use:
+%\begin{proof}
+%Suppose on the contrary there exists a real number $L$ such that
+%\begin{displaymath}
+%\lim_{x\rightarrow\infty} \frac{f(x)}{g(x)} = L.
+%\end{displaymath}
+%Then
+%\begin{displaymath}
+%l=\lim_{x\rightarrow c} f(x)
+%= \lim_{x\rightarrow c}
+%\left[ g{x} \cdot \frac{f(x)}{g(x)} \right ]
+%= \lim_{x\rightarrow c} g(x) \cdot \lim_{x\rightarrow c}
+%\frac{f(x)}{g(x)} = 0\cdot L = 0,
+%\end{displaymath}
+%which contradicts our assumption that $l\neq 0$.
+%\end{proof}
+%
+%Complete rules about using these environments and using the
+%two different creation commands are in the
+%\textit{Author's Guide}; please consult it for more
+%detailed instructions.  If you need to use another construct,
+%not listed therein, which you want to have the same
+%formatting as the Theorem
+%or the Definition\cite{salas:calculus} shown above,
+%use the \texttt{{\char'134}newtheorem} or the
+%\texttt{{\char'134}newdef} command,
+%respectively, to create it.
+%
+%\subsection*{A {\secit Caveat} for the \TeX\ Expert}
+%Because you have just been given permission to
+%use the \texttt{{\char'134}newdef} command to create a
+%new form, you might think you can
+%use \TeX's \texttt{{\char'134}def} to create a
+%new command: \textit{Please refrain from doing this!}
+%Remember that your \LaTeX\ source code is primarily intended
+%to create camera-ready copy, but may be converted
+%to other forms -- e.g. HTML. If you inadvertently omit
+%some or all of the \texttt{{\char'134}def}s recompilation will
+%be, to say the least, problematic.
+%
+%\section{Conclusions}
+%This paragraph will end the body of this sample document.
+%Remember that you might still have Acknowledgments or
+%Appendices; brief samples of these
+%follow.  There is still the Bibliography to deal with; and
+%we will make a disclaimer about that here: with the exception
+%of the reference to the \LaTeX\ book, the citations in
+%this paper are to articles which have nothing to
+%do with the present subject and are used as
+%examples only.
 %\end{document}  % This is where a 'short' article might terminate
 
 %ACKNOWLEDGMENTS are optional
-\section{Acknowledgments}
-This section is optional; it is a location for you
-to acknowledge grants, funding, editing assistance and
-what have you.  In the present case, for example, the
-authors would like to thank Gerald Murray of ACM for
-his help in codifying this \textit{Author's Guide}
-and the \textbf{.cls} and \textbf{.tex} files that it describes.
+
+\section{Performance evaluation: Tor and Cloud-based Onion Routing}
+
+This evaluation considers two experiments for comparison: \cite{cite2}
+\begin{itemize}
+  \item downloading single files (TorPref)
+  \item downloading entire web sites
+\end{itemize}
+
+\textbf{Individual Files Download:}
+
+For performance evaluation when downloading single files, Tor-supplied TorPref\footnote{https://metrics.torproject.org/tools.html} measurement tool is used. For experiments are used five \textit{cloud-based onion routing circuits} which were built over the US and EU datacenters, and five Tor circuits, randomly built by Tor. Three files of size 50KB, 1MB and 50MB, were downloaded repeating each download 100 times. The results are shown in the Figure 3 (left), and as you can see, the average \textit{cloud-based onion routing's} performance is better then Tor's.\cite{cite2}
+
+\textbf{Downloading Web pages:}
+
+For this purposes 10 \textbf{entire} home pages were downloaded using Tor, \textit{cloud-based onion routing} and a direct Internet connection, and each home page was downloaded 10 times in a row. For the \textit{cloud-based onion routing} downloads, two use cases were tested, one with the \textit{cloud-based onion routing relay} under load (serving 50 connections at the time) and serving just one connection at the time. In the Figure 3 (center) you can see that the \textit{cloud-based onion routing} is several times faster then Tor, although it is slower then direct access.\cite{cite2}
+
+\textbf{Concurrent Users:}
+
+Here is evaluated the number of concurrent users that one node can maintain. Also, for the purposes of this experiment, nodes of the different size (nodes differ in CPU, memory and I/O resources) from Amazon EC2 are evaluated. You can see that m1.large and c1.medium can maintain more then 100 concurrent users, while the t.micro has problem with handling 10 users. The results are shown in Figure 3 (right) where you can see that the two largest instances achieved speed between 50 Mbps and 120 Mbps.\cite{cite2}
+
+\section{Conclusion}
+TODO
 
 %
 % The following two commands are all you need in the
 % initial runs of your .tex file to
 % produce the bibliography for the citations in your paper.
-\bibliographystyle{abbrv}
-\bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
+\bibliographystyle{plain}
+%\bibliography{sigproc}  % sigproc.bib is the name of the Bibliography in this case
 % You must have a proper ".bib" file
 %  and remember to run:
 % latex bibtex latex latex
@@ -538,51 +631,83 @@ and the \textbf{.cls} and \textbf{.tex} files that it describes.
 %
 %APPENDICES are optional
 %\balancecolumns
-\appendix
-%Appendix A
-\section{Headings in Appendices}
-The rules about hierarchical headings discussed above for
-the body of the article are different in the appendices.
-In the \textbf{appendix} environment, the command
-\textbf{section} is used to
-indicate the start of each Appendix, with alphabetic order
-designation (i.e. the first is A, the second B, etc.) and
-a title (if you include one).  So, if you need
-hierarchical structure
-\textit{within} an Appendix, start with \textbf{subsection} as the
-highest level. Here is an outline of the body of this
-document in Appendix-appropriate form:
-\subsection{Introduction}
-\subsection{The Body of the Paper}
-\subsubsection{Type Changes and  Special Characters}
-\subsubsection{Math Equations}
-\paragraph{Inline (In-text) Equations}
-\paragraph{Display Equations}
-\subsubsection{Citations}
-\subsubsection{Tables}
-\subsubsection{Figures}
-\subsubsection{Theorem-like Constructs}
-\subsubsection*{A Caveat for the \TeX\ Expert}
-\subsection{Conclusions}
-\subsection{Acknowledgments}
-\subsection{Additional Authors}
-This section is inserted by \LaTeX; you do not insert it.
-You just add the names and information in the
-\texttt{{\char'134}additionalauthors} command at the start
-of the document.
-\subsection{References}
-Generated by bibtex from your ~.bib file.  Run latex,
-then bibtex, then latex twice (to resolve references)
-to create the ~.bbl file.  Insert that ~.bbl file into
-the .tex source file and comment out
-the command \texttt{{\char'134}thebibliography}.
+%\appendix
+%%Appendix A
+%\section{Headings in Appendices}
+%The rules about hierarchical headings discussed above for
+%the body of the article are different in the appendices.
+%In the \textbf{appendix} environment, the command
+%\textbf{section} is used to
+%indicate the start of each Appendix, with alphabetic order
+%designation (i.e. the first is A, the second B, etc.) and
+%a title (if you include one).  So, if you need
+%hierarchical structure
+%\textit{within} an Appendix, start with \textbf{subsection} as the
+%highest level. Here is an outline of the body of this
+%document in Appendix-appropriate form:
+%\subsection{Introduction}
+%\subsection{The Body of the Paper}
+%\subsubsection{Type Changes and  Special Characters}
+%\subsubsection{Math Equations}
+%\paragraph{Inline (In-text) Equations}
+%\paragraph{Display Equations}
+%\subsubsection{Citations}
+%\subsubsection{Tables}
+%\subsubsection{Figures}
+%\subsubsection{Theorem-like Constructs}
+%\subsubsection*{A Caveat for the \TeX\ Expert}
+%\subsection{Conclusions}
+%\subsection{Acknowledgments}
+%\subsection{Additional Authors}
+%This section is inserted by \LaTeX; you do not insert it.
+%You just add the names and information in the
+%\texttt{{\char'134}additionalauthors} command at the start
+%of the document.
+%\subsection{References}
+%Generated by bibtex from your ~.bib file.  Run latex,
+%then bibtex, then latex twice (to resolve references)
+%to create the ~.bbl file.  Insert that ~.bbl file into
+%the .tex source file and comment out
+%the command \texttt{{\char'134}thebibliography}.
 % This next section command marks the start of
 % Appendix B, and does not continue the present hierarchy
-\section{More Help for the Hardy}
-The acm\_proc\_article-sp document class file itself is chock-full of succinct
-and helpful comments.  If you consider yourself a moderately
-experienced to expert user of \LaTeX, you may find reading
-it useful but please remember not to change it.
+%\section{More Help for the Hardy}
+%The acm\_proc\_article-sp document class file itself is chock-full of succinct
+%and helpful comments.  If you consider yourself a moderately
+%experienced to expert user of \LaTeX, you may find reading
+%it useful but please remember not to change it.
 \balancecolumns
 % That's all folks!
+
+\begin{thebibliography}{9}
+
+\bibitem{cite1}
+  Michael D. Reed, Paul F. Syverson, David M. Goldschlag, Naval Research Laboratory,
+  \emph{Anonymous Connections and Onion Routing}, 1998.
+  
+  \bibitem{cite2}
+  Nicholas Jones, Matvey Arye, Jacopo Cesaero, Michael J. Freedman,
+  \emph{Hiding Amongst the Clouds: A Proposal for Cloud-based Onion Routing}, Princeton University, 1998.
+  
+  \bibitem{cite3}
+  Michael D. Reed, Paul F. Syverson, David M. Goldschlag, 
+  \emph{Onion Routing for Anonymus and Private Internet Connection}, 1998.
+  
+    \bibitem{cite4}
+  Marc O'Morian, Vladislav Titov, Wendy Verbuggen, 
+  \emph{Onion Routing for Anonymus Communication},
+  http://ntrg.cs.tcd.ie/undergrad/4ba2.05/group10/
+  
+      \bibitem{cite5}
+  Lincoln Stein, John Stewart, 
+  \emph{The World Wide Web Security FAQ: Securing against Denial of Service attacks},
+  http://www.w3.org/Security/Faq/wwwsf6.html
+  
+    \bibitem{cite6}
+  Roger Dingledine, Nick Mathewson, Paul Syverson, 
+  \emph{Tor: The Second-Generation Onion Router}.
+  
+
+\end{thebibliography}
+
 \end{document}
