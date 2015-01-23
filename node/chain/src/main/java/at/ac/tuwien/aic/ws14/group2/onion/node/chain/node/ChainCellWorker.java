@@ -253,9 +253,11 @@ public class ChainCellWorker implements CellWorker {
             connectionWorker.removeTargetWorker(circuit);
 
             if (assocCircuit != null) {
-                connectionWorker.sendCell(new DestroyCell(assocCircuit.getCircuitID()));
-                connectionWorker.removeCircuit(assocCircuit);
-                connectionWorker.removeTargetWorker(assocCircuit);
+                ConnectionWorker assocConnectionWorker = connectionWorkerFactory.getConnectionWorker(assocCircuit.getEndpoint());
+
+                assocConnectionWorker.sendCell(new DestroyCell(assocCircuit.getCircuitID()));
+                assocConnectionWorker.removeCircuit(assocCircuit);
+                assocConnectionWorker.removeTargetWorker(assocCircuit);
             }
         } catch (IOException e) {
             logger.warn("Could not send DestroyCell during chain destruction.", e);
