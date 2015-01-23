@@ -32,8 +32,7 @@ public class SocksWorker implements Runnable, AutoCloseable {
 	private static final Logger logger = LoggerFactory.getLogger(SocksWorker.class.getName());
 	private static final int CHAIN_LENGTH = 3;
 
-	// TODO (KK) Rename this since it is not only the command channel
-	private final Socket commandSocket;
+	private final Socket socket;
 	private final Consumer<SocksWorker> closeCallback;
 	private final SynchronousQueue<ChainMetaData> chainEstablishedAnswerQueue = new SynchronousQueue<>();
 	private final LocalNodeCore localNodeCore;
@@ -41,8 +40,8 @@ public class SocksWorker implements Runnable, AutoCloseable {
 	private Short circuitId;
 	private SocksDataForwarder socksDataForwarder;
 
-	public SocksWorker(Socket commandSocket, LocalNodeCore localNodeCore, DirectoryService.Client directoryClient, Consumer<SocksWorker> closeCallback) {
-		this.commandSocket = Objects.requireNonNull(commandSocket);
+	public SocksWorker(Socket socket, LocalNodeCore localNodeCore, DirectoryService.Client directoryClient, Consumer<SocksWorker> closeCallback) {
+		this.socket = Objects.requireNonNull(socket);
 		this.closeCallback = Objects.requireNonNull(closeCallback);
 		this.localNodeCore = Objects.requireNonNull(localNodeCore);
 		this.directoryClient = Objects.requireNonNull(directoryClient);
@@ -50,13 +49,13 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 	@Override
 	public void run() {
-		if (!commandSocket.isConnected())
+		if (!socket.isConnected())
 			throw new IllegalStateException("TCP socket not connected");
 
 		try {
 			try {
-				DataInputStream inputStream = new DataInputStream(commandSocket.getInputStream());
-				OutputStream outputStream = commandSocket.getOutputStream();
+				DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+				OutputStream outputStream = socket.getOutputStream();
 
 				/*
 				 * SOCKS connection initialization
@@ -92,7 +91,7 @@ public class SocksWorker implements Runnable, AutoCloseable {
 					// Something is not supported
 
 					// Tell the originator
-					CommandReply reply = new CommandReply(e.getReplyType(), new SocksAddress(commandSocket.getLocalAddress(), commandSocket.getLocalPort()));
+					CommandReply reply = new CommandReply(e.getReplyType(), new SocksAddress(socket.getLocalAddress(), socket.getLocalPort()));
 					outputStream.write(reply.toByteArray());
 
 					// ...and quit
@@ -111,14 +110,13 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 				// Create and start the forwarder of for the client data
 				logger.info("Starting SOCKS data forwarder");
-				socksDataForwarder = new SocksDataForwarder(commandSocket, circuitId, localNodeCore);
+				socksDataForwarder = new SocksDataForwarder(socket, circuitId, localNodeCore);
 				socksDataForwarder.setName("SOCKS data forwarder thread of " + Thread.currentThread().getName());
 				socksDataForwarder.setUncaughtExceptionHandler(Thread.currentThread().getUncaughtExceptionHandler());
 				socksDataForwarder.start();
 
-				// Send succeeded command reply
-				// TODO (KK) Change the address and port which is told to the originator
-				CommandReply commandReply = new CommandReply(ReplyType.SUCCEEDED, new SocksAddress(InetAddress.getLoopbackAddress(), 1));
+				// Send succeeded command reply (currently just a fake bound address is returned)
+				CommandReply commandReply = new CommandReply(ReplyType.SUCCEEDED, new SocksAddress(InetAddress.getLoopbackAddress(), 0xdead));
 				outputStream.write(commandReply.toByteArray());
 
 				// Wait on SocksDataForwarder
@@ -167,7 +165,7 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 	@Override
 	public void close() throws IOException {
-		commandSocket.close();
+		socket.close();
 
 		if (socksDataForwarder != null)
 			socksDataForwarder.close();
