@@ -106,7 +106,7 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 				// Connect to the target
 				logger.info("Connecting to destination");
-				localNodeCore.connectTo(circuitId, convertEndpointToSocksAddress(destination));
+				localNodeCore.connectTo(circuitId, convertSocksAddressToEndpoint(destination));
 
 				// Create and start the forwarder of for the client data
 				logger.info("Starting SOCKS data forwarder");
@@ -137,7 +137,7 @@ public class SocksWorker implements Runnable, AutoCloseable {
 		}
 	}
 
-	private Endpoint convertEndpointToSocksAddress(SocksAddress socksAddress) {
+	private Endpoint convertSocksAddressToEndpoint(SocksAddress socksAddress) {
 		Objects.requireNonNull(socksAddress);
 
 		switch (socksAddress.getAddressType()) {
