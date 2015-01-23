@@ -86,9 +86,10 @@ public class LocalNodeStarter {
 		socksServer.start();
 
 		//Create and start WebServer
-		Server webServer = createWebServer(8080);
 		logger.info("Starting WebServer");
+		Server webServer = null;
 		try {
+			webServer = createWebServer(8080);
 			webServer.start();
 		} catch (Exception e) {
 			logger.fatal("Could not start WebServer");
@@ -107,10 +108,21 @@ public class LocalNodeStarter {
 	}
 
 	private static Server createWebServer(int port) {
+		ClassLoader cl = LocalNodeStarter.class.getClassLoader();
+		URL webapp = cl.getResource("webapp");
+		if (webapp == null) {
+			throw new IllegalStateException("Can't find webapp folder");
+		}
+
+		URL resourceDescriptor = cl.getResource("webapp/WEB-INF/web.xml");
+		if (resourceDescriptor == null) {
+			throw new IllegalStateException("Can't find web.xml");
+		}
+
 		WebAppContext context = new WebAppContext();
 		context.setContextPath("/");
-		//TODO: Relying on hardcoded paths to war file is awful
-		context.setWar("./node/local/build/libs/local-0.1.0.war");
+		context.setDescriptor(resourceDescriptor.getPath());
+		context.setResourceBase(webapp.getPath());
 		Server server = new Server(port);
 		server.setHandler(context);
 		return server;
