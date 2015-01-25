@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSASignAndVerify;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,11 +54,26 @@ public class HeartBeatWorker implements Runnable {
             }
 
             LocalDateTime currentEndTime = LocalDateTime.now();
-            long relayMsgCountSnapshot = UsageCollector.currentRelayMsgCount.get();
-            long createMsgCountSnapshot = UsageCollector.currentCreateMsgCount.get();
-            long circuitCountSnapshot = UsageCollector.circuitCount.get();
-            long targetCountSnapshot = UsageCollector.targetCount.get();
-            long chainCountSnapshot = UsageCollector.chainCount.get();
+
+            ConnectionWorkerFactory factory = ConnectionWorkerFactory.getInstance();
+
+            long circuitCountSnapshot = 0;
+            long chainCountSnapshot = 0;
+            long targetCountSnapshot = 0;
+
+            // Factory is null if setCellWorkerFactory has not been called beforehand as it is the case with the HeartBeatWorkerTest.
+            if (factory != null) {
+                ConnectionWorkerFactory.Statistics stats = factory.collectUsageStatistics();
+
+                if (stats != null) {
+                    circuitCountSnapshot = stats.circuitCount;
+                    chainCountSnapshot = stats.chainCount;
+                    targetCountSnapshot = stats.targetCount;
+                }
+            }
+
+            long relayMsgCountSnapshot = UsageStatistics.currentRelayMsgCount.get();
+            long createMsgCountSnapshot = UsageStatistics.currentCreateMsgCount.get();
 
             NodeUsage usage = new NodeUsage(
                     lastSuccessfulHeartBeat.format(dateTimeFormatter),
@@ -82,8 +98,8 @@ public class HeartBeatWorker implements Runnable {
             if (ret) {
                 //logger.debug("Heartbeat with ID {} successful!", nodeID);
                 lastSuccessfulHeartBeat = currentEndTime;
-                UsageCollector.currentRelayMsgCount.accumulateAndGet(relayMsgCountSnapshot, (current, update) -> current - update);
-                UsageCollector.currentCreateMsgCount.accumulateAndGet(createMsgCountSnapshot, (current, update) -> current - update);
+                UsageStatistics.currentRelayMsgCount.accumulateAndGet(relayMsgCountSnapshot, (current, update) -> current - update);
+                UsageStatistics.currentCreateMsgCount.accumulateAndGet(createMsgCountSnapshot, (current, update) -> current - update);
             } else {
                 logger.warn("Heartbeat unsuccessful, need to register first");
                 try {
