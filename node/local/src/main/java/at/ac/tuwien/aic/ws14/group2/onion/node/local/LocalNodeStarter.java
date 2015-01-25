@@ -128,8 +128,15 @@ public class LocalNodeStarter {
 
 		WebAppContext context = new WebAppContext();
 		context.setContextPath("/");
-		context.setDescriptor(resourceDescriptor.getPath());
-		context.setResourceBase(webapp.getPath());
+
+		String resourceDescriptorPath = resourceDescriptor.getPath();
+		logger.info("Registering Resource Descriptor " + resourceDescriptorPath);
+		context.setDescriptor(resourceDescriptorPath);
+
+		String webappPath = webapp.getPath();
+		logger.info("Registering webapp directory " + webappPath);
+		context.setResourceBase(webappPath);
+
 		Server server = new Server(port);
 		server.setHandler(context);
 		return server;

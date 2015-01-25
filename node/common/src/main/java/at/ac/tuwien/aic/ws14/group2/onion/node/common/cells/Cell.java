@@ -20,6 +20,7 @@ public abstract class Cell {
     static final byte CELL_TYPE_CREATE_RESPONSE = 1;
     static final byte CELL_TYPE_DESTROY = 2;
     static final byte CELL_TYPE_RELAY = 3;
+    static final byte CELL_TYPE_ERROR = 4;
 
     protected Cell() {
         // used when receive() is called
