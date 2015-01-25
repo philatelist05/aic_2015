@@ -35,6 +35,10 @@ The fastest way to start those components is by running "./gradlew installapp" t
 
 The configuration file is located in shared/src/main/resources/config.xml and pretty self-explaining:
 
+
+```
+#!xml
+
 	<?xml version="1.0" encoding="UTF-8" ?>
 	<onion:config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				  xmlns:onion="http://onion.ws14group2.aic.tuwien.ac.at"
@@ -71,5 +75,7 @@ The configuration file is located in shared/src/main/resources/config.xml and pr
 			<port>8080</port>
 		</target-service>
 	</onion:config>
+```
+
 
 For the EC2 autostart AWS credentials in one of the usual locations are needed (e.g., ~/.aws/credentials).
