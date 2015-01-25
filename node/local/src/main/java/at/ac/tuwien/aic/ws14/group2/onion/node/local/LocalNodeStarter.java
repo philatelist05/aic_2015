@@ -6,6 +6,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalCellWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.LocalNodeCore;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.server.SocksServer;
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.web.WebInformationCallback;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.Configuration;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.ConfigurationFactory;
 import org.apache.logging.log4j.Level;
@@ -27,6 +28,8 @@ import java.security.Security;
 
 public class LocalNodeStarter {
 	private static final Logger logger = LogManager.getLogger(LocalNodeStarter.class.getName());
+
+	private static LocalNodeCore nodeCore;
 
 	/**
 	 * Main method
@@ -53,7 +56,7 @@ public class LocalNodeStarter {
 
 		logger.info("Creating NodeCore");
 		Endpoint fakeEndpoint = new Endpoint(localHost, listeningPort);
-		LocalNodeCore nodeCore = new LocalNodeCore(fakeEndpoint);
+		nodeCore = new LocalNodeCore(fakeEndpoint);
 
 		logger.info("Setting up CellWorkerFactory");
 		ConnectionWorkerFactory.setCellWorkerFactory(new LocalCellWorkerFactory(nodeCore));
@@ -99,12 +102,16 @@ public class LocalNodeStarter {
 
 
 		// Block main thread until SOCKS server and WebServer is interrupted
-		logger.info("Waiting for SOCKS server to be interrupted");
+		logger.info("Waiting for SOCKS server and WebServer to be interrupted");
 		try {
 			socksServer.join();
 			webServer.join();
 		} catch (InterruptedException ignored) {
 		}
+	}
+
+	public static void setWebInformationCallback(WebInformationCallback callback) {
+		nodeCore.setWebCallback(callback);
 	}
 
 	private static Server createWebServer(int port) {
