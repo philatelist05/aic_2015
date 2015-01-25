@@ -51,6 +51,8 @@ public class ChainCellWorker implements CellWorker {
                 handleRelayCell();
             } else if (cell instanceof DestroyCell) {
                 handleDestroyCell();
+            } else if (cell instanceof ErrorCell) {
+                handleErrorCell();
             } else {
                 logger.error("Cannot handle cell {}, so shutting down chain.", cell.getClass().getName());
 
@@ -190,6 +192,21 @@ public class ChainCellWorker implements CellWorker {
         if (assocCircuit != null) {
             assocConnectionWorker.removeCircuit(assocCircuit);
             assocConnectionWorker.removeTargetWorker(assocCircuit);
+        }
+    }
+
+    private void handleErrorCell() throws IOException {
+        logger.info("Handling ErrorCell");
+
+        ErrorCell errorCell = (ErrorCell)cell;
+
+        if (errorCell.getErrorCode() == ErrorCell.ERROR_CODE_CONNECTION_WORKER_ALREADY_EXISTS) {
+            ConnectionWorker outgoingConnectionWorker = connectionWorkerFactory.getConnectionWorker(errorCell.getEndpoint());
+
+            logger.debug("Extending chain once again after receiving ErrorCell");
+            extendChain(outgoingConnectionWorker, circuit, errorCell.getEndpoint(), errorCell.getDHHalf());
+        } else {
+            logger.error("Unknown error code in ErrorCell: {}", errorCell.getErrorCode());
         }
     }
 
