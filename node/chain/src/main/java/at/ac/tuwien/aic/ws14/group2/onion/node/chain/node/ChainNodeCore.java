@@ -69,8 +69,10 @@ public class ChainNodeCore implements Runnable {
             } catch (DecodeException e) {
                 logger.warn("Caught DecodeException while decoding on incoming Socket: ", e.getMessage());
             } catch (ConnectionWorkerAlreadyExistsException e) {
+                logger.warn("Caught ConnectionWorkerAlreadyExistsException while decoding on incoming Socket: ", e.getMessage());
                 //TODO send ErrorCell
             } catch (ConnectionWorkerException e) {
+                logger.warn("Caught ConnectionWorkerException while decoding on incoming Socket: ", e.getMessage());
                 //TODO send ErrorCell
             }
         }
