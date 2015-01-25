@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Instances of this class are thread-safe.
  */
-public class ConnectionWorkerFactory {
+public class ConnectionWorkerFactory implements ConnectionWorkerObserver {
     private static final Logger logger = LogManager.getLogger(ConnectionWorkerFactory.class);
 
     private static ConnectionWorkerFactory instance;
@@ -58,6 +58,7 @@ public class ConnectionWorkerFactory {
     private ConnectionWorker createOrUseExisting(Endpoint endpoint) throws IOException {
         Socket socket = new Socket(endpoint.getAddress(), endpoint.getPort());
         ConnectionWorker worker = new ConnectionWorker(endpoint, socket, cellWorkerFactory);
+        worker.addObserver(this);
 
         ConnectionWorker existingWorker = connectionWorkers.putIfAbsent(endpoint, worker);
         if (existingWorker == null) {
@@ -79,6 +80,7 @@ public class ConnectionWorkerFactory {
         ConnectionWorker worker = null;
         try {
             worker = new ConnectionWorker(endpoint, socket, cellWorkerFactory);
+            worker.addObserver(this);
         } catch (IOException e) {
             logger.warn("Encountered IOException while creating new ConnectionWorker: {}", e.getMessage());
             throw new ConnectionWorkerException();
@@ -87,5 +89,11 @@ public class ConnectionWorkerFactory {
             throw new ConnectionWorkerAlreadyExistsException("There is already a connection worker for node " + endpoint + ".");
 
         return worker;
+    }
+
+    @Override
+    public void connectionClosed(ConnectionWorker connectionWorker) {
+        logger.debug("removing " + connectionWorker);
+        connectionWorkers.remove(connectionWorker.getEndpoint());
     }
 }

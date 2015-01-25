@@ -12,10 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.concurrent.*;
 
 /**
  * Created by Thomas on 22.11.2014.
@@ -23,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 public class ConnectionWorker implements AutoCloseable {
     private final Logger logger;
 
+    private Endpoint endpoint;
     private final Socket socket;
     private final OutputStream outputStream;
     private final InputStream inputStream;
@@ -35,11 +34,14 @@ public class ConnectionWorker implements AutoCloseable {
     private final Thread cellReceiverThread;
     private final ExecutorService cellWorkerPool = Executors.newCachedThreadPool();
 
+    private final CopyOnWriteArrayList<ConnectionWorkerObserver> observers = new CopyOnWriteArrayList<>();
+
     /**
      * @param socket Takes ownership of this socket.
      */
     public ConnectionWorker(Endpoint endpoint, Socket socket, CellWorkerFactory cellWorkerFactory) throws IOException {
-        this.logger = LogManager.getLogger(ConnectionWorker.class.getCanonicalName() + "[" + endpoint.getAddress().getHostAddress() + ":" + endpoint.getPort() + "]");
+        this.endpoint = endpoint;
+        this.logger = LogManager.getLogger(ConnectionWorker.class.getSimpleName() + " [" + endpoint + "]");
         this.socket = socket;
         this.outputStream = socket.getOutputStream();
         this.inputStream = socket.getInputStream();
@@ -47,6 +49,13 @@ public class ConnectionWorker implements AutoCloseable {
 
         cellReceiverThread = new Thread(new CellReceiver(inputStream));
         cellReceiverThread.start();
+    }
+
+    /**
+     * @return The endpoint this ConnectionWorker has been created for.
+     */
+    public Endpoint getEndpoint() {
+        return endpoint;
     }
 
     /**
@@ -179,6 +188,25 @@ public class ConnectionWorker implements AutoCloseable {
         return targetWorkers.size();
     }
 
+    public void addObserver(ConnectionWorkerObserver observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(ConnectionWorkerObserver observer) {
+        observers.remove(observer);
+    }
+
+    public void signalConnectionClosed() {
+        for (ConnectionWorkerObserver observer : observers) {
+            observer.connectionClosed(this);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return ConnectionWorker.class.getSimpleName() + " [" + endpoint + "]";
+    }
+
     /**
      * Receives cells from the other node and hands them over to the cell workers.
      */
@@ -197,10 +225,13 @@ public class ConnectionWorker implements AutoCloseable {
                 }
             } catch (SocketException e) {
                 logger.info("Connection closed (SocketException): {}", e.getMessage());
+                signalConnectionClosed();
             } catch (EOFException e) {
                 logger.info("Connection closed (EOF): {}", e.getMessage());
+                signalConnectionClosed();
             } catch (Exception e) {
                 logger.error("ConnectionWorker thread terminated.", e);
+                signalConnectionClosed();
             }
         }
     }
