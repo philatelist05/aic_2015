@@ -280,6 +280,6 @@ public class LocalNodeCore {
     }
 
     public boolean hasWebCallback() {
-        return webCallback != null;
+        return webCallback == null;
     }
 }
