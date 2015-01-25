@@ -35,7 +35,7 @@ public class CommandReply extends SocksMessage {
 			if (e instanceof EOFException)
 				throw (EOFException) e;
 			// Should never be the case since we are reading from an byte array
-			throw new RuntimeException();
+			throw new RuntimeException(e);
 		}
 	}
 
