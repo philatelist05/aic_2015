@@ -5,11 +5,11 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" version="3.0">
     <servlet>
-        <servlet-name>test</servlet-name>
+        <servlet-name>root</servlet-name>
         <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.WebUIServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>test</servlet-name>
-        <url-pattern>/test</url-pattern>
+        <servlet-name>root</servlet-name>
+        <url-pattern>/onion</url-pattern>
     </servlet-mapping>
 </web-app>
