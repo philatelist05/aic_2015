@@ -10,7 +10,7 @@ import java.io.PrintWriter;
 /**
  * Created by Stefan on 23.01.15.
  */
-public class TestServlet extends HttpServlet {
+public class WebUIServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PrintWriter out = resp.getWriter();
