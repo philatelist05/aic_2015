@@ -10,13 +10,13 @@ import java.util.List;
  */
 public interface WebInformationCallback {
 
-    void chainRequestResponse(List<ChainNodeInformation> info);
+    void chainRequestResponse(long requestId, List<ChainNodeInformation> info);
 
-    void chainBuildUpStep(int stepNumber, ChainNodeMetaData node, boolean requestOrResponse, boolean success);
+    void chainBuildUpStep(long requestId, int stepNumber, ChainNodeMetaData node, boolean requestOrResponse, boolean success);
 
-    void establishedTargetConnection(TargetInfo info);
+    void establishedTargetConnection(long requestId, TargetInfo info);
 
-    void data(byte[] data, boolean sentOrReceived);
+    void data(long requestId, byte[] data, boolean sentOrReceived);
 
-    void error(String errormsg);
+    void error(long requestId, String errormsg);
 }

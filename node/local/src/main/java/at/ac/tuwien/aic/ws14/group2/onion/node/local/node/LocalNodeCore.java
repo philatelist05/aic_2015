@@ -9,6 +9,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFacto
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.SocksCallBack;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.ErrorCode;
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.web.WebInformationCallback;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.EncryptException;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.exception.KeyExchangeException;
@@ -31,6 +32,7 @@ public class LocalNodeCore {
     private ConcurrentHashMap<Short, ChainMetaData> chains;
     private ConcurrentHashMap<Short, SocksCallBack> callbacks;
     private Endpoint lastExitNode;
+    private WebInformationCallback webCallback;
 
     public LocalNodeCore(Endpoint endpoint, ConcurrentSkipListSet<Short> circuitIDs, ConcurrentHashMap<Short, ChainMetaData> chains, ConcurrentHashMap<Short, SocksCallBack> callbacks) {
         this.fakedEndpoint = endpoint;
@@ -261,5 +263,9 @@ public class LocalNodeCore {
     protected void addCircuitToConnectionWorker(Circuit circuit) throws IOException, CircuitIDExistsAlreadyException {
         ConnectionWorker connectionWorker = ConnectionWorkerFactory.getInstance().getConnectionWorker(circuit.getEndpoint());
         connectionWorker.addCircuit(circuit);
+    }
+
+    public void setWebCallback(WebInformationCallback webCallback) {
+        this.webCallback = webCallback;
     }
 }
