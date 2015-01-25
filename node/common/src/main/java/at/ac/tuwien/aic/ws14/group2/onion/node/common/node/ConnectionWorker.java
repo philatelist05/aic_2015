@@ -14,6 +14,7 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by Thomas on 22.11.2014.
@@ -182,6 +183,10 @@ public class ConnectionWorker implements AutoCloseable {
 
     public int getCircuitCount() {
         return circuits.size();
+    }
+
+    public int getNumCircuitsWithAssociatedCircuit() {
+        return circuits.reduceValuesToInt(10, circuit -> circuit.getAssociatedCircuit() == null ? 0 : 1, 0, (a, b) -> a + b);
     }
 
     public int getTargetWorkerCount() {
