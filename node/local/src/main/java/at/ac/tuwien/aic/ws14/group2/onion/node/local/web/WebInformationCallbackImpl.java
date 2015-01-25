@@ -51,17 +51,32 @@ public class WebInformationCallbackImpl implements  WebInformationCallback {
 
     @Override
     public void dataSent(long requestId, byte[] data) {
+        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+        DataSentRequest dataSentRequest = new DataSentRequest(data);
+        queue.add(dataSentRequest);
 
+        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+        oldInfo.add(dataSentRequest);
     }
 
     @Override
     public void dataReceived(long requestId, byte[] data) {
+        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+        DataReceivedRequest dataReceivedRequest = new DataReceivedRequest(data);
+        queue.add(dataReceivedRequest);
 
+        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+        oldInfo.add(dataReceivedRequest);
     }
 
     @Override
     public void chainDestroyed(long requestId) {
+        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+        ChainDestroyedRequest chainDestroyedRequest = new ChainDestroyedRequest();
+        queue.add(chainDestroyedRequest);
 
+        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+        oldInfo.add(chainDestroyedRequest);
     }
 
     @Override
@@ -76,6 +91,11 @@ public class WebInformationCallbackImpl implements  WebInformationCallback {
 
     @Override
     public void info(long requestId, String msg) {
+        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+        InfoRequest infoRequest = new InfoRequest(msg);
+        queue.add(infoRequest);
 
+        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+        oldInfo.add(infoRequest);
     }
 }
