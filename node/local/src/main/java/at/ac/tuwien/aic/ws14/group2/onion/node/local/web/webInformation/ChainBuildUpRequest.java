@@ -1,18 +1,21 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.web.webInformation;
 
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.ChainMetaData;
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.ChainNodeMetaData;
+
 /**
  * Created by Stefan on 25.01.15.
  */
-public class ChainBuildUpRequest implements RequestInfo<ChainBuildUp> {
-    private final ChainBuildUp chainBuildUp;
+public class ChainBuildUpRequest implements RequestInfo<ChainMetaData> {
+    private final ChainMetaData chainNodeMetaData;
 
-    public ChainBuildUpRequest(ChainBuildUp chainBuildUp) {
-        this.chainBuildUp = chainBuildUp;
+    public ChainBuildUpRequest(ChainMetaData chainNodeMetaData) {
+        this.chainNodeMetaData = chainNodeMetaData;
     }
 
     @Override
-    public ChainBuildUp getInfo() {
-        return chainBuildUp;
+    public ChainMetaData getInfo() {
+        return chainNodeMetaData;
     }
 }
 
