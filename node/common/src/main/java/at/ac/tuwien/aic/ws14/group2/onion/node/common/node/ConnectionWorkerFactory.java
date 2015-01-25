@@ -102,20 +102,24 @@ public class ConnectionWorkerFactory implements ConnectionWorkerObserver {
     public Statistics collectUsageStatistics() {
         final AtomicInteger numCircuits = new AtomicInteger();
         final AtomicInteger numCircuitHalfPairs = new AtomicInteger();
+        final AtomicInteger numTargets = new AtomicInteger();
 
         connectionWorkers.forEach((endpoint, worker) -> {
             numCircuits.addAndGet(worker.getCircuitCount());
             numCircuitHalfPairs.addAndGet(worker.getNumCircuitsWithAssociatedCircuit());
+            numTargets.addAndGet(worker.getTargetWorkerCount());
         });
 
         Statistics stats = new Statistics();
         stats.circuitCount = numCircuits.intValue();
         stats.chainCount = numCircuits.intValue() - numCircuitHalfPairs.intValue() / 2;
+        stats.targetCount = numTargets.intValue();
         return stats;
     }
 
     public static class Statistics {
         public int circuitCount;
         public int chainCount;
+        public int targetCount;
     }
 }

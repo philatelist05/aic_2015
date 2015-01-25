@@ -59,6 +59,7 @@ public class HeartBeatWorker implements Runnable {
 
             long circuitCountSnapshot = 0;
             long chainCountSnapshot = 0;
+            long targetCountSnapshot = 0;
 
             // Factory is null if setCellWorkerFactory has not been called beforehand as it is the case with the HeartBeatWorkerTest.
             if (factory != null) {
@@ -67,12 +68,12 @@ public class HeartBeatWorker implements Runnable {
                 if (stats != null) {
                     circuitCountSnapshot = stats.circuitCount;
                     chainCountSnapshot = stats.chainCount;
+                    targetCountSnapshot = stats.targetCount;
                 }
             }
 
             long relayMsgCountSnapshot = UsageStatistics.currentRelayMsgCount.get();
             long createMsgCountSnapshot = UsageStatistics.currentCreateMsgCount.get();
-            long targetCountSnapshot = UsageStatistics.targetCount.get();
 
             NodeUsage usage = new NodeUsage(
                     lastSuccessfulHeartBeat.format(dateTimeFormatter),

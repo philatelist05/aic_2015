@@ -191,8 +191,6 @@ public class ChainCellWorker implements CellWorker {
             assocConnectionWorker.removeCircuit(assocCircuit);
             assocConnectionWorker.removeTargetWorker(assocCircuit);
         }
-
-        UsageStatistics.setTargetCount(connectionWorker.getTargetWorkerCount());
     }
 
     private void handleExtendCommand(ExtendCommand cmd) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IOException {
@@ -204,14 +202,12 @@ public class ChainCellWorker implements CellWorker {
     private void handleConnectCommand(ConnectCommand cmd) throws IOException {
         logger.info("Handling ConnectCommand: {}", cmd);
         connectionWorker.getOrCreateTargetWorker(circuit, cmd.getEndpoint());
-        UsageStatistics.setTargetCount(connectionWorker.getTargetWorkerCount());
     }
 
     private void handleDataCommand(DataCommand cmd) throws IOException {
         logger.info("Handling DataCommand: {}", cmd);
 
         TargetWorker tw = connectionWorker.getOrCreateTargetWorker(circuit, null);
-        UsageStatistics.setTargetCount(connectionWorker.getTargetWorkerCount());
 
         tw.sendData(cmd.getData(), cmd.getSequenceNumber());
     }
@@ -254,7 +250,5 @@ public class ChainCellWorker implements CellWorker {
         } catch (IOException e) {
             logger.warn("Could not send DestroyCell during chain destruction.", e);
         }
-
-        UsageStatistics.setTargetCount(connectionWorker.getTargetWorkerCount());
     }
 }

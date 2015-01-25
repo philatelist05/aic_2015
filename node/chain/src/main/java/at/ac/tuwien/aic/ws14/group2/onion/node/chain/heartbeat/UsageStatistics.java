@@ -5,7 +5,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UsageStatistics {
     protected static AtomicLong currentRelayMsgCount = new AtomicLong(0);
     protected static AtomicLong currentCreateMsgCount = new AtomicLong(0);
-    protected static AtomicLong targetCount = new AtomicLong(0);
 
     public static void incrementRelayCounter() {
         currentRelayMsgCount.incrementAndGet();
@@ -13,9 +12,5 @@ public class UsageStatistics {
 
     public static void incrementCreateCounter() {
         currentCreateMsgCount.incrementAndGet();
-    }
-
-    public static void setTargetCount(long count) {
-        targetCount.set(count);
     }
 }
