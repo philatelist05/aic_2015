@@ -268,4 +268,8 @@ public class LocalNodeCore {
     public void setWebCallback(WebInformationCallback webCallback) {
         this.webCallback = webCallback;
     }
+
+    public WebInformationCallback getWebCallback() {
+        return webCallback;
+    }
 }
