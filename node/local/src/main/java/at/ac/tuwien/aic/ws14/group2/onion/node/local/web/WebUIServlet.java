@@ -35,23 +35,26 @@ public class WebUIServlet extends HttpServlet {
         Configuration configuration = ConfigurationFactory.getConfiguration();
         String targetServiceHost = configuration.getTargetServiceHost();
         int targetServicePort = configuration.getTargetServicePort();
-        InetSocketAddress address = new InetSocketAddress(targetServiceHost, targetServicePort);
+        InetSocketAddress targetAddress = new InetSocketAddress(targetServiceHost, targetServicePort);
+        int localNodeServerPort = configuration.getLocalNodeServerPort();
+        String localNodeHost = "localhost";
+        InetSocketAddress serverAddress = new InetSocketAddress(localNodeHost, localNodeServerPort);
 
-        String response = doSocks5Request(address);
+        String response = doSocks5Request(targetAddress, serverAddress);
 
         HashMap<String, Object> scopes = new HashMap<>();
-        scopes.put("response", "This is a response");
+        scopes.put("response", response);
 
         Template template = new Template("webapp/templates/index.hbs");
         template.render(resp.getWriter(), scopes);
     }
 
-    private String doSocks5Request(InetSocketAddress address) throws ServletException {
+    private String doSocks5Request(InetSocketAddress target, InetSocketAddress server) throws ServletException {
         try {
-            SocksClient socksClient = new SocksClient(address);
-            return socksClient.send(address, "GET / HTTP/1.1\r\n\r\n");
+            SocksClient socksClient = new SocksClient(server);
+            return socksClient.send(target, "GET / HTTP/1.1\r\n\r\n");
         } catch (IOException | SocksException e) {
-            throw new ServletException("Unable to issue socks5 request to " + address, e);
+            throw new ServletException("Unable to issue socks5 request to " + target, e);
         }
     }
 

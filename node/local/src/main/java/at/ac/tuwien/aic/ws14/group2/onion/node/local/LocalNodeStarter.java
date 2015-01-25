@@ -92,7 +92,7 @@ public class LocalNodeStarter {
 		logger.info("Starting WebServer");
 		Server webServer = null;
 		try {
-			webServer = createWebServer(8080);
+			webServer = createWebServer(8000);
 			webServer.start();
 		} catch (Exception e) {
 			logger.fatal("Could not start WebServer");
