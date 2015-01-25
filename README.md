@@ -35,41 +35,41 @@ The fastest way to start those components is by running "./gradlew installapp" t
 
 The configuration file is located in shared/src/main/resources/config.xml and pretty self-explaining:
 
-<?xml version="1.0" encoding="UTF-8" ?>
-<onion:config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xmlns:onion="http://onion.ws14group2.aic.tuwien.ac.at"
-              xsi:schemaLocation="http://onion.ws14group2.aic.tuwien.ac.at config.xsd">
-	<node>
-		<common>
-			<local-mode>true</local-mode> <!-- true to run all components locally for testing purposes //-->
-			<host>localhost</host> <!-- hostname/ip address of the directory node //-->
-			<port>9090</port> <!-- listening port of the directory node //-->
-		</common>
-		<local>
-			<server-port>1080</server-port> <!-- listening port of the SOCKS5 interface //-->
-			<listening-host>localhost</listening-host> <!-- listening hostname/address of the SOCKS5 interface //-->
-			<cellworkers-per-connectionworker>5</cellworkers-per-connectionworker> <!-- number of simultaneous cell workers per connection worker //-->
-		</local>
-		<chain>
-			<heartbeat-interval>1000</heartbeat-interval> <!-- interval between heartbeat messages, in ms //-->
-			<cellworkers-per-connectionworker>20</cellworkers-per-connectionworker> <!-- number of simultaneous cell workers per connection worker //-->
-			<targetworker-timeout>2000</targetworker-timeout> <!-- timeout for connections to a target host, in ms //-->
-		</chain>
-		<directory>
-			<heartbeat-timeout>10000</heartbeat-timeout> <!-- timeout interval until a chain node is regarded as inactive, in ms //-->
-			<thriftworker>        <!-- minimum and maximum number of worker threads for the thrift interface //-->
-				<min>3</min>
-				<max>16</max>
-			</thriftworker>
-			<autostart>true</autostart>       <!-- whether to autostart EC2 instances for chain nodes //-->
-			<numberofnodes>3</numberofnodes>  <!-- how many nodes should be auto started //-->
-			<region>ec2.us-west-2.amazonaws.com</region> <!-- endpoint of the region in which nodes are autostarted //-->
-		</directory>
-	</node>
-	<target-service>          <!-- host/address and port where the target service is running //-->
-		<host>localhost</host>
-		<port>8080</port>
-	</target-service>
-</onion:config>
+	<?xml version="1.0" encoding="UTF-8" ?>
+	<onion:config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				  xmlns:onion="http://onion.ws14group2.aic.tuwien.ac.at"
+				  xsi:schemaLocation="http://onion.ws14group2.aic.tuwien.ac.at config.xsd">
+		<node>
+			<common>
+				<local-mode>true</local-mode> <!-- true to run all components locally for testing purposes //-->
+				<host>localhost</host> <!-- hostname/ip address of the directory node //-->
+				<port>9090</port> <!-- listening port of the directory node //-->
+			</common>
+			<local>
+				<server-port>1080</server-port> <!-- listening port of the SOCKS5 interface //-->
+				<listening-host>localhost</listening-host> <!-- listening hostname/address of the SOCKS5 interface //-->
+				<cellworkers-per-connectionworker>5</cellworkers-per-connectionworker> <!-- number of simultaneous cell workers per connection worker //-->
+			</local>
+			<chain>
+				<heartbeat-interval>1000</heartbeat-interval> <!-- interval between heartbeat messages, in ms //-->
+				<cellworkers-per-connectionworker>20</cellworkers-per-connectionworker> <!-- number of simultaneous cell workers per connection worker //-->
+				<targetworker-timeout>2000</targetworker-timeout> <!-- timeout for connections to a target host, in ms //-->
+			</chain>
+			<directory>
+				<heartbeat-timeout>10000</heartbeat-timeout> <!-- timeout interval until a chain node is regarded as inactive, in ms //-->
+				<thriftworker>        <!-- minimum and maximum number of worker threads for the thrift interface //-->
+					<min>3</min>
+					<max>16</max>
+				</thriftworker>
+				<autostart>true</autostart>       <!-- whether to autostart EC2 instances for chain nodes //-->
+				<numberofnodes>3</numberofnodes>  <!-- how many nodes should be auto started //-->
+				<region>ec2.us-west-2.amazonaws.com</region> <!-- endpoint of the region in which nodes are autostarted //-->
+			</directory>
+		</node>
+		<target-service>          <!-- host/address and port where the target service is running //-->
+			<host>localhost</host>
+			<port>8080</port>
+		</target-service>
+	</onion:config>
 
 For the EC2 autostart AWS credentials in one of the usual locations are needed (e.g., ~/.aws/credentials).
