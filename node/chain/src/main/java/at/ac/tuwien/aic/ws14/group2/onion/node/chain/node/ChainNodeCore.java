@@ -2,6 +2,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.chain.node;
 
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.Cell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.ErrorCell;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
@@ -59,7 +60,20 @@ public class ChainNodeCore implements Runnable {
                 Cell cell = Cell.receive(socket.getInputStream());
                 if (cell instanceof CreateCell) {
                     CreateCell createCell = (CreateCell) cell;
-                    ConnectionWorker connectionWorker = ConnectionWorkerFactory.getInstance().createIncomingConnectionWorker(createCell.getEndpoint(), socket);
+
+                    ConnectionWorker connectionWorker = null;
+                    try {
+                        connectionWorker = ConnectionWorkerFactory.getInstance().createIncomingConnectionWorker(createCell.getEndpoint(), socket);
+                    } catch (ConnectionWorkerAlreadyExistsException e) {
+                        logger.warn("Caught ConnectionWorkerAlreadyExistsException while decoding on incoming Socket: ", e.getMessage());
+
+                        ErrorCell errorCell = new ErrorCell(createCell.getCircuitID(), createCell.getEndpoint(), createCell.getDHHalf(), ErrorCell.ERROR_CODE_CONNECTION_WORKER_ALREADY_EXISTS);
+                        ConnectionWorkerFactory.getInstance().getConnectionWorker(createCell.getEndpoint()).sendCell(errorCell);
+                    } catch (ConnectionWorkerException e) {
+                        logger.warn("Caught ConnectionWorkerException while decoding on incoming Socket: ", e.getMessage());
+                        //TODO send ErrorCell?
+                    }
+
                     connectionWorker.handleCell(createCell);
                 } else {
                     logger.warn("Dropping non-Create cell on listening socket: {}", cell.toString());
@@ -68,12 +82,6 @@ public class ChainNodeCore implements Runnable {
                 logger.warn("Caught IOException while reading from incoming Socket: ", e.getMessage());
             } catch (DecodeException e) {
                 logger.warn("Caught DecodeException while decoding on incoming Socket: ", e.getMessage());
-            } catch (ConnectionWorkerAlreadyExistsException e) {
-                logger.warn("Caught ConnectionWorkerAlreadyExistsException while decoding on incoming Socket: ", e.getMessage());
-                //TODO send ErrorCell
-            } catch (ConnectionWorkerException e) {
-                logger.warn("Caught ConnectionWorkerException while decoding on incoming Socket: ", e.getMessage());
-                //TODO send ErrorCell
             }
         }
     }
