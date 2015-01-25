@@ -147,6 +147,12 @@ public class LocalNodeCore {
     public void destroyChain(short circuitID) {
         ChainMetaData chainMetaData = getChainMetaData(circuitID);
         SocksCallBack callBack = getCallBack(circuitID);
+
+        if (chainMetaData == null) {
+            logger.error("chainMetaData is null while destroying the chain");
+            return;
+        }
+
         synchronized (chainMetaData) {
             Endpoint endpoint = chainMetaData.getNodes().get(0).getEndPoint();
 
@@ -272,7 +278,7 @@ public class LocalNodeCore {
     }
 
     public WebInformationCallback getWebCallback() {
-        return webCallback;
+        return this.webCallback;
     }
 
     public void setWebCallback(WebInformationCallback webCallback) {
@@ -280,6 +286,6 @@ public class LocalNodeCore {
     }
 
     public boolean hasWebCallback() {
-        return webCallback == null;
+        return this.webCallback != null;
     }
 }
