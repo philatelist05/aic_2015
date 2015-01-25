@@ -1,22 +1,28 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.web;
 
-import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
-import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.ChainNodeMetaData;
-
-import java.util.List;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
+import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.ChainMetaData;
 
 /**
  * Created by Stefan on 25.01.15.
  */
 public interface WebInformationCallback {
 
-    void chainRequestResponse(long requestId, List<ChainNodeInformation> info);
+    void chainBuildUp(long requestId, ChainMetaData chainMetaData);
 
-    void chainBuildUpStep(long requestId, int stepNumber, ChainNodeMetaData node, boolean requestOrResponse, boolean success);
+    void chainEstablished(long requestId, ChainMetaData chainMetaData);
 
-    void establishedTargetConnection(long requestId, TargetInfo info);
+    void establishedTargetConnection(long requestId, Endpoint endpoint);
 
-    void data(long requestId, byte[] data, boolean sentOrReceived);
+    void dataSent(long requestId, byte[] data);
 
-    void error(long requestId, String errormsg);
+    void dataReceived(long requestId, byte[] data);
+
+    void chainDestroyed(long requestId);
+
+    void error(long requestId, String errorMsg);
+
+    void info(long requestId, String msg);
+
+
 }

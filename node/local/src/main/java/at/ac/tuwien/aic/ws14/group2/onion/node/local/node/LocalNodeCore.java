@@ -92,6 +92,9 @@ public class LocalNodeCore {
         Circuit circuit = new Circuit(getAndReserveFreeCircuitID(), firstNode.getEndPoint());
         chainMetaData.setCircuitID(circuit.getCircuitID());
 
+        if (this.hasWebCallback())
+            this.getWebCallback().chainBuildUp(circuit.getCircuitID(), chainMetaData);
+
         callbacks.putIfAbsent(circuit.getCircuitID(), callBack);
         chains.putIfAbsent(circuit.getCircuitID(), chainMetaData);
 
@@ -180,6 +183,9 @@ public class LocalNodeCore {
             callBack.error(ErrorCode.CW_FAILURE);
             return;
         }
+
+        if (this.hasWebCallback())
+            this.getWebCallback().establishedTargetConnection(circuitID, endpoint);
     }
 
     public void sendData(Short circuitID, byte[] data) {
@@ -210,10 +216,10 @@ public class LocalNodeCore {
     }
 
     public short getAndReserveFreeCircuitID() {
-        Short circuitId = (short) random.nextInt(Short.MAX_VALUE);
-        while (!circuitIDs.add(circuitId)) {
+        Short circuitId;
+        do {
             circuitId = (short) random.nextInt(Short.MAX_VALUE);
-        }
+        } while (!circuitIDs.add(circuitId));
         return circuitId;
     }
 
@@ -265,11 +271,15 @@ public class LocalNodeCore {
         connectionWorker.addCircuit(circuit);
     }
 
+    public WebInformationCallback getWebCallback() {
+        return webCallback;
+    }
+
     public void setWebCallback(WebInformationCallback webCallback) {
         this.webCallback = webCallback;
     }
 
-    public WebInformationCallback getWebCallback() {
-        return webCallback;
+    public boolean hasWebCallback() {
+        return webCallback != null;
     }
 }

@@ -153,18 +153,16 @@ public class SocksWorker implements Runnable, AutoCloseable {
 	}
 
 	private void createChain() throws TException, InterruptedException {
-        ChainMetaData chainMetaData = null;
+		ChainMetaData chainMetaData;
 
-        boolean getNewChain = true;
 		synchronized (this.directoryClient) {
-			while (getNewChain) {
+			do {
 				// Get chain from the directory
 				List<ChainNodeInformation> chainMetaDataList = directoryClient.getChain(CHAIN_LENGTH);
 				chainMetaData = ChainMetaData.fromChainNodeInformationList(chainMetaDataList);
 
 				// Check if we can create a chain
-				getNewChain = !localNodeCore.checkExitNode(chainMetaData);
-			}
+			} while (!localNodeCore.checkExitNode(chainMetaData));
 		}
 
         // Create the chain
@@ -194,11 +192,15 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 		@Override
 		public void chainEstablished(ChainMetaData chainMetaData) {
+			if (SocksWorker.this.localNodeCore.hasWebCallback())
+				SocksWorker.this.localNodeCore.getWebCallback().chainEstablished(circuitId, chainMetaData);
 			SocksWorker.this.chainEstablishedAnswerQueue.offer(chainMetaData);
 		}
 
 		@Override
 		public void chainDestroyed() {
+			if (SocksWorker.this.localNodeCore.hasWebCallback())
+				SocksWorker.this.localNodeCore.getWebCallback().chainDestroyed(circuitId);
 			try {
 				SocksWorker.this.close();
 			} catch (IOException e) {
@@ -219,6 +221,9 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 		@Override
 		public void error(ErrorCode errorCode) {
+			if (SocksWorker.this.localNodeCore.hasWebCallback())
+				SocksWorker.this.localNodeCore.getWebCallback().error(circuitId,
+						String.format("Got error with error code %s", errorCode.name()));
 			try {
 				SocksWorker.this.close();
 			} catch (IOException e) {
