@@ -153,12 +153,20 @@ public class SocksWorker implements Runnable, AutoCloseable {
 	}
 
 	private void createChain() throws TException, InterruptedException {
-		// Get chain from the directory
-		List<ChainNodeInformation> chainMetaDataList = directoryClient.getChain(CHAIN_LENGTH);
-		ChainMetaData chainMetaData = ChainMetaData.fromChainNodeInformationList(chainMetaDataList);
+        ChainMetaData chainMetaData = null;
 
-		// Create the chain
-		localNodeCore.createChain(chainMetaData, new SocksCallbackImpl());
+        boolean getNewChain = true;
+        while (getNewChain) {
+            // Get chain from the directory
+            List<ChainNodeInformation> chainMetaDataList = directoryClient.getChain(CHAIN_LENGTH);
+            chainMetaData = ChainMetaData.fromChainNodeInformationList(chainMetaDataList);
+
+            // Check if we can create a chain
+            getNewChain = !localNodeCore.checkExitNode(chainMetaData);
+        }
+
+        // Create the chain
+        localNodeCore.createChain(chainMetaData, new SocksCallbackImpl());
 
 		// Wait for completion of the chain creation
 		chainMetaData = this.chainEstablishedAnswerQueue.take();

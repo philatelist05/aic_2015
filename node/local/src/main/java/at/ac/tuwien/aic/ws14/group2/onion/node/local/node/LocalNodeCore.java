@@ -30,6 +30,7 @@ public class LocalNodeCore {
     private ConcurrentSkipListSet<Short> circuitIDs;
     private ConcurrentHashMap<Short, ChainMetaData> chains;
     private ConcurrentHashMap<Short, SocksCallBack> callbacks;
+    private Endpoint lastExitNode;
 
     public LocalNodeCore(Endpoint endpoint, ConcurrentSkipListSet<Short> circuitIDs, ConcurrentHashMap<Short, ChainMetaData> chains, ConcurrentHashMap<Short, SocksCallBack> callbacks) {
         this.fakedEndpoint = endpoint;
@@ -53,6 +54,28 @@ public class LocalNodeCore {
 
     public SocksCallBack getCallBack(Short circuitID) {
         return callbacks.get(circuitID);
+    }
+
+    /**
+     * If this method is called a twice and the chain for the second call has the same exit node as the first one, then returns false.
+     * Otherwise it returns true.
+     */
+    public boolean checkExitNode(ChainMetaData chainMetaData) {
+        logger.debug("check chain's exit node");
+
+        Endpoint exitNode = chainMetaData.getNodes().get(chainMetaData.getNodes().size() - 1).getEndPoint();
+
+        logger.debug("lastExitNode: " + lastExitNode);
+        logger.debug("exitNode: " + exitNode);
+
+        if (exitNode.equals(lastExitNode)) {
+            logger.debug("same exit node received twice");
+            return false;
+        }
+
+        lastExitNode = exitNode;
+
+        return true;
     }
 
     public void createChain(ChainMetaData chainMetaData, SocksCallBack callBack) {
