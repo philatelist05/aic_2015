@@ -252,9 +252,7 @@ Tor is a second generation and the most sophisticated implementation of the
 \textbf{perfect forward secrecy}: Tor now uses the \textit{``session'' key}
 design, where the \textit{originator} negotiates with each node to derive a
 shared secret --- the \textit{session key}. The \textit{session key} exchange
-protocol which Tor uses is called Diffie-Hellman\footnote{W. Diffie and M.E. 
-Hellman, New directions in cryptography, IEEE Transactions on Information Theory
-22 (1976), 644-654.} key exchange. The generated keys are only used for one
+protocol which Tor uses is called Diffie-Hellman\cite{cite8} key exchange. The generated keys are only used for one
 session, i.e. for the communication over one specific route. Public-key 
 encryption is used only to establish the connection and secure the key exchange. \cite{cite4} \cite{cite6}
 
@@ -334,6 +332,13 @@ can generate an identical shared secret using both halves of the Diffie-Hellman
 handshake. At this point the \textit{circuit} between these two nodes is created
 and they can send \textit{relay cells} to each other.  \cite{cite6}
 
+\begin{figure*}
+    \centering
+    \includegraphics[width=1\textwidth]{evaluation.png}
+    \caption{Evaluation \cite{cite2}}
+    \label{fig:eval_image}
+\end{figure*}
+
 To extend the circuit to the next node, the originator's \textit{onion proxy} 
 sends a \textit{relay extend cell} to the first node. The \textit{relay extend
 cell's} encrypted payload contains the address of the second node and the first
@@ -348,13 +353,6 @@ shared secret. The first node encrypts and wraps this data in a
 To extend the \textit{circuit} further, the above mentioned protocol is 
 repeated by wrapping further \textit{relay} layers around the \textit{relay
 extend cell}.
-
-\begin{figure*}
-    \centering
-    \includegraphics[width=1\textwidth]{evaluation.png}
-    \caption{Evaluation \cite{cite2}}
-    \label{fig:eval_image}
-\end{figure*}
 
 To completely tear down a \textit{circuit}, the originator sends a 
 \textit{destroy cell} over the \textit{circuit}. Every node which receives such
@@ -480,6 +478,10 @@ yet still a big research area. \cite{cite7}
   \bibitem{cite7}
 Paul F. Syverson,  Naval Research Laboratory,
   \emph{A Peel of Onion}.
+  
+  \bibitem{cite8}
+  W. Diffie, M.E. Hellman,
+  \emph{New directions in cryptography, IEEE Transactions on Information Theory}, 644-654, 1976.
 
 \end{thebibliography}
 
