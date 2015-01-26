@@ -18,7 +18,7 @@ import java.util.Arrays;
 public class ChainCellWorker implements CellWorker {
     static final Logger logger = LogManager.getLogger(ChainCellWorker.class.getName());
 
-    private final Circuit circuit;
+    private Circuit circuit;
     private final Cell cell;
     private final ConnectionWorker connectionWorker;
     private final PrivateKey privateKey;
@@ -69,9 +69,9 @@ public class ChainCellWorker implements CellWorker {
         UsageStatistics.incrementCreateCounter();
 
         CreateCell createCell = (CreateCell) cell;
-        Circuit newCircuit = new Circuit(createCell.getCircuitID(), createCell.getEndpoint());
+        circuit = new Circuit(createCell.getCircuitID(), createCell.getEndpoint());
         try {
-            connectionWorker.addCircuit(newCircuit);
+            connectionWorker.addCircuit(circuit);
         } catch (CircuitIDExistsAlreadyException e) {
             logger.warn("Circuit ID race condition happened for node at {}", createCell.getEndpoint());
 
@@ -95,8 +95,8 @@ public class ChainCellWorker implements CellWorker {
             return;
         }
 
-        newCircuit.setSessionKey(sharedSecret);
-        connectionWorker.sendCell(new CreateResponseCell(newCircuit.getCircuitID(), dhPublicKey, RSASignAndVerify.signData(dhPublicKey, this.privateKey)));
+        circuit.setSessionKey(sharedSecret);
+        connectionWorker.sendCell(new CreateResponseCell(circuit.getCircuitID(), dhPublicKey, RSASignAndVerify.signData(dhPublicKey, this.privateKey)));
     }
 
     private void handleCreateResponseCell() throws IOException {
@@ -239,7 +239,6 @@ public class ChainCellWorker implements CellWorker {
         outgoingCircuit.setDHHalf(dhHalf);
 
         CreateCell createCell = new CreateCell(outgoingCircuit.getCircuitID(), this.endpoint, dhHalf);
-
         connectionWorker.sendCell(createCell);
     }
 

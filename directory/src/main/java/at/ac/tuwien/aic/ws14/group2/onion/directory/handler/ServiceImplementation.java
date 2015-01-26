@@ -22,6 +22,9 @@ public class ServiceImplementation implements DirectoryService.Iface {
         this.chainNodeRegistry = chainNodeRegistry;
     }
 
+    // determines how the chain should be selected (used only for debugging)
+    int chainSelection;
+    boolean debugging = false;
 
     @Override
     public boolean heartbeat(int nodeID, NodeUsage nodeUsage) throws TException {
@@ -75,6 +78,23 @@ public class ServiceImplementation implements DirectoryService.Iface {
         if (scores.size() < chainLength) {
             logger.error("not enough active nodes ({}) for requested chain length", scores.size());
             return null;
+        }
+
+        if (debugging) {
+            if (chainSelection == 0) {
+                scores.sort((a, b) -> Integer.compare(a.getNodeID(), b.getNodeID()));
+                chainSelection = 1;
+            } else {
+                scores.sort((a, b) -> Integer.compare(b.getNodeID(), a.getNodeID()));
+                chainSelection = 0;
+            }
+
+            ArrayList<ChainNodeInformation> selectedNodes = new ArrayList<>();
+            for (int i = 0; i < chainLength; i++) {
+                selectedNodes.add(scores.get(i).getNodeInfo());
+            }
+
+            return selectedNodes;
         }
 
         // select target node
