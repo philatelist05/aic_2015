@@ -21,13 +21,6 @@
             <h2 class="pull-left">
                 Onion Routing Cockpit
             </h2>
-            <div class="pull-right">
-                <div class="new-chain-btn">
-                    <button id="new-chain" class="btn btn-primary">
-                        New Chain
-                    </button>
-                </div>
-            </div>
             <div class="clearfix"></div>
         </div>
 
@@ -61,19 +54,15 @@
     <script src="js/bootstrap.min.js"></script>
     <script type="application/javascript">
         $(document).ready(function () {
-            $("#new-chain").click(function() {
+            setInterval(function() {
                 $.ajax(
                         {
-                            url:"/requestChain",
+                            url:"/getChainBoxes",
                             success:function(result){
-                                $("#output").html(result);
+                                $("#chain-content").html(result);
                             }
                         }
                 );
-
-            });
-            setInterval(function() {
-                //TODO: do here chain info stuff
             }, 1000);
         });
     </script>

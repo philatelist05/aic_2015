@@ -12,6 +12,18 @@
         <servlet-name>requestChain</servlet-name>
         <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.RequestChainServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>requestDetail</servlet-name>
+        <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.RequestDetailServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>requestOverview</servlet-name>
+        <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.RequestOverviewServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>getChainBoxes</servlet-name>
+        <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.GetChainBoxesServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>root</servlet-name>
         <url-pattern>/onion</url-pattern>
@@ -19,5 +31,17 @@
     <servlet-mapping>
         <servlet-name>requestChain</servlet-name>
         <url-pattern>/requestChain</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>requestDetail</servlet-name>
+        <url-pattern>/requestDetail</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>requestOverview</servlet-name>
+        <url-pattern>/requestOverview</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>getChainBoxes</servlet-name>
+        <url-pattern>/getChainBoxes</url-pattern>
     </servlet-mapping>
 </web-app>

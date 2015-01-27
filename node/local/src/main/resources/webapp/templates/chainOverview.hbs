@@ -1,0 +1,18 @@
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Time</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    {{#requests}}
+    <tr>
+        <th scope="row">{{id}}</th>
+        <td>{{time}}</td>
+        <td><a class="btn btn-default" href="/requestDetail?id={{id}}" role="button">View Details</a></td>
+    </tr>
+    {{/requests}}
+    </tbody>
+</table>
