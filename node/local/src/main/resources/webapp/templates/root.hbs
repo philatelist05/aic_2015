@@ -52,7 +52,7 @@
                     }
             );
         });
-        setInterval(function() {
+        var periodic = function() {
             $.ajax(
                     {
                         url:"/requestOverview",
@@ -61,7 +61,9 @@
                         }
                     }
             );
-        }, 10000);
+        };
+        periodic();
+        setInterval(periodic, 10000);
     });
 </script>
 </body>
