@@ -74,10 +74,22 @@
                         }
                 );
             };
+            var periodicInfoData = function() {
+                $.ajax(
+                        {
+                            url:"/getInfoData",
+                            success:function(result){
+                                $("#info").html(result);
+                            }
+                        }
+                );
+            };
             periodicChainBoxes();
             periodicReceivedData();
-            setInterval(periodicChainBoxes, 3000);
-            setInterval(periodicReceivedData, 3000);
+            periodicInfoData();
+            setInterval(periodicChainBoxes, 1500);
+            setInterval(periodicReceivedData, 1500);
+            setInterval(periodicInfoData, 1500);
         });
     </script>
 </body>
