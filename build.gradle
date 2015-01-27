@@ -79,7 +79,7 @@ project(':directory') {
         compile project(':directory-api')
         compile project(':shared')
         compile group: 'com.google.guava', name: 'guava', version: '10.0'
-        compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.9.0'
+        compile group: 'com.amazonaws', name: 'aws-java-sdk-ec2', version: '1.9.0'
     }
 }
 
