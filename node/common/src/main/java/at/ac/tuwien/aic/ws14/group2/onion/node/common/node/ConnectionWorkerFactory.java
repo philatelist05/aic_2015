@@ -58,6 +58,7 @@ public class ConnectionWorkerFactory implements ConnectionWorkerObserver {
     }
 
     private ConnectionWorker createOrUseExisting(Endpoint endpoint) throws IOException {
+
         Socket socket = new Socket(endpoint.getAddress(), endpoint.getPort());
         ConnectionWorker worker = new ConnectionWorker(endpoint, socket, cellWorkerFactory);
         worker.addObserver(this);
@@ -117,9 +118,33 @@ public class ConnectionWorkerFactory implements ConnectionWorkerObserver {
         return stats;
     }
 
+    public int getNumConnectionWorker() {
+        return connectionWorkers.size();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("ConnectionWorkers: {\n");
+        connectionWorkers.forEach((e, w) -> {
+            sb.append(w).append('\n');
+        });
+        sb.append("}");
+        return sb.toString();
+    }
+
     public static class Statistics {
         public int circuitCount;
         public int chainCount;
         public int targetCount;
+
+        @Override
+        public String toString() {
+            return "Statistics{" +
+                    "circuitCount=" + circuitCount +
+                    ", chainCount=" + chainCount +
+                    ", targetCount=" + targetCount +
+                    '}';
+        }
     }
 }

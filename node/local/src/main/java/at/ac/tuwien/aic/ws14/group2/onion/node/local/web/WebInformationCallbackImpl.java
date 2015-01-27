@@ -10,92 +10,100 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Created by Stefan on 25.01.15.
  */
-public class WebInformationCallbackImpl implements  WebInformationCallback {
-    
-    private ConcurrentHashMap<Long, ConcurrentLinkedQueue<RequestInfo>> requestInfoMap;
-    
-    public WebInformationCallbackImpl() {
-        this.requestInfoMap = new ConcurrentHashMap<>();
-    }
+public class WebInformationCallbackImpl implements WebInformationCallback {
 
-    @Override
-    public void chainEstablished(long requestId, ChainMetaData chainMetaData) {
-        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
-        ChainEstablishedInfo chainRequestInfo = new ChainEstablishedInfo(chainMetaData);
-        queue.add(chainRequestInfo);
+	private ConcurrentHashMap<Long, ConcurrentLinkedQueue<RequestInfo>> requestInfoMap;
 
-        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
-        oldInfo.add(chainRequestInfo);
-    }
+	public WebInformationCallbackImpl() {
+		this.requestInfoMap = new ConcurrentHashMap<>();
+	}
 
-    @Override
-    public void chainBuildUp(long requestId, ChainMetaData chainMetaData) {
-        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
-        ChainBuildUpRequest chainBuildUpRequest = new ChainBuildUpRequest(chainMetaData);
-        queue.add(chainBuildUpRequest);
+	@Override
+	public void chainEstablished(long requestId, ChainMetaData chainMetaData) {
+		ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+		ChainEstablishedInfo chainRequestInfo = new ChainEstablishedInfo(chainMetaData);
+		queue.add(chainRequestInfo);
 
-        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
-        oldInfo.add(chainBuildUpRequest);
-    }
+		ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+		if (oldInfo != null)
+			oldInfo.add(chainRequestInfo);
+	}
 
-    @Override
-    public void establishedTargetConnection(long requestId, Endpoint endpoint) {
-        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
-        TargetRequestInfo targetRequestInfo = new TargetRequestInfo(endpoint);
-        queue.add(targetRequestInfo);
+	@Override
+	public void chainBuildUp(long requestId, ChainMetaData chainMetaData) {
+		ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+		ChainBuildUpRequest chainBuildUpRequest = new ChainBuildUpRequest(chainMetaData);
+		queue.add(chainBuildUpRequest);
 
-        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
-        oldInfo.add(targetRequestInfo);
-    }
+		ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+		if (oldInfo != null)
+			oldInfo.add(chainBuildUpRequest);
+	}
+
+	@Override
+	public void establishedTargetConnection(long requestId, Endpoint endpoint) {
+		ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+		TargetRequestInfo targetRequestInfo = new TargetRequestInfo(endpoint);
+		queue.add(targetRequestInfo);
+
+		ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+		if (oldInfo != null)
+			oldInfo.add(targetRequestInfo);
+	}
 
 
-    @Override
-    public void dataSent(long requestId, byte[] data) {
-        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
-        DataSentRequest dataSentRequest = new DataSentRequest(data);
-        queue.add(dataSentRequest);
+	@Override
+	public void dataSent(long requestId, byte[] data) {
+		ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+		DataSentRequest dataSentRequest = new DataSentRequest(data);
+		queue.add(dataSentRequest);
 
-        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
-        oldInfo.add(dataSentRequest);
-    }
+		ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+		if (oldInfo != null)
+			oldInfo.add(dataSentRequest);
+	}
 
-    @Override
-    public void dataReceived(long requestId, byte[] data) {
-        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
-        DataReceivedRequest dataReceivedRequest = new DataReceivedRequest(data);
-        queue.add(dataReceivedRequest);
+	@Override
+	public void dataReceived(long requestId, byte[] data) {
+		ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+		DataReceivedRequest dataReceivedRequest = new DataReceivedRequest(data);
+		queue.add(dataReceivedRequest);
 
-        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
-        oldInfo.add(dataReceivedRequest);
-    }
+		ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+		if (oldInfo != null)
+			oldInfo.add(dataReceivedRequest);
+	}
 
-    @Override
-    public void chainDestroyed(long requestId) {
-        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
-        ChainDestroyedRequest chainDestroyedRequest = new ChainDestroyedRequest();
-        queue.add(chainDestroyedRequest);
+	@Override
+	public void chainDestroyed(long requestId) {
+		ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+		ChainDestroyedRequest chainDestroyedRequest = new ChainDestroyedRequest();
+		queue.add(chainDestroyedRequest);
 
-        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
-        oldInfo.add(chainDestroyedRequest);
-    }
+		ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+		if (oldInfo != null)
+			oldInfo.add(chainDestroyedRequest);
+	}
 
-    @Override
-    public void error(long requestId, String errormsg) {
-        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
-        ErrorRequestInfo errorRequestInfo = new ErrorRequestInfo(errormsg);
-        queue.add(errorRequestInfo);
+	@Override
+	public void error(long requestId, String errormsg) {
+		ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+		ErrorRequestInfo errorRequestInfo = new ErrorRequestInfo(errormsg);
+		queue.add(errorRequestInfo);
 
-        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
-        oldInfo.add(errorRequestInfo);
-    }
+		ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+		if (oldInfo != null)
+			oldInfo.add(errorRequestInfo);
+	}
 
-    @Override
-    public void info(long requestId, String msg) {
-        ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
-        InfoRequest infoRequest = new InfoRequest(msg);
-        queue.add(infoRequest);
+	@Override
+	public void info(long requestId, String msg) {
+		ConcurrentLinkedQueue<RequestInfo> queue = new ConcurrentLinkedQueue<>();
+		InfoRequest infoRequest = new InfoRequest(msg);
+		queue.add(infoRequest);
 
-        ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
-        oldInfo.add(infoRequest);
-    }
+		ConcurrentLinkedQueue<RequestInfo> oldInfo = requestInfoMap.putIfAbsent(requestId, queue);
+		if (oldInfo != null)
+			oldInfo.add(infoRequest);
+	}
 }

@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.ChainNodeInformation;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.DirectoryService;
 import at.ac.tuwien.aic.ws14.group2.onion.directory.api.service.NodeUsage;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorker;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.ConnectionWorkerFactory;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSASignAndVerify;
 import org.apache.logging.log4j.LogManager;
@@ -70,6 +71,10 @@ public class HeartBeatWorker implements Runnable {
                     chainCountSnapshot = stats.chainCount;
                     targetCountSnapshot = stats.targetCount;
                 }
+
+                logger.debug("Statistics: " + stats);
+                logger.debug("#ConnectionWorkers: " + factory.getNumConnectionWorker());
+                //logger.debug(factory);
             }
 
             long relayMsgCountSnapshot = UsageStatistics.currentRelayMsgCount.get();

@@ -167,10 +167,10 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
         // Create the chain
         localNodeCore.createChain(chainMetaData, new SocksCallbackImpl());
+		circuitId = chainMetaData.getCircuitID();
 
 		// Wait for completion of the chain creation
 		chainMetaData = this.chainEstablishedAnswerQueue.take();
-		circuitId = chainMetaData.getCircuitID();
 	}
 
     private void shutdownChain() {
