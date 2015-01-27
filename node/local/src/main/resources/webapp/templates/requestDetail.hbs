@@ -84,12 +84,24 @@
                         }
                 );
             };
+            var periodicErrorData = function() {
+                $.ajax(
+                        {
+                            url:"/getErrorData",
+                            success:function(result){
+                                $("#error").html(result);
+                            }
+                        }
+                );
+            };
             periodicChainBoxes();
             periodicReceivedData();
             periodicInfoData();
+            periodicErrorData()
             setInterval(periodicChainBoxes, 1500);
             setInterval(periodicReceivedData, 1500);
             setInterval(periodicInfoData, 1500);
+            setInterval(periodicErrorData, 1500);
         });
     </script>
 </body>

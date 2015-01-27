@@ -32,6 +32,10 @@
         <servlet-name>getInfoData</servlet-name>
         <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.GetInfoServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>getErrorData</servlet-name>
+        <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.GetErrorServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>root</servlet-name>
         <url-pattern>/onion</url-pattern>
@@ -59,5 +63,9 @@
     <servlet-mapping>
         <servlet-name>getInfoData</servlet-name>
         <url-pattern>/getInfoData</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>getErrorData</servlet-name>
+        <url-pattern>/getErrorData</url-pattern>
     </servlet-mapping>
 </web-app>
