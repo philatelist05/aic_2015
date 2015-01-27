@@ -133,7 +133,7 @@ public class ServiceImplementation implements DirectoryService.Iface {
         final double P = 0.1;
         final double M = 1000;
 
-        // value1 == 1   if nodeUsage.getChainCount() == 0
+        // value1 == 1 if nodeUsage.getChainCount() == 0
         // value1 == P if nodeUsage.getChainCount() == M
         double value1 = 1 / (1 + (1 - P) / (P * M) * nodeUsage.getChainCount());
         double value2 = random.nextDouble();

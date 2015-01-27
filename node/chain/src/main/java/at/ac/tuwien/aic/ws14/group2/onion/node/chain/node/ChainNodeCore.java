@@ -68,14 +68,10 @@ public class ChainNodeCore implements Runnable {
                     } catch (ConnectionWorkerAlreadyExistsException e) {
                         logger.warn("Caught ConnectionWorkerAlreadyExistsException while decoding on incoming Socket: ", e.getMessage());
 
-                        socket.close();
-
                         ErrorCell errorCell = new ErrorCell(createCell.getCircuitID(), createCell.getEndpoint(), createCell.getDHHalf(), ErrorCell.ERROR_CODE_CONNECTION_WORKER_ALREADY_EXISTS);
-                        ConnectionWorker worker = ConnectionWorkerFactory.getInstance().getConnectionWorker(createCell.getEndpoint());
-                        if (worker == null)
-                            logger.warn("Could not send ErrorCell because of another race condition.");
-                        else
-                            worker.sendCell(errorCell);
+                        errorCell.send(socket.getOutputStream());
+
+                        socket.close();
                     } catch (ConnectionWorkerException e) {
                         logger.warn("Caught ConnectionWorkerException while decoding on incoming Socket: ", e.getMessage());
 

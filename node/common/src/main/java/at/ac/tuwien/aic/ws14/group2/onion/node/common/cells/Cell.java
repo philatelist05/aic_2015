@@ -56,6 +56,9 @@ public abstract class Cell {
             case CELL_TYPE_RELAY:
                 cell = new RelayCell(buffer);
                 break;
+            case CELL_TYPE_ERROR:
+                cell = new ErrorCell(buffer);
+                break;
             default:
                 throw new DecodeException();
         }
@@ -104,6 +107,8 @@ public abstract class Cell {
                 return "Destroy";
             case CELL_TYPE_RELAY:
                 return "Relay";
+            case CELL_TYPE_ERROR:
+                return "Error";
             default:
                 return "?";
         }
