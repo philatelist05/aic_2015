@@ -26,12 +26,20 @@ own (and on demand).
 
 By using `./gradlew test`
 
-### Deployment instructions ###
+## Deployment instructions ###
 
 There need to be at least 4 components running to create an Onion Routing network: 1 directory node and 3 chain nodes. Each client that wants to use the network needs to run an instance of the local node component.
-The fastest way to start those components is by running "./gradlew installapp" to compile the code and create start scripts in <component>/build/install/<component>/bin/
+The fastest way to start those components is by running "./gradlew installapp" to compile the code and create start scripts in <component>/build/install/<component>/bin/ (e.g., directory/build/install/directory/bin)
 
-### Configuration Options ###
+### AWS ###
+
+In order to deploy this project on amazon EC2, you need a linux AMI with Oracle Java 8 JRE, git and thrift installed. The description of this AMI needs to be set to "G2-T3-template". Furthermore, a security group named "G2-T3" allowing access to the ports 22, 1080, 8080, 9090 and 30000-39999 needs to be available.
+
+Start one instance for the directory node and optionally a target service node by starting applicable instances, cloning this repo and running it like described above. The IP address of the directory node needs to be set in the configuration file that is used on all chain nodes and the local nodes.
+
+For the EC2 auto-start AWS credentials in one of the usual locations (e.g., ~/.aws/credentials) and appropriate configuration values are needed.
+
+## Configuration Options ###
 
 The configuration file is located in shared/src/main/resources/config.xml and pretty self-explaining:
 
@@ -67,7 +75,7 @@ The configuration file is located in shared/src/main/resources/config.xml and pr
 				</thriftworker>
 				<autostart>true</autostart>       <!-- whether to autostart EC2 instances for chain nodes //-->
 				<numberofnodes>3</numberofnodes>  <!-- how many nodes should be auto started //-->
-				<region>ec2.us-west-2.amazonaws.com</region> <!-- endpoint of the region in which nodes are autostarted //-->
+				<region>ec2.us-west-2.amazonaws.com</region> <!-- endpoint of the region in which nodes are auto-started, AMI and security group as described in README.md need to be available here //-->
 			</directory>
 		</node>
 		<target-service>          <!-- host/address and port where the target service is running //-->
@@ -76,6 +84,3 @@ The configuration file is located in shared/src/main/resources/config.xml and pr
 		</target-service>
 	</onion:config>
 ```
-
-
-For the EC2 autostart AWS credentials in one of the usual locations are needed (e.g., ~/.aws/credentials).
