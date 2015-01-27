@@ -3,6 +3,7 @@ package at.ac.tuwien.aic.ws14.group2.onion.node.chain.node;
 import at.ac.tuwien.aic.ws14.group2.onion.node.chain.heartbeat.UsageStatistics;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.*;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.CircuitIDExistsAlreadyException;
+import at.ac.tuwien.aic.ws14.group2.onion.node.common.exceptions.DecodeException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.*;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.DHKeyExchange;
 import at.ac.tuwien.aic.ws14.group2.onion.shared.crypto.RSASignAndVerify;
@@ -45,6 +46,8 @@ public class ChainCellWorker implements CellWorker {
         try {
             if (circuit == null && cell instanceof CreateCell) {
                 handleCreateCell();
+            } else if (circuit == null) {
+                logger.error("Received non-CreateCell on null-Circuit");
             } else if (cell instanceof CreateResponseCell) {
                 handleCreateResponseCell();
             } else if (cell instanceof RelayCell) {
@@ -58,9 +61,17 @@ public class ChainCellWorker implements CellWorker {
 
                 shutdownChain(circuit);
             }
-        } catch (Exception e) {
-            logger.error("Exception while handling cell, so shutting down chain.", e);
-
+        } catch (IOException e) {
+            logger.error("IOException while handling cell, so shutting down chain: {}", e);
+            shutdownChain(circuit);
+        } catch (DecryptException e) {
+            logger.error("DecryptException while handling cell, so shutting down chain: {}", e);
+            shutdownChain(circuit);
+        } catch (EncryptException e) {
+            logger.error("EncryptException while handling cell, so shutting down chain: {}", e);
+            shutdownChain(circuit);
+        } catch (DecodeException e) {
+            logger.error("DecodeException while handling cell, so shutting down chain: {}", e);
             shutdownChain(circuit);
         }
     }
@@ -124,7 +135,7 @@ public class ChainCellWorker implements CellWorker {
         }
     }
 
-    private void handleRelayCell() throws Exception {
+    private void handleRelayCell() throws IOException, EncryptException, DecryptException, DecodeException {
         UsageStatistics.incrementRelayCounter();
 
         RelayCell relayCell = (RelayCell)cell;
@@ -137,7 +148,11 @@ public class ChainCellWorker implements CellWorker {
             logger.debug("Decrypted payload: {}", decryptedPayload);
             Command cmd = decryptedPayload.decode();
             if (cmd instanceof ExtendCommand) {
-                handleExtendCommand((ExtendCommand)cmd);
+                try {
+                    handleExtendCommand((ExtendCommand) cmd);
+                } catch (Exception e) {
+                    throw new DecryptException(e);
+                }
             } else if (cmd instanceof ConnectCommand) {
                 handleConnectCommand((ConnectCommand)cmd);
             } else if (cmd instanceof DataCommand) {
@@ -249,6 +264,10 @@ public class ChainCellWorker implements CellWorker {
      * Used to react on unrecoverable errors.
      */
     private void shutdownChain(Circuit circuit) {
+        if (circuit == null) {
+            logger.warn("Cannot shutdown chain for null-Circuit");
+            return;
+        }
         Circuit assocCircuit = circuit.getAssociatedCircuit();
 
         try {

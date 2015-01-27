@@ -226,7 +226,7 @@ public class LocalCellWorker implements CellWorker {
     }
 
     private void retryCreateCell(ChainMetaData metaData, SocksCallBack callback) {
-        nodeCore.removeChain(circuit.getCircuitID());
+        nodeCore.destroyChain(circuit.getCircuitID());
         nodeCore.createChain(metaData, callback);
     }
 
