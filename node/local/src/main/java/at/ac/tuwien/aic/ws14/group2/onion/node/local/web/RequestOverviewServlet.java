@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -21,20 +20,18 @@ public class RequestOverviewServlet extends HttpServlet {
             throw new ServletException("Session is not initialized");
         }
         WebInformationCallbackImpl callback = (WebInformationCallbackImpl) session.getAttribute("callback");
-        Enumeration<Long> ids = callback.getIds();
+        List<Long> ids = callback.getIds();
         Template template = new Template("webapp/templates/chainOverview.hbs");
         template.render(resp.getWriter(), new Context(ids));
 
     }
 
     static class Context {
-        ArrayList<Item> items;
+        List<Item> items;
 
-        Context(Enumeration<Long> ids) {
+        Context(List<Long> ids) {
             items = new ArrayList<>();
-            while (ids.hasMoreElements()) {
-                items.add(new Item(ids.nextElement()));
-            }
+            ids.forEach(id -> items.add(new Item(id)));
         }
         List<Item> requests() {
             return items;
