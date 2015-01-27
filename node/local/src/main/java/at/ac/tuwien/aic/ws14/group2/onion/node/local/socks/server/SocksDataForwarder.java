@@ -64,7 +64,8 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 
 				// Start thread handling the responses
 				logger.info("Start thread handling the responses");
-				this.responseHandlerThread = new ResponseHandlerThread(this.responseBuffer, clientSocket.getOutputStream(), newBucketNotifyingQueue);
+				this.responseHandlerThread = new ResponseHandlerThread(this.responseBuffer,
+						clientSocket.getOutputStream(), newBucketNotifyingQueue, localNodeCore, circuitId);
 				this.responseHandlerThread.setName("Response handler thread of " + this.getName());
 				this.responseHandlerThread.setUncaughtExceptionHandler(this.getUncaughtExceptionHandler());
 				this.responseHandlerThread.start();
@@ -89,6 +90,9 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 					// Forward data to the circuit
 					byte[] payload = Arrays.copyOf(buffer, actualBytesRead);
 					localNodeCore.sendData(circuitId, payload);
+
+					if (this.localNodeCore.hasWebCallback())
+						this.localNodeCore.getWebCallback().dataSent(this.circuitId, payload);
 				}
 			} finally {
 				if (this.responseHandlerThread != null)
@@ -128,12 +132,17 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 		private final PriorityBlockingQueue<Bucket> responseBuffer;
 		private final OutputStream outputStream;
 		private final BlockingQueue<Object> newBucketNotifyingQueue;
+		private final LocalNodeCore localNodeCore;
+		private final Short circuitId;
 		private volatile boolean stop;
 		private long lastSentSequenceNumber;
 
-		public ResponseHandlerThread(PriorityBlockingQueue<Bucket> responseBuffer, OutputStream outputStream, BlockingQueue<Object> newBucketNotifyingQueue) {
+		public ResponseHandlerThread(PriorityBlockingQueue<Bucket> responseBuffer, OutputStream outputStream,
+		                             BlockingQueue<Object> newBucketNotifyingQueue, LocalNodeCore localNodeCore,
+		                             Short circuitId) {
 			super();
-
+			this.localNodeCore = Objects.requireNonNull(localNodeCore);
+			this.circuitId = Objects.requireNonNull(circuitId);
 			this.responseBuffer = Objects.requireNonNull(responseBuffer);
 			this.outputStream = Objects.requireNonNull(outputStream);
 			this.lastSentSequenceNumber = -1;
@@ -170,6 +179,9 @@ public class SocksDataForwarder extends Thread implements AutoCloseable {
 						// Send data back
 						this.outputStream.write(bucket.getData());
 						this.lastSentSequenceNumber = currentSequenceNumber;
+
+						if (this.localNodeCore.hasWebCallback())
+							this.localNodeCore.getWebCallback().dataReceived(this.circuitId, bucket.getData());
 					}
 				} finally {
 					this.outputStream.close();
