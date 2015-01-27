@@ -118,15 +118,26 @@ public class ServiceImplementation implements DirectoryService.Iface {
      * Returns the score/probability for a node to become a chain node but no target node.
      */
     private double calculateChainNodeScore(NodeUsage nodeUsage) {
-        // TODO: more intelligent calculation
-        return random.nextDouble();
+        return calculateProbability(nodeUsage);
     }
 
     /**
      * Returns the score/probability for a node to become a target node.
      */
     private double calculateTargetNodeScore(NodeUsage nodeUsage) {
-        // TODO: more intelligent calculation
-        return random.nextDouble();
+        return calculateProbability(nodeUsage);
+    }
+
+    private double calculateProbability(NodeUsage nodeUsage) {
+        final double CHAIN_COUNT_WEIGHT = 0.4;
+        final double P = 0.1;
+        final double M = 1000;
+
+        // value1 == 1   if nodeUsage.getChainCount() == 0
+        // value1 == P if nodeUsage.getChainCount() == M
+        double value1 = 1 / (1 + (1 - P) / (P * M) * nodeUsage.getChainCount());
+        double value2 = random.nextDouble();
+
+        return value1 * CHAIN_COUNT_WEIGHT + value2 * (1 - CHAIN_COUNT_WEIGHT);
     }
 }
