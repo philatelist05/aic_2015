@@ -49,6 +49,8 @@ public class LocalCellWorker implements CellWorker {
             handleRelayCell((RelayCell) cell);
         } else if (cell instanceof DestroyCell) {
             handleDestroyCell((DestroyCell) cell);
+        } else if (cell instanceof ErrorCell) {
+            handleErrorCell((ErrorCell) cell);
         } else {
             logger.warn("Unsupported Cell received: {}", cell);
             return;
@@ -212,6 +214,15 @@ public class LocalCellWorker implements CellWorker {
 
         metaData.growChain(sessionKey);
         nextChainBuildingStep(metaData, callback);
+    }
+
+    private void handleErrorCell(ErrorCell errorCell) {
+        logger.info("Handling ErrorCell");
+
+        SocksCallBack callback = nodeCore.getCallBack(circuit.getCircuitID());
+        ChainMetaData metaData = nodeCore.getChainMetaData(circuit.getCircuitID());
+
+        retryCreateCell(metaData, callback);
     }
 
     private void retryCreateCell(ChainMetaData metaData, SocksCallBack callback) {
