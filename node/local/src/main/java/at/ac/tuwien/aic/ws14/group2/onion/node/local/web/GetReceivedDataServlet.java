@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -26,7 +26,7 @@ public class GetReceivedDataServlet extends HttpServlet {
         List<byte[]> dataReceived = callback.getDataReceived(id);
 
         PrintWriter writer = resp.getWriter();
-        dataReceived.forEach(bytes -> writer.print(Arrays.toString(bytes)));
+        dataReceived.forEach(bytes -> writer.print(new String(bytes, Charset.forName("UTF-8"))));
         writer.flush();
         writer.close();
     }
