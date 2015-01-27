@@ -24,6 +24,10 @@
         <servlet-name>getChainBoxes</servlet-name>
         <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.GetChainBoxesServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>getReceivedData</servlet-name>
+        <servlet-class>at.ac.tuwien.aic.ws14.group2.onion.node.local.web.GetReceivedDataServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>root</servlet-name>
         <url-pattern>/onion</url-pattern>
@@ -43,5 +47,9 @@
     <servlet-mapping>
         <servlet-name>getChainBoxes</servlet-name>
         <url-pattern>/getChainBoxes</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>getReceivedData</servlet-name>
+        <url-pattern>/getReceivedData</url-pattern>
     </servlet-mapping>
 </web-app>
