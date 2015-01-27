@@ -33,4 +33,8 @@ public class Template {
         mustache.execute(writer, scopes);
         writer.flush();
     }
+
+    public void render(PrintWriter writer) throws IOException {
+        render(writer, new Object());
+    }
 }
