@@ -1,0 +1,26 @@
+{{#nodes}}
+    <div class=" col-lg-4">
+        <div class="chain-panel">
+            <div class="chain-panel-heading">
+                <h4>ChainNode ID {{id}}</h4>
+            </div>
+            <dl class="separated">
+                <dt>InstanceID</dt>
+                <dd>{{instanceId}}</dd>
+                <dt>Domain Name</dt>
+                <dd>{{domainName}}</dd>
+                <dt>Region</dt>
+                <dd>{{region}}</dd>
+                <dt>Chains</dt>
+                <dd>
+                    <ul>
+                {{#chains}}
+                    <li>Address: {{address}}</li>
+                    <li>Port: {{port}}</li>
+                {{/chains}}
+                    </ul>
+                </dd>
+            </dl>
+        </div>
+    </div>
+{{/nodes}}

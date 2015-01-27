@@ -52,7 +52,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	}
 
 	public List<ChainMetaData> getChainEstablished(long requestId) {
-		ConcurrentLinkedQueue<ChainMetaData> infos = chainEstablished.get(requestId);
+		ConcurrentLinkedQueue<ChainMetaData> infos = chainEstablished.getOrDefault(requestId, new ConcurrentLinkedQueue<>());
 		return new LinkedList<>(infos);
 	}
 
@@ -69,7 +69,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	}
 
 	public List<ChainMetaData> getChainBuildUp(long requestId) {
-		ConcurrentLinkedQueue<ChainMetaData> infos = chainBuildUp.get(requestId);
+		ConcurrentLinkedQueue<ChainMetaData> infos = chainBuildUp.getOrDefault(requestId, new ConcurrentLinkedQueue<>());
 		return new LinkedList<>(infos);
 	}
 
@@ -86,7 +86,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	}
 
 	public List<Endpoint> getEstablishedTargetConnection(long requestId) {
-		ConcurrentLinkedQueue<Endpoint> infos = establishedTargetConnection.get(requestId);
+		ConcurrentLinkedQueue<Endpoint> infos = establishedTargetConnection.getOrDefault(requestId, new ConcurrentLinkedQueue<>());
 		return new LinkedList<>(infos);
 	}
 
@@ -103,7 +103,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	}
 
 	public List<byte[]> getDataSent(long requestId) {
-		ConcurrentLinkedQueue<byte[]> infos = dataSent.get(requestId);
+		ConcurrentLinkedQueue<byte[]> infos = dataSent.getOrDefault(requestId, new ConcurrentLinkedQueue<>());
 		return new LinkedList<>(infos);
 	}
 
@@ -120,7 +120,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	}
 
 	public List<byte[]> getDataReceived(long requestId) {
-		ConcurrentLinkedQueue<byte[]> infos = dataReceived.get(requestId);
+		ConcurrentLinkedQueue<byte[]> infos = dataReceived.getOrDefault(requestId, new ConcurrentLinkedQueue<>());
 		return new LinkedList<>(infos);
 	}
 
@@ -148,7 +148,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	}
 
 	public List<String> getError(long requestId) {
-		ConcurrentLinkedQueue<String> infos = error.get(requestId);
+		ConcurrentLinkedQueue<String> infos = error.getOrDefault(requestId, new ConcurrentLinkedQueue<>());
 		return new LinkedList<>(infos);
 	}
 
@@ -165,11 +165,11 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	}
 
 	public List<String> getInfo(long requestId) {
-		ConcurrentLinkedQueue<String> infos = info.get(requestId);
+		ConcurrentLinkedQueue<String> infos = info.getOrDefault(requestId, new ConcurrentLinkedQueue<>());
 		return new LinkedList<>(infos);
 	}
 
 	public List<Long> getIds() {
-		return new LinkedList<Long>(ids);
+		return new LinkedList<>(ids);
 	}
 }

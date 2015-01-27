@@ -1,7 +1,5 @@
 package at.ac.tuwien.aic.ws14.group2.onion.node.local.node;
 
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.cells.CreateCell;
-import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Circuit;
 import at.ac.tuwien.aic.ws14.group2.onion.node.common.node.Endpoint;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.SocksCallBack;
 import org.hamcrest.BaseMatcher;
@@ -31,9 +29,9 @@ public class LocalNodeCoreTest {
     @BeforeClass
     public static void initTestData() {
         nodes = new ConcurrentHashMap<>();
-        nodes.put(0, new ChainNodeMetaData(null, new Endpoint("localhost", 12345), null));
-        nodes.put(1, new ChainNodeMetaData(null, new Endpoint("localhost", 12346), null));
-        nodes.put(2, new ChainNodeMetaData(null, new Endpoint("localhost", 12347), null));
+        nodes.put(0, new ChainNodeMetaData(null, new Endpoint("localhost", 12345), null, "", "", ""));
+        nodes.put(1, new ChainNodeMetaData(null, new Endpoint("localhost", 12346), null, "", "", ""));
+        nodes.put(2, new ChainNodeMetaData(null, new Endpoint("localhost", 12347), null, "", "", ""));
         chain1 = new ChainMetaData((short) 1, new ConcurrentHashMap<>(nodes));
         chain2 = new ChainMetaData((short) 2, new ConcurrentHashMap<>(nodes));
         chain3 = new ChainMetaData((short) 3, new ConcurrentHashMap<>(nodes));

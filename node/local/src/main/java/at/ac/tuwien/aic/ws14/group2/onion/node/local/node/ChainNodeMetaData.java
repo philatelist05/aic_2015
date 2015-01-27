@@ -22,11 +22,17 @@ public class ChainNodeMetaData {
     private PublicKey publicKey;
     private Endpoint endPoint;
     private byte[] sessionKey;
+    private String instanceId;
+    private String domainName;
+    private String region;
 
-    public ChainNodeMetaData(PublicKey publicKey, Endpoint endPoint, byte[] sessionKey) {
+    public ChainNodeMetaData(PublicKey publicKey, Endpoint endPoint, byte[] sessionKey, String instanceId, String domainName, String region) {
         this.publicKey = publicKey;
         this.endPoint = endPoint;
         this.sessionKey = sessionKey;
+        this.instanceId = instanceId;
+        this.domainName = domainName;
+        this.region = region;
     }
 
     //TODO FG throw exception instead of returning null?
@@ -60,7 +66,11 @@ public class ChainNodeMetaData {
         }
         Endpoint endpoint = new Endpoint(address, information.getPort());
 
-        return new ChainNodeMetaData(publicKey, endpoint, null);
+        String instanceId = information.getInstanceId();
+        String domainName = information.getDomainName();
+        String region = information.getRegion();
+
+        return new ChainNodeMetaData(publicKey, endpoint, null, instanceId, domainName, region);
     }
 
     public PublicKey getPublicKey() {
@@ -77,6 +87,18 @@ public class ChainNodeMetaData {
 
     public void setSessionKey(byte[] sessionKey) {
         this.sessionKey = sessionKey;
+    }
+
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public String getDomainName() {
+        return domainName;
+    }
+
+    public String getRegion() {
+        return region;
     }
 
     @Override
