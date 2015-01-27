@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Onion Routing</title>
 
     <!-- Bootstrap -->
@@ -17,58 +16,36 @@
     <![endif]-->
 </head>
 <body>
-<div class="container">
-    <h1 class="page-header">Onion Routing Cockpit</h1>
+    <div class="container">
+        <h1 class="page-header">Onion Routing Cockpit</h1>
 
-    <div class="row">
-        <div class=" col-lg-4">
-            <div class="chain-panel">
-                <div class="chain-panel-heading">
-                    <h4>Chain #1</h4>
-                </div>
-                <dl class="separated">
-                    <dt>Item1</dt>
-                    <dd>Descr Item1</dd>
-                    <dt>Item2</dt>
-                    <dd>Descr Item2</dd>
-                    <dt>Item3</dt>
-                    <dd>Descr Item3</dd>
-                </dl>
-            </div>
+        <div id="chain-content" class="row">
         </div>
+
+        <p>
+            <h3>Response</h3>
+            <div class="highlight">
+                <pre id="output">.</pre>
+            </div>
+        </p>
+        <p>
+            <h3>Logging</h3>
+            <div class="highlight">
+                <pre id="info">.</pre>
+            </div>
+        </p>
+        <p>
+            <h3>Errors</h3>
+            <div class="highlight">
+                <pre id="error">.</pre>
+            </div>
+        </p>
     </div>
 
-    <p>
 
-    <h3>Response</h3>
-
-    <div class="highlight">
-        <pre id="output">.</pre>
-    </div>
-    </p>
-    <p>
-
-    <h3>Logging</h3>
-
-    <div class="highlight">
-        <pre id="info">.</pre>
-    </div>
-    </p>
-    <p>
-
-    <h3>Errors</h3>
-
-    <div class="highlight">
-        <pre id="error">.</pre>
-    </div>
-    </p>
-</div>
-</div>
-
-
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="js/bootstrap.min.js"></script>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
 </body>
 </html>
