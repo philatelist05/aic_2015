@@ -21,31 +21,48 @@
     <h1 class="page-header">Onion Routing Cockpit</h1>
 
     <div class="row">
-        <div class="col-lg-3">
-            <div class="panel-group">
-                {{#nodes}}
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title">
-                            <a data-toggle="collapse" data-target="#collapseOne"
-                               href="#collapseOne" class="collapsed">
-                                Chain Node {{name}}
-                            </a>
-                        </h4>
-                    </div>
-                    <div id="collapseOne" class="panel-collapse collapse in">
-                        <div class="panel-body">
-                            {{body}}
-                        </div>
-                    </div>
+        <div class=" col-lg-4">
+            <div class="chain-panel">
+                <div class="chain-panel-heading">
+                    <h4>Chain #1</h4>
                 </div>
-                    {{/nodes}}
+                <dl class="separated">
+                    <dt>Item1</dt>
+                    <dd>Descr Item1</dd>
+                    <dt>Item2</dt>
+                    <dd>Descr Item2</dd>
+                    <dt>Item3</dt>
+                    <dd>Descr Item3</dd>
+                </dl>
             </div>
         </div>
-        <div class="col-lg-9">
-            {{response}}
-        </div>
     </div>
+
+    <p>
+
+    <h3>Response</h3>
+
+    <div class="highlight">
+        <pre id="output">.</pre>
+    </div>
+    </p>
+    <p>
+
+    <h3>Logging</h3>
+
+    <div class="highlight">
+        <pre id="info">.</pre>
+    </div>
+    </p>
+    <p>
+
+    <h3>Errors</h3>
+
+    <div class="highlight">
+        <pre id="error">.</pre>
+    </div>
+    </p>
+</div>
 </div>
 
 
