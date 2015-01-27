@@ -65,8 +65,10 @@ public class ConnectionWorkerFactory implements ConnectionWorkerObserver {
 
         ConnectionWorker existingWorker = connectionWorkers.putIfAbsent(endpoint, worker);
         if (existingWorker == null) {
+            logger.info("Created new ConnectionWorker: {}", worker);
             return worker;
         } else {
+            worker.removeObserver(this);
             worker.close();
             return existingWorker;
         }

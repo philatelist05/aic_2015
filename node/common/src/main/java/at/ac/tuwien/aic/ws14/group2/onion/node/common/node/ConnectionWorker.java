@@ -209,7 +209,7 @@ public class ConnectionWorker implements AutoCloseable {
 
     @Override
     public String toString() {
-        return ConnectionWorker.class.getSimpleName() + " [" + endpoint + "]";
+        return ConnectionWorker.class.getSimpleName() + " [" + endpoint + " / " + circuits.keySet() + "]";
     }
 
     /**
