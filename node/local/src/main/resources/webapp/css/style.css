@@ -43,3 +43,10 @@ dl.separated dd {
     word-wrap: break-word;
     padding-bottom:10px;
 }
+
+.new-chain-btn {
+    bottom: 15px;
+    position: relative;
+    top: 15px;
+
+}
