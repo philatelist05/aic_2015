@@ -54,7 +54,7 @@
     <script src="js/bootstrap.min.js"></script>
     <script type="application/javascript">
         $(document).ready(function () {
-            setInterval(function() {
+            var periodic = function() {
                 $.ajax(
                         {
                             url:"/getChainBoxes",
@@ -63,7 +63,9 @@
                             }
                         }
                 );
-            }, 1000);
+            };
+            periodic();
+            setInterval(periodic, 1000);
         });
     </script>
 </body>
