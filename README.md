@@ -39,7 +39,7 @@ In order to deploy this project on amazon EC2, you need a linux AMI with Oracle 
 To setup the AMI on a Debian/Ubuntu based distribution:
 
 * Install Java JRE (either using make-jpkg or PPA)
-* ``$ sudo apt-get update; sudo apt-get install git thrift``
+* ``$ sudo apt-get update; sudo apt-get install git thrift-compiler``
 * ``$ git clone https://bitbucket.org/FabianG/aic-group-2-topic-3.git``
 * ``$ cd aic-group-2-topic-3``
 * ``$ git checkout tags/aws-tested``
