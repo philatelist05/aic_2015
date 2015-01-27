@@ -93,6 +93,9 @@ public class TargetWorker implements AutoCloseable {
                 return;
             }
 
+            if (buffer.getContents().isEmpty())
+                return;
+
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             buffer.getContents().stream()
                     .forEach(bucket -> {

@@ -6,12 +6,8 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.MessagePar
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.exceptions.SocksException;
 import at.ac.tuwien.aic.ws14.group2.onion.node.local.socks.messages.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.io.*;
+import java.net.*;
 import java.nio.charset.Charset;
 import java.util.Objects;
 
@@ -26,8 +22,12 @@ public class SocksClient {
 	}
 
 	/**
+	 * <p>
 	 * Send data to the destination over the SOCKS server and receive the response as return value.
-	 * This method <strong>blocks</strong> until the entire response is received.
+	 * </p><p>
+	 * Attention: This method <strong>blocks</strong> until the entire response is received, i.e. until an
+	 * EOF is received.
+	 * </p>
 	 *
 	 * @param destination the IP address and port of the destination server
 	 * @param data        the data which should be sent over the SOCKS server to the destination
@@ -82,15 +82,16 @@ public class SocksClient {
 				}
 			}
 
-			// We are read to send
+			// We are ready to send
 			outputStream.write(data);
+			outputStream.flush();
 
 			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(4096); // 4 KiB buffer
-			int c;
+			int length;
 
-			// TODO (KK) Maybe we can use the Channels of Java 8 here instead
-			while ((c = inputStream.read()) != -1) {
-				byteArrayOutputStream.write(c);
+			byte[] buffer = new byte[4096];
+			while ((length = inputStream.read(buffer)) != -1) {
+				byteArrayOutputStream.write(buffer, 0, length);
 			}
 
 			return byteArrayOutputStream.toByteArray();
@@ -100,6 +101,41 @@ public class SocksClient {
 
 		}
 	}
+
+	public String sendHttpGet(InetSocketAddress destination) throws IOException {
+		Objects.requireNonNull(destination);
+
+		URL destinationUrl = new URL(String.format("http://%s:%d", destination.getHostString(), destination.getPort()));
+
+		Proxy socksProxy = new Proxy(Proxy.Type.SOCKS, socksServer);
+
+		HttpURLConnection connection = null;
+		try {
+			connection = (HttpURLConnection) destinationUrl.openConnection(socksProxy);
+
+			// Get response
+			InputStream inputStream = connection.getInputStream();
+			try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+
+				StringBuilder response = new StringBuilder();
+
+				bufferedReader.lines().forEach((s) -> response.append(String.format("%s%n", s)));
+
+				// Delete last newline character
+				int newlineLength = String.format("%n").length();
+				response.delete(response.length() - newlineLength, response.length());
+
+				return response.toString();
+			}
+
+		} finally {
+			if (connection != null)
+				connection.disconnect();
+
+		}
+
+	}
+
 
 	/**
 	 * Send UTF-8 encoded data
