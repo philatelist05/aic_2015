@@ -5,8 +5,7 @@ import at.ac.tuwien.aic.ws14.group2.onion.node.local.node.ChainMetaData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -24,7 +23,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	private ConcurrentHashMap<Long, ConcurrentLinkedQueue<byte[]>> dataReceived;
 	private ConcurrentHashMap<Long, ConcurrentLinkedQueue<String>> error;
 	private ConcurrentHashMap<Long, ConcurrentLinkedQueue<String>> info;
-	private ConcurrentSkipListSet<Long> ids;
+	private ConcurrentHashMap<Long, Date> ids;
 	private ConcurrentSkipListSet<Long> chainDestroyed;
 
 	public WebInformationCallbackImpl() {
@@ -36,7 +35,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		this.error = new ConcurrentHashMap<>();
 		this.info = new ConcurrentHashMap<>();
 		this.chainDestroyed = new ConcurrentSkipListSet<>();
-		this.ids = new ConcurrentSkipListSet<>();
+		this.ids = new ConcurrentHashMap<>();
 	}
 
 	@Override
@@ -48,7 +47,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		ConcurrentLinkedQueue<ChainMetaData> oldInfo = chainEstablished.putIfAbsent(requestId, queue);
 		if (oldInfo != null)
 			oldInfo.add(chainMetaData);
-		ids.add(requestId);
+		ids.putIfAbsent(requestId, new Date());
 	}
 
 	public List<ChainMetaData> getChainEstablished(long requestId) {
@@ -65,7 +64,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		ConcurrentLinkedQueue<ChainMetaData> oldInfo = chainBuildUp.putIfAbsent(requestId, queue);
 		if (oldInfo != null)
 			oldInfo.add(chainMetaData);
-		ids.add(requestId);
+		ids.putIfAbsent(requestId, new Date());
 	}
 
 	public List<ChainMetaData> getChainBuildUp(long requestId) {
@@ -82,7 +81,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		ConcurrentLinkedQueue<Endpoint> oldInfo = establishedTargetConnection.putIfAbsent(requestId, queue);
 		if (oldInfo != null)
 			oldInfo.add(endpoint);
-		ids.add(requestId);
+		ids.putIfAbsent(requestId, new Date());
 	}
 
 	public List<Endpoint> getEstablishedTargetConnection(long requestId) {
@@ -99,7 +98,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		ConcurrentLinkedQueue<byte[]> oldInfo = dataSent.putIfAbsent(requestId, queue);
 		if (oldInfo != null)
 			oldInfo.add(data);
-		ids.add(requestId);
+		ids.putIfAbsent(requestId, new Date());
 	}
 
 	public List<byte[]> getDataSent(long requestId) {
@@ -116,7 +115,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		ConcurrentLinkedQueue<byte[]> oldInfo = dataReceived.putIfAbsent(requestId, queue);
 		if (oldInfo != null)
 			oldInfo.add(data);
-		ids.add(requestId);
+		ids.putIfAbsent(requestId, new Date());
 	}
 
 	public List<byte[]> getDataReceived(long requestId) {
@@ -128,7 +127,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	public void chainDestroyed(long requestId) {
 		logger.info("Received chainDestroyed with id " + requestId);
 		chainDestroyed.add(requestId);
-		ids.add(requestId);
+		ids.putIfAbsent(requestId, new Date());
 	}
 
 	public boolean isChainDestroyed(long requestId) {
@@ -144,7 +143,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		ConcurrentLinkedQueue<String> oldInfo = error.putIfAbsent(requestId, queue);
 		if (oldInfo != null)
 			oldInfo.add(errormsg);
-		ids.add(requestId);
+		ids.putIfAbsent(requestId, new Date());
 	}
 
 	public List<String> getError(long requestId) {
@@ -161,7 +160,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		ConcurrentLinkedQueue<String> oldInfo = info.putIfAbsent(requestId, queue);
 		if (oldInfo != null)
 			oldInfo.add(msg);
-		ids.add(requestId);
+		ids.putIfAbsent(requestId, new Date());
 	}
 
 	public List<String> getInfo(long requestId) {
@@ -169,7 +168,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 		return new LinkedList<>(infos);
 	}
 
-	public List<Long> getIds() {
-		return new LinkedList<>(ids);
+	public Map<Long, Date> getIds() {
+		return new HashMap<>(ids);
 	}
 }
