@@ -23,9 +23,17 @@
         </h2>
         <div class="pull-right">
             <div class="new-chain-btn">
-                <button id="new-chain" class="btn btn-primary">
-                    New Chain
-                </button>
+                <form class="form-inline" id="newCainForm">
+                    <div class="form-group">
+                        <label for="inputHostName">Host</label>
+                        <input type="text" class="form-control" id="inputHostName" placeholder="{{default-hostname}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="inputPort">Port</label>
+                        <input type="text" class="form-control" id="inputPort" placeholder="{{default-port}}">
+                    </div>
+                    <button type="submit" id="new-chain" class="btn btn-primary">New Chain</button>
+                </form>
             </div>
         </div>
         <div class="clearfix"></div>
@@ -43,10 +51,16 @@
 <script src="js/bootstrap.min.js"></script>
 <script type="application/javascript">
     $(document).ready(function () {
-        $("#new-chain").click(function() {
+        $("#newCainForm").submit(function() {
+            $("#new-chain").attr("readonly", "readonly");
             $.ajax(
                     {
                         url:"/requestChain",
+                        data: {
+                            host: $("#inputHostName").attr("readonly", "readonly").val(),
+                            port : $("#inputPort").attr("readonly", "readonly").val()
+                        },
+                        async: false,
                         success:function(result){
                         }
                     }
@@ -63,7 +77,7 @@
             );
         };
         periodic();
-        setInterval(periodic, 10000);
+        setInterval(periodic, 5000);
     });
 </script>
 </body>

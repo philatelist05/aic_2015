@@ -19,9 +19,9 @@ public class RequestChainServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Configuration configuration = ConfigurationFactory.getConfiguration();
-		String targetServiceHost = configuration.getTargetServiceHost();
-		int targetServicePort = configuration.getTargetServicePort();
-		InetSocketAddress targetAddress = new InetSocketAddress(targetServiceHost, targetServicePort);
+
+		InetSocketAddress targetAddress = getTargetAddress(req);
+
 		int localNodeServerPort = configuration.getLocalNodeServerPort();
 		String localNodeHost = "localhost";
 		InetSocketAddress serverAddress = new InetSocketAddress(localNodeHost, localNodeServerPort);
@@ -32,6 +32,26 @@ public class RequestChainServlet extends HttpServlet {
 		writer.println(response);
 		writer.flush();
 		writer.close();
+	}
+
+	private InetSocketAddress getTargetAddress(HttpServletRequest req) {
+		Configuration configuration = ConfigurationFactory.getConfiguration();
+		String host = req.getParameter("host");
+		if (host == null || host.isEmpty()) {
+			host = configuration.getTargetServiceHost();
+		}
+
+		int port;
+		try {
+			port = Integer.parseInt(req.getParameter("port"));
+		} catch (NumberFormatException e) {
+			port = configuration.getTargetServicePort();
+		}
+		if (port < 0 || port > 65535) {
+			port = configuration.getTargetServicePort();
+		}
+
+		return new InetSocketAddress(host, port);
 	}
 
 	private String doSocks5Request(InetSocketAddress target, InetSocketAddress server) throws ServletException {
