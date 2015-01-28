@@ -231,9 +231,10 @@ public class LocalNodeCore {
 
     public boolean removeChain(Short circuitID) {
         boolean success = true;
-        if(!circuitIDs.remove(circuitID)) {
-            success = false;
-        }
+        // Do not reuse the circuit IDs
+//        if(!circuitIDs.remove(circuitID)) {
+//            success = false;
+//        }
         if(chains.remove(circuitID) == null) {
             success = false;
         }
