@@ -6,8 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Stefan on 27.01.15.
@@ -20,7 +19,7 @@ public class RequestOverviewServlet extends HttpServlet {
             throw new ServletException("Session is not initialized");
         }
         WebInformationCallbackImpl callback = (WebInformationCallbackImpl) session.getAttribute("callback");
-        List<Long> ids = callback.getIds();
+        Map<Long, Date> ids = callback.getIds();
         Template template = new Template("webapp/templates/chainOverview.hbs");
         template.render(resp.getWriter(), new Context(ids));
 
@@ -29,19 +28,23 @@ public class RequestOverviewServlet extends HttpServlet {
     static class Context {
         List<Item> items;
 
-        Context(List<Long> ids) {
+        Context(Map<Long, Date> ids) {
             items = new ArrayList<>();
-            ids.forEach(id -> items.add(new Item(id)));
+            SortedMap<Date, Long> sorted = new TreeMap<>(Date::compareTo);
+            ids.forEach((aLong1, date1) -> sorted.put(date1, aLong1));
+            sorted.forEach((date1, aLong1) -> items.add(new Item(aLong1, date1.toString())));
         }
         List<Item> requests() {
             return items;
         }
 
         static class Item {
-            Item(Long id) {
+            Item(Long id, String time) {
                 this.id = id;
+                this.time = time;
             }
             Long id;
+            String time;
         }
     }
 }
