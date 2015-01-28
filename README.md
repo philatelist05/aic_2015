@@ -49,6 +49,10 @@ Start one instance for the directory node and optionally a target service node a
 
 To enable EC2 auto-start set the configuration values directory.autostart, numberofnodes and region as well as common.local-mode and provide your AWS credentials in one of the usual locations (e.g., ~/.aws/credentials).
 
+## The web interface ##
+
+The web interface runs on the host where the local node runs. There you can access it via the URL http://localhost:8000/onion. With this interface you see every request coming through this local node (either through the SOCKS5 proxy or directly from the web UI). It is also possible to set up arbitrary requests with the "New Chain" button in the web interface.
+
 ## Configuration Options ###
 
 The configuration file is located in shared/src/main/resources/config.xml and pretty self-explaining:
