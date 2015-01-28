@@ -25,7 +25,7 @@ public class GetErrorServlet extends HttpServlet {
         List<String> info = callback.getError(id);
 
         PrintWriter writer = resp.getWriter();
-        info.forEach(writer::print);
+        info.forEach(writer::println);
         writer.flush();
         writer.close();
 

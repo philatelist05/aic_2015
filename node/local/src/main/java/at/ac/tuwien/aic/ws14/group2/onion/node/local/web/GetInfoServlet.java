@@ -25,7 +25,7 @@ public class GetInfoServlet extends HttpServlet {
         List<String> info = callback.getInfo(id);
 
         PrintWriter writer = resp.getWriter();
-        info.forEach(writer::print);
+        info.forEach(writer::println);
         writer.flush();
         writer.close();
     }

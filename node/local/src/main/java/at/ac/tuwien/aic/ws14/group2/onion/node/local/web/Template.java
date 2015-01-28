@@ -26,14 +26,6 @@ public class Template {
         writer.flush();
     }
 
-    public void render(Writer writer, Object[] scopes) throws IOException {
-        ClassLoader cl = ClassLoader.getSystemClassLoader();
-        MustacheFactory mf = new DefaultMustacheFactory();
-        Mustache mustache = mf.compile(new InputStreamReader(cl.getResourceAsStream(location)), "test");
-        mustache.execute(writer, scopes);
-        writer.flush();
-    }
-
     public void render(PrintWriter writer) throws IOException {
         render(writer, new Object());
     }
