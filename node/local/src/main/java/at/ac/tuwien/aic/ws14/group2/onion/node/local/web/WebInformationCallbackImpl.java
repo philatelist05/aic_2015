@@ -135,14 +135,14 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 	}
 
 	@Override
-	public void error(long requestId, String errormsg) {
-		logger.info("Received error with id " + requestId + " and " + errormsg );
+	public void error(long requestId, String msg) {
+		logger.info("Received error with id " + requestId + " and \"" + msg + "\"");
 		ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<>();
-		queue.add(errormsg);
+		queue.add(msg);
 
 		ConcurrentLinkedQueue<String> oldInfo = error.putIfAbsent(requestId, queue);
 		if (oldInfo != null)
-			oldInfo.add(errormsg);
+			oldInfo.add(msg);
 		ids.putIfAbsent(requestId, new Date());
 	}
 
@@ -153,7 +153,7 @@ public class WebInformationCallbackImpl implements WebInformationCallback {
 
 	@Override
 	public void info(long requestId, String msg) {
-		logger.info("Received error with id " + requestId + " and " + msg);
+		logger.info("Received info with id " + requestId + " and \"" + msg + "\"");
 		ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<>();
 		queue.add(msg);
 
