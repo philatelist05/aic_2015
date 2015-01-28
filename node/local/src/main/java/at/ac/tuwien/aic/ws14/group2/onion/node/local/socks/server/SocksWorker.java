@@ -106,7 +106,15 @@ public class SocksWorker implements Runnable, AutoCloseable {
 
 				// Connect to the target
 				logger.info("Connecting to destination");
+				if (this.localNodeCore.hasWebCallback())
+					this.localNodeCore.getWebCallback().info(circuitId, "Connecting to destination...");
+
 				localNodeCore.connectTo(circuitId, convertSocksAddressToEndpoint(destination));
+
+				if (this.localNodeCore.hasWebCallback()) {
+					this.localNodeCore.getWebCallback().info(circuitId, "Connection established");
+					this.localNodeCore.getWebCallback().info(circuitId, "Starting data transfer...");
+				}
 
 				// Create and start the forwarder of for the client data
 				logger.info("Starting SOCKS data forwarder");
@@ -122,7 +130,15 @@ public class SocksWorker implements Runnable, AutoCloseable {
 				// Wait on SocksDataForwarder
 				socksDataForwarder.join();
 
+				if (this.localNodeCore.hasWebCallback()) {
+					this.localNodeCore.getWebCallback().info(circuitId, "Data received completely");
+					this.localNodeCore.getWebCallback().info(circuitId, "Destroying the chain again...");
+				}
+
                 shutdownChain();
+
+				if (this.localNodeCore.hasWebCallback())
+					this.localNodeCore.getWebCallback().info(circuitId, "Chain destroyed");
 
 			} finally {
 				close();
@@ -168,9 +184,14 @@ public class SocksWorker implements Runnable, AutoCloseable {
         // Create the chain
         localNodeCore.createChain(chainMetaData, new SocksCallbackImpl());
 		circuitId = chainMetaData.getCircuitID();
+		if (this.localNodeCore.hasWebCallback())
+			this.localNodeCore.getWebCallback().info(circuitId, "Creating chain...");
 
 		// Wait for completion of the chain creation
 		chainMetaData = this.chainEstablishedAnswerQueue.take();
+
+		if (this.localNodeCore.hasWebCallback())
+			this.localNodeCore.getWebCallback().info(circuitId, "Chain established");
 	}
 
     private void shutdownChain() {
